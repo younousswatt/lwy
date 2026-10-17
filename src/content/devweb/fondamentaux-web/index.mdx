@@ -1,0 +1,534 @@
+# Fondamentaux du web
+
+Ce module introduit les concepts fondamentaux du fonctionnement du web : l'architecture client-serveur, le protocole HTTP, le système de noms de domaine, et le rôle du navigateur. Il explique également comment configurer un environnement de développement moderne avec VS Code, les DevTools et le terminal, et guide la création d'un premier fichier HTML validé localement. À l'issue de ce module, vous comprendrez ce qui se passe lorsqu'une page web est chargée et serez capable de créer et d'inspecter un document HTML de base.
+
+## Objectifs
+
+- Comprendre l'architecture client-serveur et le rôle de chaque composant dans une requête web.
+- Expliquer le fonctionnement du protocole HTTP, des URL et du système DNS.
+- Installer et configurer un éditeur de code (VS Code) avec les extensions essentielles.
+- Utiliser les DevTools du navigateur pour inspecter et déboguer une page.
+- Exécuter des commandes de base dans le terminal pour naviguer et manipuler des fichiers.
+- Créer un fichier HTML valide et le servir localement avec un serveur de développement.
+
+## Prérequis
+
+Aucun. Ce module est conçu pour des débutants complets.
+
+## Cours
+
+### Architecture client-serveur
+
+Le web fonctionne selon une architecture client-serveur. Le client est généralement un navigateur web (Chrome, Firefox, Safari) qui envoie des requêtes à un serveur. Le serveur est un ordinateur distant qui héberge des fichiers (HTML, CSS, JavaScript, images) et qui répond aux requêtes en renvoyant ces fichiers.
+
+<Callout type="info">
+Le terme "client" désigne toute application qui envoie des requêtes, pas uniquement un navigateur. Une application mobile ou un script Python peuvent aussi agir comme des clients.
+</Callout>
+
+Le processus se déroule en plusieurs étapes :
+
+1. L'utilisateur saisit une URL dans la barre d'adresse du navigateur.
+2. Le navigateur résout le nom de domaine en adresse IP via DNS.
+3. Le navigateur établit une connexion TCP avec le serveur.
+4. Le navigateur envoie une requête HTTP (généralement GET).
+5. Le serveur traite la requête et renvoie une réponse HTTP avec le contenu demandé.
+6. Le navigateur reçoit la réponse et l'interprète pour afficher la page.
+
+Le serveur ne conserve pas d'information sur les requêtes précédentes : chaque requête est indépendante. Cette propriété est essentielle pour comprendre le fonctionnement du web et explique pourquoi des mécanismes comme les cookies ou le stockage local sont nécessaires pour maintenir un état entre les requêtes.
+
+### Le protocole HTTP
+
+HTTP (HyperText Transfer Protocol) est le protocole de communication utilisé sur le web. Il définit le format des messages échangés entre client et serveur. Une requête HTTP comprend une méthode, un chemin, des en-têtes et éventuellement un corps.
+
+Les méthodes les plus courantes sont :
+
+- `GET` : demander une ressource (une page, une image).
+- `POST` : envoyer des données au serveur (un formulaire).
+- `PUT` : mettre à jour une ressource existante.
+- `DELETE` : supprimer une ressource.
+
+Une requête GET typique ressemble à ceci :
+
+```http
+GET /index.html HTTP/1.1
+Host: example.com
+User-Agent: Mozilla/5.0
+Accept: text/html
+```
+
+La réponse correspondante contient un code de statut, des en-têtes et un corps :
+
+```http
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 1234
+
+<!doctype html>
+<html>
+...
+</html>
+```
+
+Les codes de statut indiquent le résultat de la requête. Les plus importants sont :
+
+- `200 OK` : la requête a réussi.
+- `301 Moved Permanently` : la ressource a été déplacée définitivement.
+- `404 Not Found` : la ressource n'existe pas.
+- `500 Internal Server Error` : une erreur est survenue sur le serveur.
+
+<Callout type="tip">
+Vous pouvez observer les requêtes et réponses HTTP dans l'onglet "Network" des DevTools de votre navigateur. C'est un outil précieux pour comprendre ce qui se passe lors du chargement d'une page.
+</Callout>
+
+### URL et DNS
+
+Une URL (Uniform Resource Locator) identifie une ressource sur le web. Elle se compose de plusieurs parties :
+
+```
+https://example.com:443/path/to/resource?query=value#fragment
+```
+
+- `https` : le protocole (HTTPS est la version sécurisée de HTTP).
+- `example.com` : le nom de domaine.
+- `443` : le port (optionnel, 443 est le port par défaut pour HTTPS).
+- `/path/to/resource` : le chemin vers la ressource sur le serveur.
+- `?query=value` : la chaîne de requête (paramètres optionnels).
+- `#fragment` : l'identifiant de fragment (ancre dans la page).
+
+Le nom de domaine (`example.com`) est lisible par les humains mais les ordinateurs communiquent via des adresses IP (comme `93.184.216.34`). Le système DNS (Domain Name System) effectue cette traduction. Lorsque vous accédez à un site, votre ordinateur interroge un serveur DNS pour obtenir l'adresse IP correspondante au nom de domaine.
+
+Le DNS fonctionne de manière hiérarchique : les serveurs racine renvoient vers les serveurs de domaines de premier niveau (.com, .org, .fr), qui eux-mêmes renvoient vers les serveurs autoritaires pour le domaine spécifique. Ce système permet une résolution rapide et distribuée des noms de domaine.
+
+### Le navigateur et le rendu
+
+Le navigateur a plusieurs responsabilités : envoyer des requêtes HTTP, interpréter les réponses, exécuter le JavaScript, et afficher le contenu. Le processus de rendu d'une page HTML comprend plusieurs étapes :
+
+1. Le navigateur reçoit le HTML et le parse pour construire le DOM (Document Object Model).
+2. Le CSS est parsé pour construire le CSSOM (CSS Object Model).
+3. Le DOM et le CSSOM sont combinés pour créer l'arbre de rendu.
+4. L'arbre de rendu est utilisé pour calculer la mise en page (layout).
+5. Les éléments sont peints à l'écran (paint).
+
+Le DOM est une représentation arborescente du document HTML où chaque élément est un nœud. Cette structure permet au JavaScript de manipuler le document de manière programmatique. Par exemple, pour changer le texte d'un paragraphe, le JavaScript accède au nœud correspondant dans le DOM et modifie sa propriété.
+
+```javascript
+document.querySelector('p').textContent = 'Nouveau texte';
+```
+
+Les DevTools du navigateur permettent d'inspecter le DOM en temps réel, de modifier les styles CSS, de déboguer le JavaScript, et d'analyser les performances. Ces outils sont indispensables pour le développement web.
+
+### Environnement de développement
+
+Un environnement de développement efficace comprend trois outils principaux : un éditeur de code, un terminal, et les DevTools du navigateur.
+
+**VS Code** est un éditeur de code gratuit et extensible développé par Microsoft. Il supporte la coloration syntaxique, l'autocomplétion, le débogage intégré, et dispose d'un riche écosystème d'extensions. Pour le développement web, les extensions suivantes sont recommandées :
+
+- Live Server : sert les fichiers locaux et recharge automatiquement la page lors des modifications.
+- Prettier : formate automatiquement le code selon des règles cohérentes.
+- ESLint : détecte les erreurs et les problèmes de style dans le JavaScript.
+
+**Le terminal** permet d'exécuter des commandes pour naviguer dans le système de fichiers, installer des dépendances, et lancer des serveurs de développement. Les commandes essentielles sur Linux, macOS et Windows (avec Git Bash ou WSL) sont :
+
+- `pwd` : affiche le répertoire courant.
+- `ls` (ou `dir` sur Windows) : liste les fichiers du répertoire.
+- `cd <dossier>` : change de répertoire.
+- `mkdir <dossier>` : crée un nouveau répertoire.
+- `touch <fichier>` : crée un nouveau fichier vide.
+
+```bash
+# Créer un projet et naviguer
+mkdir mon-projet
+cd mon-projet
+touch index.html
+```
+
+**Les DevTools** sont accessibles via F12 ou Ctrl+Shift+I (Cmd+Option+I sur Mac). Ils comprennent plusieurs onglets :
+
+- Elements : inspection du DOM et des styles CSS.
+- Console : exécution de JavaScript et affichage des erreurs.
+- Network : analyse des requêtes et réponses HTTP.
+- Sources : débogage du JavaScript.
+- Performance : analyse des performances de rendu.
+
+### Premier fichier HTML
+
+HTML (HyperText Markup Language) est le langage de balisage utilisé pour structurer le contenu des pages web. Un document HTML minimal contient une déclaration de type de document, un élément racine `html`, une section `head` avec des métadonnées, et une section `body` avec le contenu visible.
+
+```html
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ma première page</title>
+  </head>
+  <body>
+    <h1>Bonjour, monde !</h1>
+    <p>Ceci est mon premier document HTML.</p>
+  </body>
+</html>
+```
+
+Chaque élément de cette structure a une importance :
+
+- `<!doctype html>` : indique au navigateur d'utiliser le mode standard HTML5.
+- `<html lang="fr">` : l'élément racine avec l'attribut `lang` pour spécifier la langue.
+- `<meta charset="utf-8">` : définit l'encodage des caractères (UTF-8 supporte tous les caractères).
+- `<meta name="viewport" ...>` : configure le comportement sur mobile (mise à l'échelle adaptée).
+- `<title>` : le titre affiché dans l'onglet du navigateur.
+
+Les éléments HTML sont imbriqués de manière hiérarchique. L'indentation du code reflète cette structure et facilite la lecture. Le navigateur ignore les espaces et les sauts de ligne superflus, mais une indentation cohérente est essentielle pour la maintenabilité du code.
+
+### Servir un fichier localement
+
+Pour développer efficacement, il est nécessaire de servir les fichiers locaux via un serveur HTTP plutôt que de les ouvrir directement dans le navigateur (protocole `file://`). Le protocole `file://` a des limitations : certaines fonctionnalités JavaScript ne fonctionnent pas, les requêtes AJAX sont bloquées par les politiques de sécurité du navigateur (CORS), et le comportement peut différer de celui d'un serveur de production.
+
+Avec l'extension Live Server dans VS Code, il suffit de faire un clic droit sur le fichier HTML et de choisir "Open with Live Server". Le serveur démarre automatiquement et la page s'ouvre à une URL locale (généralement `http://127.0.0.1:5500`). Toute modification du fichier provoque un rechargement automatique de la page.
+
+Alternativement, Python dispose d'un serveur HTTP intégré :
+
+```bash
+# Python 3
+python -m http.server 8000
+
+# Python 2
+python -m SimpleHTTPServer 8000
+```
+
+Node.js propose également des serveurs de développement comme `http-server` ou `live-server` installables via npm.
+
+<Callout type="tip">
+Utilisez toujours un serveur local pour le développement. Cela évite de nombreux problèmes liés aux restrictions de sécurité du navigateur et reproduit plus fidèlement l'environnement de production.
+</Callout>
+
+## Erreurs fréquentes
+
+**Oublier la déclaration doctype**
+
+```html
+<html>
+  <head>...</head>
+  <body>...</body>
+</html>
+```
+
+Le navigateur peut passer en mode "quirks" (mode de compatibilité) et interpréter le HTML selon des règles obsolètes, entraînant des différences de rendu.
+
+<Callout type="warn">
+```html
+<!doctype html>
+<html>
+  <head>...</head>
+  <body>...</body>
+</html>
+```
+Toujours inclure `<!doctype html>` au début du document pour garantir le mode standard.
+</Callout>
+
+**Oublier l'attribut lang**
+
+```html
+<html>
+  <head>...</head>
+  <body>...</body>
+</html>
+```
+
+Les outils d'accessibilité et les moteurs de recherche ne peuvent pas identifier la langue du document, ce qui affecte la synthèse vocale et l'indexation.
+
+<Callout type="warn">
+```html
+<html lang="fr">
+  <head>...</head>
+  <body>...</body>
+</html>
+```
+Spécifiez toujours la langue avec l'attribut `lang` sur l'élément `html`.
+</Callout>
+
+**Oublier la meta viewport**
+
+```html
+<head>
+  <meta charset="utf-8">
+  <title>Ma page</title>
+</head>
+```
+
+Sur mobile, la page peut être affichée avec un zoom arbitraire, rendant le texte illisible ou obligeant l'utilisateur à zoomer horizontalement.
+
+<Callout type="warn">
+```html
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ma page</title>
+</head>
+```
+Incluez toujours la meta viewport pour un affichage correct sur mobile.
+</Callout>
+
+**Ouvrir le fichier directement avec file://**
+
+L'utilisateur double-clique sur `index.html` pour l'ouvrir dans le navigateur. Certaines fonctionnalités JavaScript (fetch, localStorage) peuvent ne pas fonctionner ou se comporter différemment par rapport à un serveur HTTP.
+
+<Callout type="warn">
+Utilisez un serveur local (Live Server, Python http.server, ou un serveur Node.js) pour servir vos fichiers. Cela reproduit fidèlement l'environnement de production et évite les problèmes liés aux restrictions de sécurité.
+</Callout>
+
+**Indentation incohérente**
+
+```html
+<html>
+<head>
+  <title>Page</title>
+</head>
+<body>
+<h1>Titre</h1>
+<p>Paragraphe</p>
+</body>
+</html>
+```
+
+Le code est difficile à lire et à maintenir. La structure hiérarchique des éléments n'est pas visible.
+
+<Callout type="warn">
+```html
+<html>
+  <head>
+    <title>Page</title>
+  </head>
+  <body>
+    <h1>Titre</h1>
+    <p>Paragraphe</p>
+  </body>
+</html>
+```
+Indentez systématiquement le code pour refléter la structure imbriquée des éléments. Utilisez 2 ou 4 espaces par niveau d'indentation (jamais de tabulations mixtes avec des espaces).
+</Callout>
+
+## Exercices
+
+<Exercise n="1.1" title="Identifier les composants d'une URL">
+Analysez l'URL suivante et identifiez chaque composant : `https://developer.mozilla.org:443/fr/docs/Web/HTML?highlight=semantic#introduction`.
+
+Quelle est la méthode HTTP utilisée par défaut lorsqu'on accède à cette URL dans un navigateur ?
+</Exercise>
+
+<Solution>
+Composants de l'URL :
+- Protocole : `https`
+- Nom de domaine : `developer.mozilla.org`
+- Port : `443` (port par défaut pour HTTPS)
+- Chemin : `/fr/docs/Web/HTML`
+- Chaîne de requête : `?highlight=semantic`
+- Fragment : `#introduction`
+
+La méthode HTTP utilisée par défaut est `GET`. Les navigateurs envoient systématiquement une requête GET lorsqu'ils accèdent à une URL.
+</Solution>
+
+<Exercise n="1.2" title="Observer une requête HTTP avec les DevTools">
+Ouvrez n'importe quel site web dans votre navigateur, accédez aux DevTools (F12), et allez dans l'onglet "Network". Rechargez la page (F5). Identifiez :
+
+1. La première requête envoyée (type de document)
+2. Le code de statut de cette requête
+3. La taille du document reçu
+4. Le temps total de chargement
+
+Quelle est la différence entre une requête de type "document" et une requête de type "script" ?
+</Exercise>
+
+<Solution>
+La première requête est généralement de type "document" (le fichier HTML). Le code de statut est généralement `200 OK`. La taille et le temps varient selon le site.
+
+Une requête de type "document" correspond au fichier HTML principal qui structure la page. Une requête de type "script" correspond à un fichier JavaScript chargé par la page. Le navigateur télécharge d'abord le document HTML, puis analyse son contenu pour identifier les ressources externes (scripts, styles, images) et les charge via des requêtes supplémentaires.
+</Solution>
+
+<Exercise n="1.3" title="Créer une structure de projet">
+Ouvrez un terminal et créez la structure de dossiers suivante :
+
+```
+mon-site/
+├── css/
+├── js/
+├── images/
+└── index.html
+```
+
+Placez-vous dans le dossier `mon-site` et créez un fichier `index.html` avec la structure HTML de base décrite dans le cours. Vérifiez que le fichier a été créé avec la commande `ls` (ou `dir` sur Windows).
+</Exercise>
+
+<Solution>
+```bash
+# Création des dossiers
+mkdir mon-site
+cd mon-site
+mkdir css js images
+
+# Création du fichier index.html
+touch index.html
+
+# Vérification
+ls
+# Affiche : css/ js/ images/ index.html
+```
+
+Le fichier `index.html` doit contenir :
+
+```html
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mon site</title>
+  </head>
+  <body>
+    <h1>Mon site</h1>
+  </body>
+</html>
+```
+</Solution>
+
+<Exercise n="1.4" title="Inspecter le DOM avec les DevTools">
+Créez un fichier HTML avec plusieurs niveaux d'imbrication (paragraphes dans des sections, listes dans des articles, etc.). Ouvrez ce fichier dans un navigateur avec un serveur local, puis utilisez les DevTools pour :
+
+1. Inspecter un élément et voir son HTML dans l'onglet Elements
+2. Modifier le texte d'un élément directement dans les DevTools
+3. Ajouter un nouvel attribut à un élément
+4. Supprimer un élément du DOM
+
+Les modifications effectuées dans les DevTools sont-elles permanentes ?
+</Exercise>
+
+<Solution>
+1. Clic droit sur l'élément → "Inspecter" ou utilisez l'outil de sélection (Ctrl+Shift+C).
+2. Dans l'onglet Elements, double-cliquez sur le texte d'un élément pour le modifier.
+3. Clic droit sur l'élément → "Edit attribute" ou ajoutez un attribut dans le panneau de droite.
+4. Clic droit sur l'élément → "Delete element".
+
+Les modifications effectuées dans les DevTools ne sont pas permanentes. Elles ne persistent que tant que la page est chargée. Recharger la page (F5) restaure le fichier original. Les DevTools servent à expérimenter et déboguer, pas à modifier le code source.
+</Solution>
+
+<Exercise n="1.5" title="Installer et configurer VS Code">
+Installez VS Code si ce n'est pas déjà fait, puis installez les extensions suivantes depuis le marketplace intégré (Ctrl+Shift+X) :
+
+1. Live Server (par Ritwick Dey)
+2. Prettier (par Prettier)
+3. ESLint (par Microsoft)
+
+Configurez Prettier pour formater automatiquement lors de la sauvegarde : Settings → search "format on save" → cochez "Editor: Format On Save". Ouvrez votre fichier `index.html` et formatez-le avec Prettier (Shift+Alt+F ou Cmd+Shift+F).
+</Exercise>
+
+<Solution>
+Après installation des extensions :
+1. Ouvrez VS Code
+2. Cliquez sur l'icône Extensions dans la barre latérale (ou Ctrl+Shift+X)
+3. Recherchez chaque extension par son nom et cliquez sur "Install"
+4. Pour la configuration : File → Preferences → Settings (ou Ctrl+,)
+5. Recherchez "format on save" et activez l'option
+6. Ouvrez `index.html` et appuyez sur Shift+Alt+F pour formater
+
+Prettier appliquera une indentation cohérente, ajoutera des espaces autour des opérateurs, et organisera les attributs des éléments HTML selon des règles standards.
+</Solution>
+
+<Exercise n="1.6" title="Servir une page localement">
+Utilisez Live Server (ou un autre serveur local) pour servir votre fichier `index.html`. Ouvrez la page dans le navigateur et observez l'URL dans la barre d'adresse. Modifiez le fichier HTML (ajoutez un paragraphe, par exemple) et sauvegardez. Que se passe-t-il dans le navigateur ?
+
+Comparez avec l'ouverture directe du fichier (double-clic sur `index.html`). Quelle est la différence d'URL ?
+</Exercise>
+
+<Solution>
+Avec Live Server, l'URL ressemble à `http://127.0.0.1:5500/index.html` ou `http://localhost:5500/index.html`. Lorsque vous modifiez et sauvegardez le fichier, la page se recharge automatiquement et affiche les modifications.
+
+Avec l'ouverture directe (double-clic), l'URL ressemble à `file:///C:/chemin/vers/index.html`. La page ne se recharge pas automatiquement et certaines fonctionnalités peuvent être limitées.
+
+La différence est le protocole : `http://` (serveur local) vs `file://` (accès direct au système de fichiers). Le protocole HTTP simule un environnement de production et évite les restrictions de sécurité du navigateur.
+</Solution>
+
+<Exercise n="1.7" title="Défi : Créer une page HTML complète">
+Créez une page HTML "Bonjour" qui répond aux critères suivants :
+
+1. Structure HTML5 valide avec doctype, lang, charset, viewport
+2. Un titre de page significatif
+3. Un titre principal (h1) avec votre nom
+4. Un paragraphe de présentation
+5. Une liste non ordonnée de vos centres d'intérêt
+6. Un lien vers un site externe (ex: MDN)
+7. Servie localement via un serveur HTTP
+
+Vérifiez la validité du HTML avec le validateur du W3C (https://validator.w3.org/).
+</Exercise>
+
+<Solution>
+```html
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bonjour - Jean Dupont</title>
+  </head>
+  <body>
+    <h1>Bonjour, je suis Jean Dupont</h1>
+    <p>
+      Je suis passionné par le développement web et j'apprends à créer des sites
+      modernes et accessibles. Ce site est mon premier projet dans ce parcours.
+    </p>
+    <h2>Mes centres d'intérêt</h2>
+    <ul>
+      <li>Développement frontend</li>
+      <li>Design d'interface</li>
+      <li>Accessibilité web</li>
+      <li>Performance</li>
+    </ul>
+    <p>
+      Pour en savoir plus sur le HTML, consultez la
+      <a href="https://developer.mozilla.org/fr/docs/Web/HTML">documentation MDN</a>.
+    </p>
+  </body>
+</html>
+```
+
+Pour valider : ouvrez https://validator.w3.org/, collez votre code ou entrez l'URL locale, et vérifiez qu'aucune erreur n'est détectée.
+</Solution>
+
+## Livrable
+
+Créez une page HTML "Bonjour" servie localement. La page doit inclure :
+
+**Structure obligatoire**
+- Déclaration doctype HTML5
+- Élément html avec attribut lang="fr"
+- Élément head avec meta charset et meta viewport
+- Élément title avec un titre significatif
+- Élément body avec le contenu
+
+**Contenu obligatoire**
+- Un titre principal (h1) avec votre nom
+- Un paragraphe de présentation (3-5 phrases)
+- Une liste non ordonnée de 3-5 centres d'intérêt
+- Un lien externe vers une ressource pertinente (MDN, documentation, etc.)
+
+**Critères d'évaluation**
+- [ ] Le fichier est valide selon le validateur W3C
+- [ ] La page est servie via un serveur local (http://, pas file://)
+- [ ] L'indentation est cohérente (2 ou 4 espaces par niveau)
+- [ ] Tous les éléments sont correctement fermés
+- [ ] Les attributs obligatoires sont présents (lang, charset, viewport)
+- [ ] Le contenu est sémantiquement structuré (utilisation appropriée des éléments)
+
+**Pistes d'extension**
+- Ajoutez une image (avec attribut alt descriptif)
+- Structurez le contenu avec des sections (section, article)
+- Ajoutez des métadonnées supplémentaires (meta description)
+- Expérimentez avec différents types de listes (ol, dl)
+- Créez une deuxième page et liez-la avec un lien relatif
+
+## Pour aller plus loin
+
+- [MDN - Comprendre le web](https://developer.mozilla.org/fr/docs/Learn/Understanding_the_web) : Introduction complète au fonctionnement du web, adaptée aux débutants.
+- [MDN - Commencer avec le web](https://developer.mozilla.org/fr/docs/Learn/Getting_started_with_the_web) : Guide pratique pour créer une première page web et comprendre les outils de base.
+- [HTTP pour les développeurs](https://developer.mozilla.org/fr/docs/Web/HTTP) : Documentation approfondie sur le protocole HTTP, ses méthodes, en-têtes et codes de statut.
+- [Comment fonctionne Internet](https://www.youtube.com/watch?v=1uYy5zJs9UE) : Vidéo explicative (en anglais) sur l'infrastructure d'Internet, du DNS au routage.
+- [VS Code Documentation](https://code.visualstudio.com/docs) : Documentation officielle de VS Code pour maîtriser l'éditeur et ses extensions.

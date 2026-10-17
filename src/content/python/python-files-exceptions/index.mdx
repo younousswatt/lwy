@@ -1,0 +1,548 @@
+# Fichiers et exceptions
+
+Ce module explore la manipulation de fichiers et la gestion des exceptions en Python. Il explique comment lire et écrire des fichiers texte, utiliser les context managers (with statement), gérer les erreurs avec try/except/finally, créer des exceptions personnalisées, et comprendre la hiérarchie des exceptions. Ces compétences sont essentielles pour créer des applications robustes qui interagissent avec le système de fichiers et gèrent les erreurs gracieusement. À l'issue de ce module, vous serez capable de lire et écrire des fichiers, de gérer les erreurs, et de créer un analyseur de logs fonctionnel.
+
+## Objectifs
+
+- Comprendre les modes d'ouverture de fichiers (r, w, a)
+- Lire et écrire des fichiers texte
+- Utiliser les context managers (with statement)
+- Gérer les exceptions avec try/except/finally
+- Comprendre la hiérarchie des exceptions Python
+- Créer des exceptions personnalisées
+- Traiter les erreurs de manière gracieuse
+
+## Prérequis
+
+- Introduction à Python (scripts, REPL)
+- Variables et types (types primitifs)
+- Structures de contrôle (conditions, boucles)
+- Fonctions (définition, paramètres)
+
+## Cours
+
+### Ouverture de fichiers
+
+Python utilise la fonction `open()` pour ouvrir des fichiers.
+
+**Modes d'ouverture** :
+
+- `'r'` : lecture (par défaut)
+- `'w'` : écriture (écrase le fichier s'il existe)
+- `'a'` : ajout (ajoute à la fin du fichier)
+- `'r+'` : lecture et écriture
+- `'b'` : mode binaire (pour les fichiers non texte)
+
+**Ouverture basique** :
+
+```python
+fichier = open("exemple.txt", "r")
+contenu = fichier.read()
+fichier.close()
+```
+
+<Callout type="warn">
+Toujours fermer les fichiers avec `close()` pour libérer les ressources. Sinon, les fichiers peuvent rester verrouillés.
+</Callout>
+
+### Context managers (with statement)
+
+Le mot-clé `with` garantit que le fichier est fermé automatiquement, même en cas d'erreur.
+
+```python
+with open("exemple.txt", "r") as fichier:
+    contenu = fichier.read()
+# Le fichier est fermé automatiquement ici
+```
+
+<Callout type="tip">
+Préférez toujours `with` pour ouvrir des fichiers. C'est plus sûr et plus concis que d'appeler manuellement `close()`.
+</Callout>
+
+### Lecture de fichiers
+
+**Lecture complète** :
+
+```python
+with open("exemple.txt", "r") as fichier:
+    contenu = fichier.read()
+    print(contenu)
+```
+
+**Lecture ligne par ligne** :
+
+```python
+with open("exemple.txt", "r") as fichier:
+    for ligne in fichier:
+        print(ligne.strip())  # strip() supprime le saut de ligne
+```
+
+**Lecture dans une liste** :
+
+```python
+with open("exemple.txt", "r") as fichier:
+    lignes = fichier.readlines()  # Liste de toutes les lignes
+```
+
+**Lecture partielle** :
+
+```python
+with open("exemple.txt", "r") as fichier:
+    premiers_caracteres = fichier.read(10)  # Lit les 10 premiers caractères
+```
+
+### Écriture de fichiers
+
+**Écriture complète** :
+
+```python
+with open("sortie.txt", "w") as fichier:
+    fichier.write("Bonjour, monde !")
+```
+
+**Écriture ligne par ligne** :
+
+```python
+with open("sortie.txt", "w") as fichier:
+    fichier.write("Ligne 1\n")
+    fichier.write("Ligne 2\n")
+    fichier.write("Ligne 3\n")
+```
+
+**Ajout à un fichier existant** :
+
+```python
+with open("sortie.txt", "a") as fichier:
+    fichier.write("Nouvelle ligne\n")
+```
+
+**Écriture avec join()** :
+
+```python
+lignes = ["Ligne 1", "Ligne 2", "Ligne 3"]
+with open("sortie.txt", "w") as fichier:
+    fichier.write("\n".join(lignes))
+```
+
+### Encodage
+
+L'encodage spécifie comment les caractères sont représentés en octets.
+
+```python
+# Encodage UTF-8 (recommandé)
+with open("exemple.txt", "r", encoding="utf-8") as fichier:
+    contenu = fichier.read()
+
+# Encodage latin-1 (pour les caractères occidentaux)
+with open("exemple.txt", "r", encoding="latin-1") as fichier:
+    contenu = fichier.read()
+```
+
+<Callout type="info">
+UTF-8 est l'encodage standard pour les fichiers texte modernes. Il supporte tous les caractères Unicode.
+</Callout>
+
+### Gestion des exceptions
+
+**try/except** :
+
+```python
+try:
+    resultat = 10 / 0
+except ZeroDivisionError:
+    print("Division par zéro")
+```
+
+**Multiple except** :
+
+```python
+try:
+    nombre = int(input("Entrez un nombre : "))
+    resultat = 10 / nombre
+except ValueError:
+    print("Ce n'est pas un nombre valide")
+except ZeroDivisionError:
+    print("Division par zéro")
+```
+
+**else et finally** :
+
+```python
+try:
+    fichier = open("inexistant.txt", "r")
+except FileNotFoundError:
+    print("Fichier non trouvé")
+else:
+    contenu = fichier.read()
+    fichier.close()
+finally:
+    print("Bloc finally exécuté")
+```
+
+`else` s'exécute si aucune exception n'est levée. `finally` s'exécute toujours.
+
+<Callout type="tip">
+Utilisez `finally` pour libérer des ressources (fermer des fichiers, fermer des connexions) même en cas d'erreur.
+</Callout>
+
+### Hiérarchie des exceptions
+
+Python a une hiérarchie d'exceptions. `Exception` est la classe de base pour la plupart des exceptions.
+
+**Exceptions courantes** :
+
+- `FileNotFoundError` : fichier non trouvé
+- `PermissionError` : permission refusée
+- `ValueError` : valeur invalide
+- `TypeError` : type invalide
+- `KeyError` : clé non trouvée (dictionnaire)
+- `IndexError` : index hors limites (liste)
+- `ZeroDivisionError` : division par zéro
+
+**Exception générique** :
+
+```python
+try:
+    # Code qui peut lever diverses exceptions
+    pass
+except Exception as e:
+    print(f"Erreur : {e}")
+```
+
+### Exceptions personnalisées
+
+Vous pouvez créer vos propres exceptions en héritant de `Exception`.
+
+```python
+class MonErreur(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+try:
+    raise MonErreur("Ceci est mon erreur personnalisée")
+except MonErreur as e:
+    print(e.message)
+```
+
+### Paths et os module
+
+Le module `os` permet de manipuler les chemins de fichiers.
+
+```python
+import os
+
+# Chemin actuel
+chemin_actuel = os.getcwd()
+
+# Joindre des chemins
+chemin = os.path.join("dossier", "fichier.txt")
+
+# Vérifier si un fichier existe
+existe = os.path.exists("fichier.txt")
+
+# Créer un dossier
+os.makedirs("nouveau_dossier", exist_ok=True)
+```
+
+**pathlib (recommandé)** :
+
+```python
+from pathlib import Path
+
+chemin = Path("dossier") / "fichier.txt"
+chemin.write_text("Contenu")
+contenu = chemin.read_text()
+```
+
+<Callout type="info">
+`pathlib` est une approche moderne et orientée objet pour manipuler les chemins, préférée à `os.path`.
+</Callout>
+
+## Erreurs fréquentes
+
+**Oublier de fermer le fichier**
+
+```python
+fichier = open("exemple.txt", "r")
+contenu = fichier.read()
+# Oubli de fermer le fichier
+```
+
+Le fichier reste ouvert et peut rester verrouillé.
+
+<Callout type="warn">
+```python
+with open("exemple.txt", "r") as fichier:
+    contenu = fichier.read()
+# Le fichier est fermé automatiquement
+```
+Utilisez toujours `with` pour ouvrir les fichiers.
+</Callout>
+
+**Oublier l'encodage**
+
+```python
+with open("exemple.txt", "r") as fichier:
+    contenu = fichier.read()  # Peut échouer sur certains systèmes
+```
+
+L'encodage par défaut dépend du système et peut causer des erreurs.
+
+<Callout type="warn">
+```python
+with open("exemple.txt", "r", encoding="utf-8") as fichier:
+    contenu = fichier.read()
+```
+Spécifiez toujours l'encodage (UTF-8 est recommandé).
+</Callout>
+
+**Attraper Exception au lieu de l'exception spécifique**
+
+```python
+try:
+    nombre = int(input("Entrez un nombre : "))
+except Exception:  # Trop large
+    print("Erreur")
+```
+
+Catching toutes les exceptions masque les erreurs réelles.
+
+<Callout type="warn">
+```python
+try:
+    nombre = int(input("Entrez un nombre : "))
+except ValueError:  # Plus précis
+    print("Ce n'est pas un nombre valide")
+```
+Attrapez les exceptions spécifiques pour une meilleure gestion des erreurs.
+</Callout>
+
+**Ignorer l'exception dans except**
+
+```python
+try:
+    fichier = open("inexistant.txt", "r")
+except FileNotFoundError:
+    pass  # Ne fait rien, l'erreur est silencieuse
+```
+
+Ignorer les erreurs rend le débogage difficile.
+
+<Callout type="warn">
+```python
+try:
+    fichier = open("inexistant.txt", "r")
+except FileNotFoundError as e:
+    print(f"Erreur : {e}")  # Logguez l'erreur
+```
+Loguez ou affichez toujours les erreurs pour faciliter le débogage.
+</Callout>
+
+## Exercices
+
+<Exercise n="6.1" title="Lire un fichier">
+Créez un fichier texte `test.txt` avec quelques lignes de texte. Écrivez un script qui lit et affiche le contenu du fichier ligne par ligne.
+</Exercise>
+
+<Solution>
+```python
+with open("test.txt", "r", encoding="utf-8") as fichier:
+    for ligne in fichier:
+        print(ligne.strip())
+```
+</Solution>
+
+<Exercise n="6.2" title="Écrire dans un fichier">
+Créez un script qui demande à l'utilisateur d'entrer du texte, puis écrit ce texte dans un fichier `sortie.txt`.
+</Exercise>
+
+<Solution>
+```python
+texte = input("Entrez du texte : ")
+
+with open("sortie.txt", "w", encoding="utf-8") as fichier:
+    fichier.write(texte)
+
+print("Texte écrit dans sortie.txt")
+```
+</Solution>
+
+<Exercise n="6.3" title="Ajouter à un fichier">
+Créez un script qui ajoute une ligne de texte à un fichier existant. Le fichier doit être créé s'il n'existe pas.
+</Exercise>
+
+<Solution>
+```python
+ligne = input("Entrez une ligne à ajouter : ")
+
+with open("journal.txt", "a", encoding="utf-8") as fichier:
+    fichier.write(ligne + "\n")
+
+print("Ligne ajoutée au journal")
+```
+</Solution>
+
+<Exercise n="6.4" title="Gérer FileNotFoundError">
+Créez un script qui tente de lire un fichier. Si le fichier n'existe pas, affiche un message d'erreur et crée le fichier avec un contenu par défaut.
+</Exercise>
+
+<Solution>
+```python
+nom_fichier = "data.txt"
+
+try:
+    with open(nom_fichier, "r", encoding="utf-8") as fichier:
+        contenu = fichier.read()
+        print(contenu)
+except FileNotFoundError:
+    print(f"Le fichier {nom_fichier} n'existe pas")
+    with open(nom_fichier, "w", encoding="utf-8") as fichier:
+        fichier.write("Contenu par défaut")
+    print("Fichier créé avec contenu par défaut")
+```
+</Solution>
+
+<Exercise n="6.5" title="Créer une exception personnalisée">
+Créez une exception personnalisée `SoledePleine` qui est levée si on essaie d'ajouter un élément à une liste déjà pleine (ex: plus de 5 éléments).
+</Exercise>
+
+<Solution>
+```python
+class SoledePleine(Exception):
+    pass
+
+def ajouter_avec_limite(liste, element, limite=5):
+    if len(liste) >= limite:
+        raise SoledePleine("La liste est pleine")
+    liste.append(element)
+
+try:
+    ma_liste = [1, 2, 3, 4, 5]
+    ajouter_avec_limite(ma_liste, 6)
+except SoledePleine as e:
+    print(f"Erreur : {e}")
+```
+</Solution>
+
+<Exercise n="6.6" title="Compter les lignes d'un fichier">
+Créez un script qui compte le nombre de lignes dans un fichier texte.
+</Exercise>
+
+<Solution>
+```python
+nom_fichier = "test.txt"
+
+with open(nom_fichier, "r", encoding="utf-8") as fichier:
+    lignes = fichier.readlines()
+    nombre_lignes = len(lignes)
+
+print(f"Le fichier contient {nombre_lignes} lignes")
+```
+</Solution>
+
+<Exercise n="6.7" title="Copier un fichier">
+Créez un script qui copie le contenu d'un fichier source vers un fichier destination.
+</Exercise>
+
+<Solution>
+```python
+source = "source.txt"
+destination = "destination.txt"
+
+with open(source, "r", encoding="utf-8") as fichier_source:
+    contenu = fichier_source.read()
+
+with open(destination, "w", encoding="utf-8") as fichier_dest:
+    fichier_dest.write(contenu)
+
+print(f"Fichier copié de {source} vers {destination}")
+```
+</Solution>
+
+<Exercise n="6.8" title="Défi : Analyseur de logs">
+Créez un analyseur de logs qui :
+
+1. Lit un fichier de logs (format : [DATE] [NIVEAU] Message)
+2. Compte le nombre de logs par niveau (INFO, WARNING, ERROR)
+3. Affiche les statistiques
+4. Écrit les logs ERROR dans un fichier séparé
+
+Gérez les erreurs de fichier inexistant.
+</Exercise>
+
+<Solution>
+```python
+import os
+
+def analyser_logs(fichier_logs):
+    statistiques = {"INFO": 0, "WARNING": 0, "ERROR": 0}
+    errors = []
+
+    try:
+        with open(fichier_logs, "r", encoding="utf-8") as fichier:
+            for ligne in fichier:
+                if "[INFO]" in ligne:
+                    statistiques["INFO"] += 1
+                elif "[WARNING]" in ligne:
+                    statistiques["WARNING"] += 1
+                elif "[ERROR]" in ligne:
+                    statistiques["ERROR"] += 1
+                    errors.append(ligne)
+    except FileNotFoundError:
+        print(f"Le fichier {fichier_logs} n'existe pas")
+        return
+
+    print("Statistiques :")
+    for niveau, count in statistiques.items():
+        print(f"{niveau} : {count}")
+
+    if errors:
+        with open("errors.log", "w", encoding="utf-8") as fichier_erreur:
+            fichier_erreur.writelines(errors)
+        print(f"{len(errors)} logs ERROR écrits dans errors.log")
+
+analyser_logs("application.log")
+```
+</Solution>
+
+## Livrable
+
+Créez un analyseur de logs en Python. L'analyseur doit inclure :
+
+**Fonctionnalités obligatoires**
+- Lecture d'un fichier de logs
+- Comptage des logs par niveau (INFO, WARNING, ERROR)
+- Affichage des statistiques
+- Écriture des logs ERROR dans un fichier séparé
+- Gestion des erreurs (fichier inexistant)
+
+**Code obligatoire**
+- Utilisation de with pour les fichiers
+- Encodage UTF-8 spécifié
+- try/except pour la gestion d'erreurs
+- Fonctions modulaires
+- Code documenté
+
+**Critères d'évaluation**
+- [ ] Analyseur fonctionnel
+- [ ] Comptage par niveau
+- [ ] Fichier d'erreurs créé
+- [ ] Gestion des erreurs
+- [ ] Code documenté
+- [ ] Utilisation de with
+
+**Pistes d'extension**
+- Ajoutez le filtrage par date
+- Implémentez la recherche de motifs
+- Créez des graphiques de statistiques
+- Ajoutez la rotation des logs
+- Implémentez un format de logs personnalisé
+
+## Pour aller plus loin
+
+- [Python File I/O](https://docs.python.org/3/tutorial/inputoutput.html) : Documentation officielle sur les fichiers.
+- [Real Python - File Handling](https://realpython.com/read-write-files-python/) : Guide complet sur la manipulation de fichiers.
+- [Python Exceptions](https://docs.python.org/3/tutorial/errors.html) : Documentation officielle sur les exceptions.
+- [Real Python - Exceptions](https://realpython.com/python-exceptions/) : Guide détaillé sur la gestion des exceptions.
+- [pathlib Documentation](https://docs.python.org/3/library/pathlib.html) : Documentation sur pathlib.

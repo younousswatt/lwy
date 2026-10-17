@@ -1,0 +1,105 @@
+# JavaScript — Bases
+
+JavaScript permet d’exprimer des traitements et de rendre une page interactive ; les variables, les conditions, les boucles et les fonctions en sont les outils fondamentaux.
+
+## Objectifs
+
+- Déclarer des constantes et des variables avec `const` et `let`.
+- Choisir un type de donnée approprié et utiliser les opérateurs de base.
+- Écrire des conditions qui traitent plusieurs cas.
+- Répéter une opération avec une boucle adaptée.
+- Décomposer un problème en fonctions avec paramètres et valeur de retour.
+
+## Cours
+
+### Variables, valeurs et opérateurs
+
+Utilisez `const` par défaut et `let` lorsqu’une réaffectation est nécessaire. Les chaînes de caractères, nombres et booléens représentent les valeurs courantes. L’opérateur `typeof` aide à observer le type d’une valeur pendant l’apprentissage.
+
+```javascript
+const course = 'JavaScript';
+let completedLessons = 0;
+completedLessons += 1;
+
+console.log(typeof course); // "string"
+console.log(completedLessons); // 1
+```
+
+### Conditions et boucles
+
+Une condition choisit le bloc à exécuter selon une expression booléenne. Une boucle `for...of` parcourt les valeurs d’un tableau sans gérer manuellement les indices.
+
+```javascript
+const scores = [12, 18, 15];
+let total = 0;
+
+for (const score of scores) {
+  total += score;
+}
+
+const average = total / scores.length;
+const result = average >= 10 ? 'Validé' : 'À retravailler';
+```
+
+### Fonctions
+
+Une fonction nommée regroupe une opération réutilisable. Les paramètres rendent son entrée explicite ; `return` permet à son appelant d’utiliser le résultat.
+
+```javascript
+function calculateAverage(values) {
+  if (values.length === 0) return 0;
+  const total = values.reduce((sum, value) => sum + value, 0);
+  return total / values.length;
+}
+
+console.log(calculateAverage([12, 18, 15]));
+```
+
+## Exercices
+
+<Exercise n="4.1" title="Calculer un prix après réduction">
+Écrivez une fonction `priceAfterDiscount(price, discount)` qui retourne le prix après réduction. Le paramètre `discount` est un pourcentage entier.
+
+<Solution>
+
+```javascript
+function priceAfterDiscount(price, discount) {
+  return price * (1 - discount / 100);
+}
+
+console.log(priceAfterDiscount(80, 25)); // 60
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="4.2" title="Compter les valeurs positives">
+À partir d’un tableau de nombres, comptez le nombre de valeurs strictement positives. Utilisez une boucle et une condition.
+
+<Solution>
+
+```javascript
+const values = [-2, 0, 4, 7, -1];
+let positiveCount = 0;
+
+for (const value of values) {
+  if (value > 0) positiveCount += 1;
+}
+
+console.log(positiveCount); // 2
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="4.3" title="Construire une calculatrice">
+Écrivez une fonction qui reçoit deux nombres et un opérateur (`+`, `-`, `*` ou `/`). Retournez le résultat correspondant et traitez explicitement un opérateur inconnu ainsi qu’une division par zéro.
+</Exercise>
+
+## Livrable
+
+Réalisez une calculatrice qui accepte deux nombres et une opération. Séparez le calcul dans des fonctions et vérifiez les cas usuels, notamment la division par zéro et une opération non reconnue.
+
+<Callout type="tip">
+Essayez les fonctions dans la console du navigateur avec plusieurs entrées, y compris les valeurs limites. Des tests simples révèlent vite les hypothèses cachées.
+</Callout>

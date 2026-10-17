@@ -1,0 +1,474 @@
+# Projet final — Application CLI
+
+Ce projet final consiste à réaliser un gestionnaire de tâches utilisable depuis le terminal. L'application permet d'ajouter des tâches, de les lister, de les marquer comme terminées et de les supprimer. Les données sont enregistrées dans un fichier JSON pour survivre à la fermeture du programme.
+
+Le projet réunit les compétences du parcours : fonctions, structures de données, exceptions, fichiers, classes, imports, packages, tests et interface en ligne de commande. À la fin, vous aurez une application organisée, exécutable et documentée.
+
+## Objectifs
+
+- Concevoir une application CLI avec des commandes cohérentes.
+- Organiser le code en package et séparer interface, logique métier et stockage.
+- Représenter les tâches avec une classe.
+- Lire et écrire des données JSON en traitant les erreurs.
+- Tester la logique métier et les cas limites.
+- Installer et exécuter le package dans un environnement virtuel.
+- Rédiger une documentation d'utilisation claire.
+
+## Prérequis
+
+- Tous les modules précédents du parcours Python, en particulier le module 8 sur les modules et packages.
+- Python 3.10 ou version ultérieure.
+- Un terminal, un éditeur de code et les commandes `python` et `pip`.
+
+## Cours
+
+### Cahier des charges
+
+Le gestionnaire de tâches doit permettre de :
+
+- ajouter une tâche à partir d'un titre non vide ;
+- afficher toutes les tâches avec leur identifiant et leur état ;
+- marquer une tâche existante comme terminée ;
+- supprimer une tâche existante ;
+- conserver les données entre plusieurs exécutions ;
+- signaler clairement les commandes invalides, les identifiants inconnus et les erreurs de fichier.
+
+Les tâches sont locales à l'utilisateur. Aucun service web ou compte n'est nécessaire.
+
+### Architecture
+
+Séparez le programme en trois responsabilités :
+
+- `models.py` définit la représentation d'une tâche et les opérations métier ;
+- `storage.py` convertit les tâches en JSON et gère les erreurs d'accès aux données ;
+- `cli.py` interprète les commandes et affiche les résultats.
+
+```text
+todo-cli/
+├── pyproject.toml
+├── README.md
+├── src/
+│   └── todo_cli/
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── models.py
+│       ├── storage.py
+│       └── cli.py
+└── tests/
+    └── test_models.py
+```
+
+L'interface dépend de la logique et du stockage, mais le modèle ne dépend pas du terminal. Cette séparation permet de tester les règles métier sans simuler des commandes.
+
+### Modèle d'une tâche
+
+Une tâche contient un identifiant, un titre et un état. `dataclass` fournit l'initialisation et la représentation de base de l'objet.
+
+```python
+# src/todo_cli/models.py
+from dataclasses import dataclass
+
+
+@dataclass
+class Task:
+    id: int
+    title: str
+    done: bool = False
+```
+
+Le gestionnaire regroupe les opérations métier :
+
+```python
+class TaskManager:
+    def __init__(self, tasks=None):
+        self.tasks = list(tasks) if tasks is not None else []
+
+    def add(self, title):
+        title = title.strip()
+        if not title:
+            raise ValueError("Le titre ne peut pas être vide")
+
+        next_id = max((task.id for task in self.tasks), default=0) + 1
+        task = Task(id=next_id, title=title)
+        self.tasks.append(task)
+        return task
+
+    def list_tasks(self):
+        return list(self.tasks)
+
+    def complete(self, task_id):
+        for task in self.tasks:
+            if task.id == task_id:
+                task.done = True
+                return task
+        raise ValueError(f"Aucune tâche avec l'identifiant {task_id}")
+
+    def delete(self, task_id):
+        for index, task in enumerate(self.tasks):
+            if task.id == task_id:
+                return self.tasks.pop(index)
+        raise ValueError(f"Aucune tâche avec l'identifiant {task_id}")
+```
+
+L'identifiant suivant est calculé à partir de l'identifiant maximal présent, et non du nombre de tâches. Après une suppression, cette règle évite de réutiliser immédiatement un identifiant encore présent.
+
+### Persistance JSON
+
+Le fichier de données est une liste d'objets JSON. Le module de stockage isole les conversions et les erreurs de fichier du reste de l'application.
+
+```python
+# src/todo_cli/storage.py
+import json
+from pathlib import Path
+
+from .models import Task
+
+
+class StorageError(Exception):
+    """Erreur de lecture ou d'écriture du fichier de tâches."""
+
+
+def load_tasks(path):
+    file_path = Path(path)
+    if not file_path.exists():
+        return []
+
+    try:
+        data = json.loads(file_path.read_text(encoding="utf-8"))
+        if not isinstance(data, list):
+            raise ValueError("La racine du fichier doit être une liste")
+
+        tasks = []
+        for item in data:
+            if not isinstance(item, dict):
+                raise ValueError("Chaque tâche doit être un objet")
+            tasks.append(Task(**item))
+        return tasks
+    except (OSError, json.JSONDecodeError, TypeError, ValueError) as error:
+        raise StorageError(f"Impossible de lire {file_path} : {error}") from error
+
+
+def save_tasks(path, tasks):
+    file_path = Path(path)
+    data = [
+        {"id": task.id, "title": task.title, "done": task.done}
+        for task in tasks
+    ]
+    try:
+        file_path.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+    except OSError as error:
+        raise StorageError(f"Impossible d'écrire {file_path} : {error}") from error
+```
+
+`ensure_ascii=False` conserve les caractères accentués lisibles dans le fichier. Une erreur de format ou de permissions devient une `StorageError` explicite, que l'interface pourra afficher à l'utilisateur.
+
+<Callout type="warn">
+Le fichier JSON est une entrée externe : il peut être vide, tronqué, modifié manuellement ou contenir une structure inattendue. Ne transformez pas une erreur de lecture en liste vide, car cela ferait croire que les données ont disparu puis risquerait de les écraser.
+</Callout>
+
+### Construire une interface avec `argparse`
+
+`argparse` est inclus dans Python. Il permet de définir les commandes et de produire automatiquement une aide. Une option `--file` permet de choisir le fichier de données.
+
+```python
+# src/todo_cli/cli.py
+import argparse
+import sys
+
+from .models import TaskManager
+from .storage import StorageError, load_tasks, save_tasks
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(description="Gérer une liste de tâches")
+    parser.add_argument(
+        "--file",
+        default="tasks.json",
+        help="chemin du fichier de données (défaut : tasks.json)",
+    )
+    commands = parser.add_subparsers(dest="command", required=True)
+
+    commands.add_parser("list", help="afficher les tâches")
+
+    add_parser = commands.add_parser("add", help="ajouter une tâche")
+    add_parser.add_argument("title", help="titre de la tâche")
+
+    complete_parser = commands.add_parser("complete", help="terminer une tâche")
+    complete_parser.add_argument("id", type=int, help="identifiant de la tâche")
+
+    delete_parser = commands.add_parser("delete", help="supprimer une tâche")
+    delete_parser.add_argument("id", type=int, help="identifiant de la tâche")
+
+    return parser
+```
+
+L'option globale `--file` doit être placée avant le nom de la commande, par exemple `python -m todo_cli --file mes-taches.json list`.
+
+La fonction `main` relie l'interface au modèle et au stockage :
+
+```python
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+
+    try:
+        manager = TaskManager(load_tasks(args.file))
+
+        if args.command == "add":
+            task = manager.add(args.title)
+            save_tasks(args.file, manager.list_tasks())
+            print(f"Tâche ajoutée : [{task.id}] {task.title}")
+
+        elif args.command == "list":
+            tasks = manager.list_tasks()
+            if not tasks:
+                print("Aucune tâche. Ajoutez-en une avec la commande add.")
+            for task in tasks:
+                status = "x" if task.done else " "
+                print(f"[{status}] {task.id} - {task.title}")
+
+        elif args.command == "complete":
+            task = manager.complete(args.id)
+            save_tasks(args.file, manager.list_tasks())
+            print(f"Tâche terminée : [{task.id}] {task.title}")
+
+        elif args.command == "delete":
+            task = manager.delete(args.id)
+            save_tasks(args.file, manager.list_tasks())
+            print(f"Tâche supprimée : [{task.id}] {task.title}")
+
+        return 0
+    except (StorageError, ValueError) as error:
+        print(f"Erreur : {error}", file=sys.stderr)
+        return 1
+```
+
+Enregistrez `main` dans `cli.py`. Les commandes qui modifient les données appellent `save_tasks` après la modification ; la commande `list` ne réécrit pas le fichier. L'erreur est affichée sur la sortie d'erreur et la fonction renvoie un code de sortie non nul.
+
+### Lancer le package
+
+Le fichier `__main__.py` rend possible l'exécution du package avec `python -m todo_cli` :
+
+```python
+# src/todo_cli/__main__.py
+from .cli import main
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+```
+
+Le fichier `pyproject.toml` déclare le package et une commande installable :
+
+```toml
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "todo-cli-lwy"
+version = "0.1.0"
+description = "Un gestionnaire de tâches en ligne de commande"
+requires-python = ">=3.10"
+
+[project.scripts]
+todo = "todo_cli.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+```
+
+Créez et activez un environnement virtuel, puis installez le projet depuis sa racine :
+
+```bash
+python -m venv .venv
+python -m pip install -e .
+```
+
+### Utiliser l'application
+
+Avec `python -m` :
+
+```bash
+python -m todo_cli add "Réviser les dictionnaires"
+python -m todo_cli list
+python -m todo_cli complete 1
+python -m todo_cli delete 1
+python -m todo_cli --help
+```
+
+Après installation, le point d'entrée déclaré permet également d'utiliser la commande `todo` :
+
+```bash
+todo add "Préparer le projet"
+todo list
+```
+
+Le fichier `tasks.json` est créé dans le répertoire courant. Pour choisir un autre fichier, placez `--file` avant la commande :
+
+```bash
+python -m todo_cli --file donnees/ma-liste.json add "Tester l'application"
+```
+
+Le dossier parent du chemin personnalisé doit déjà exister dans cette version. Cette contrainte peut être améliorée en créant le dossier avant l'écriture.
+
+### Tester la logique métier
+
+Les tests du gestionnaire ne dépendent pas du terminal ni du fichier JSON :
+
+```python
+# tests/test_models.py
+import unittest
+
+from todo_cli.models import TaskManager
+
+
+class TaskManagerTests(unittest.TestCase):
+    def test_add_creates_task_with_next_id(self):
+        manager = TaskManager()
+
+        task = manager.add("  Réviser Python  ")
+
+        self.assertEqual(task.id, 1)
+        self.assertEqual(task.title, "Réviser Python")
+        self.assertFalse(task.done)
+
+    def test_add_rejects_empty_title(self):
+        manager = TaskManager()
+
+        with self.assertRaises(ValueError):
+            manager.add("   ")
+
+    def test_complete_unknown_id_raises_error(self):
+        manager = TaskManager()
+
+        with self.assertRaises(ValueError):
+            manager.complete(42)
+
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+Installez le package en mode éditable et lancez les tests depuis la racine :
+
+```bash
+python -m pip install -e .
+python -m unittest discover -s tests
+```
+
+Complétez la suite avec des tests pour la suppression, l'identifiant après suppression, la lecture d'un fichier manquant et un fichier JSON invalide.
+
+### Améliorations possibles
+
+Lorsque la version de base est fiable, vous pouvez ajouter :
+
+- une date limite avec validation ;
+- un filtre pour les tâches terminées ou en attente ;
+- une commande `edit` ;
+- des tests d'intégration du stockage dans un dossier temporaire ;
+- une écriture atomique via un fichier temporaire ;
+- un format de sortie plus riche, sans mélanger cette présentation au modèle métier.
+
+<Callout type="info">
+Ajoutez une fonctionnalité à la fois. Pour chaque ajout, écrivez ou mettez à jour les tests, vérifiez la commande concernée et documentez son comportement.
+</Callout>
+
+## Erreurs fréquentes
+
+**Tout placer dans `cli.py`**
+
+Quand les règles métier, les accès fichiers et les affichages sont mélangés, il devient difficile de tester et de faire évoluer le programme. Gardez des modules avec une responsabilité claire.
+
+**Écraser les données si la lecture échoue**
+
+Un JSON invalide n'est pas la même chose qu'un fichier absent. Le fichier absent peut représenter une nouvelle liste vide ; un fichier illisible doit produire une erreur visible et ne pas être réécrit silencieusement.
+
+**Ne pas sauvegarder après une modification**
+
+Une tâche ajoutée uniquement en mémoire disparaît à la fin du processus. Chaque opération qui modifie la liste doit persister le nouvel état.
+
+**Réutiliser un identifiant après une suppression**
+
+Utiliser `len(tasks) + 1` peut créer des doublons. Calculez le prochain identifiant à partir du plus grand identifiant existant.
+
+**Ne pas traiter une tâche inexistante**
+
+Une commande avec un identifiant inconnu doit produire un message compréhensible et un code de sortie d'échec, pas une erreur de programmation ni un succès trompeur.
+
+**Confondre nom du package installé et nom importé**
+
+Le nom de distribution `todo-cli-lwy` peut être différent du nom Python `todo_cli`. Le premier est déclaré dans `pyproject.toml`, le second correspond au package importable sous `src/`.
+
+## Exercices
+
+<Exercise n="9.1" title="Concevoir les commandes">
+Avant de coder, décrivez les commandes nécessaires à votre gestionnaire de tâches. Pour chacune, précisez ses arguments, si elle modifie les données, le message de succès attendu et le comportement si l'identifiant n'existe pas.
+</Exercise>
+
+<Solution>
+| Commande | Arguments | Modifie les données | Résultat |
+|---|---|---:|---|
+| `add` | un titre | Oui | Affiche l'identifiant attribué et le titre |
+| `list` | aucun | Non | Affiche les tâches ou un message si la liste est vide |
+| `complete` | un identifiant entier | Oui | Marque la tâche comme terminée |
+| `delete` | un identifiant entier | Oui | Supprime la tâche |
+
+Pour `complete` et `delete`, un identifiant inconnu doit afficher une erreur et renvoyer un code de sortie non nul. Une commande invalide doit afficher l'aide produite par `argparse`.
+</Solution>
+
+<Exercise n="9.2" title="Implémenter le modèle métier">
+Écrivez `Task` et `TaskManager`. Testez l'ajout avec un titre entouré d'espaces, le refus d'un titre vide, la complétion d'une tâche, la suppression et la réaction à un identifiant inexistant.
+</Exercise>
+
+<Solution>
+Le modèle `Task` peut être une dataclass avec les champs `id`, `title` et `done`. Le gestionnaire doit nettoyer le titre avant de l'enregistrer, lever `ValueError` si le titre est vide, et lever également `ValueError` si une tâche demandée n'existe pas. Écrivez les tests directement contre `TaskManager` : ils ne doivent pas avoir besoin d'appeler `input()` ou de lire le terminal.
+</Solution>
+
+<Exercise n="9.3" title="Ajouter le stockage JSON">
+Implémentez `load_tasks` et `save_tasks`. Un fichier qui n'existe pas encore doit correspondre à une liste vide. Testez aussi un JSON mal formé et vérifiez que l'application ne remplace pas ce fichier par une liste vide.
+</Exercise>
+
+<Solution>
+`load_tasks` vérifie d'abord l'existence du chemin. Si le fichier est absent, elle renvoie `[]`. Sinon, elle lit le texte en UTF-8 et appelle `json.loads`. Les erreurs de lecture, de décodage ou de structure sont converties en `StorageError` avec le chemin concerné. La fonction ne doit jamais appeler `save_tasks` en réponse à une erreur.
+</Solution>
+
+<Exercise n="9.4" title="Connecter l'interface CLI">
+Définissez les sous-commandes `add`, `list`, `complete` et `delete` avec `argparse`. Ajoutez une option globale `--file`, connectez le parseur au modèle et au stockage, et affichez les erreurs sur `stderr`.
+</Exercise>
+
+<Solution>
+Créez un parser racine avec `add_argument("--file", default="tasks.json")`, puis ajoutez les sous-commandes avec `add_subparsers(dest="command", required=True)`. Ajoutez les arguments spécifiques sur le parseur associé à chaque commande. Dans `main`, chargez les tâches, exécutez l'opération demandée, puis sauvegardez seulement après une modification réussie. Interceptez les erreurs métier et de stockage au niveau de l'interface, affichez-les sur `sys.stderr` et renvoyez `1`.
+</Solution>
+
+<Exercise n="9.5" title="Écrire les tests">
+Écrivez au moins quatre tests automatisés pour la logique métier et deux tests de stockage. Utilisez un répertoire temporaire pour éviter que les tests ne modifient le fichier de votre application.
+</Exercise>
+
+<Solution>
+Les tests métier peuvent vérifier la création d'une tâche, le refus d'un titre vide, le changement d'état et la suppression. Pour le stockage, utilisez `tempfile.TemporaryDirectory()` et un chemin construit avec `pathlib.Path` dans ce répertoire. Vérifiez l'aller-retour d'une tâche via `save_tasks` puis `load_tasks`, ainsi que l'erreur explicite produite par un contenu JSON invalide.
+</Solution>
+
+<Exercise n="9.6" title="Défi : livrer une application CLI">
+Finalisez le package, ajoutez le fichier `pyproject.toml`, installez-le en mode éditable, lancez les tests et essayez chacune des commandes depuis un nouveau terminal. Rédigez un README avec les prérequis, les étapes d'installation, des exemples de commandes, l'emplacement des données et les limites connues.
+</Exercise>
+
+<Solution>
+La livraison doit au minimum contenir :
+
+- un package importable sous `src/todo_cli/` ;
+- un point d'entrée `__main__.py` ;
+- les modules modèle, stockage et CLI ;
+- un `pyproject.toml` avec les métadonnées et la commande installable ;
+- des tests lançables avec `python -m unittest discover -s tests` ;
+- un README qui explique l'activation de l'environnement, l'installation avec `python -m pip install -e .`, les commandes disponibles et l'option `--file`.
+
+Avant de déclarer le projet terminé, vérifiez une liste vide, un ajout, une liste persistante, une complétion, une suppression et au moins un cas d'erreur.
+</Solution>
+
+## Livrable
+
+Une application de gestion de tâches en ligne de commande, installable comme package Python, organisée en modules séparés, avec persistance JSON, erreurs explicites, tests automatisés et documentation d'utilisation.

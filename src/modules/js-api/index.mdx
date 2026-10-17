@@ -1,0 +1,131 @@
+# JavaScript — API
+
+Les API web permettent à une application de demander des données à un service distant ; `fetch`, les promesses et `async`/`await` structurent ces échanges asynchrones.
+
+## Objectifs
+
+- Expliquer pourquoi une requête réseau est asynchrone.
+- Envoyer une requête HTTP avec `fetch`.
+- Vérifier le statut de la réponse avant de lire son contenu.
+- Traiter les erreurs réseau et les erreurs de réponse.
+- Afficher des données reçues d’une API dans une interface lisible.
+
+## Cours
+
+### Comprendre la réponse de fetch
+
+`fetch` retourne une promesse. Une réponse HTTP en erreur, comme un statut 404, ne rejette pas automatiquement cette promesse ; le programme doit vérifier `response.ok` avant d’utiliser les données.
+
+```javascript
+const response = await fetch('/data.json');
+
+if (!response.ok) {
+  throw new Error(`Erreur HTTP : ${response.status}`);
+}
+
+const data = await response.json();
+console.log(data);
+```
+
+### Structurer un traitement asynchrone
+
+`async` permet d’utiliser `await` à l’intérieur d’une fonction. Un bloc `try`/`catch` traite explicitement les problèmes réseau ou HTTP, et laisse l’interface présenter une erreur compréhensible.
+
+```javascript
+async function loadForecast() {
+  try {
+    const response = await fetch(
+      'https://api.open-meteo.com/v1/forecast?latitude=48.86&longitude=2.35&current=temperature_2m',
+    );
+    if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Impossible de charger la météo.', error);
+    throw error;
+  }
+}
+```
+
+### Mettre à jour l’interface
+
+Présentez les différents états d’une requête : attente, réussite et erreur. Les données distantes peuvent être manquantes ou différentes de ce qui était attendu ; vérifiez leur forme avant de les afficher.
+
+```javascript
+const status = document.querySelector('#weather-status');
+
+status.textContent = 'Chargement des données…';
+loadForecast()
+  .then((forecast) => {
+    const temperature = forecast.current?.temperature_2m;
+    if (typeof temperature !== 'number') {
+      throw new Error('La température est absente de la réponse.');
+    }
+    status.textContent = `${temperature} °C`;
+  })
+  .catch(() => {
+    status.textContent = 'Les données ne sont pas disponibles.';
+  });
+```
+
+## Exercices
+
+<Exercise n="6.1" title="Lire une réponse JSON">
+Utilisez `fetch` pour demander un fichier JSON, vérifiez le statut HTTP et affichez l’objet obtenu dans la console.
+
+<Solution>
+
+```javascript
+async function loadData() {
+  const response = await fetch('/data.json');
+  if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
+  return response.json();
+}
+
+loadData()
+  .then((data) => console.log(data))
+  .catch((error) => console.error('Échec du chargement.', error));
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="6.2" title="Afficher une température actuelle">
+À partir de l’API Open-Meteo, affichez la température actuelle de Paris. Distinguez l’état de chargement, la réponse valide et l’échec de la requête.
+
+<Solution>
+
+```javascript
+async function showTemperature() {
+  const output = document.querySelector('#weather-status');
+  output.textContent = 'Chargement…';
+
+  try {
+    const response = await fetch(
+      'https://api.open-meteo.com/v1/forecast?latitude=48.86&longitude=2.35&current=temperature_2m',
+    );
+    if (!response.ok) throw new Error(`Erreur HTTP : ${response.status}`);
+    const forecast = await response.json();
+    const value = forecast.current?.temperature_2m;
+    if (typeof value !== 'number') throw new Error('Donnée manquante');
+    output.textContent = `${value} °C`;
+  } catch (error) {
+    console.error('Chargement météo impossible.', error);
+    output.textContent = 'Météo momentanément indisponible.';
+  }
+}
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="6.3" title="Laisser choisir la ville">
+Ajoutez un formulaire de recherche et connectez-le à une API de géocodage. Validez la ville saisie, empêchez une soumission vide et rendez visibles les erreurs réseau.
+</Exercise>
+
+## Livrable
+
+Créez une application météo affichant la température actuelle d’une ville. Géocodez le nom saisi, affichez les états de chargement et d’erreur, et indiquez clairement la ville et les unités présentées.
+
+<Callout type="tip">
+N’affichez jamais une réponse distante sans vérifier qu’elle contient les champs attendus. La validation des données évite qu’une réponse partielle casse toute l’interface.
+</Callout>

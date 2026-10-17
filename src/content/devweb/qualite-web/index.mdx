@@ -1,0 +1,691 @@
+# Qualité Web
+
+Ce module explore les aspects qualitatifs essentiels du développement web moderne : l'accessibilité pour assurer que tous les utilisateurs peuvent accéder au contenu, la performance pour offrir une expérience fluide, le SEO de base pour améliorer la visibilité dans les moteurs de recherche, et la validation pour garantir la conformité aux standards. Ces concepts ne sont pas des "ajouts" mais des fondamentaux qui définissent la qualité d'un site web professionnel. À l'issue de ce module, vous serez capable d'auditer un site existant selon ces critères de qualité et de proposer des améliorations concrètes.
+
+## Objectifs
+
+- Comprendre les principes de l'accessibilité (WCAG) et leurs applications pratiques.
+- Identifier et corriger les problèmes d'accessibilité courants (contraste, navigation clavier, ARIA).
+- Mesurer et optimiser les performances web (Lighthouse, Core Web Vitals).
+- Comprendre les bases du SEO (structure, métadonnées, contenu).
+- Valider le HTML et le CSS avec les outils W3C.
+- Effectuer un audit complet d'un site existant.
+- Proposer et implémenter des améliorations prioritaires.
+
+## Prérequis
+
+- HTML — Structure (éléments sémantiques, formulaires)
+- CSS — Bases (typographie, couleurs)
+- JavaScript — DOM (manipulation du DOM)
+
+## Cours
+
+### Accessibilité (WCAG)
+
+L'accessibilité web (a11y) consiste à rendre les sites utilisables par tous, indépendamment des capacités ou des limitations. Les Web Content Accessibility Guidelines (WCAG) définissent quatre principes : Perceptible, Utilisable, Compréhensible, Robuste (POUR).
+
+**Principe 1 : Perceptible** - L'information doit être présentée de manière à être perçue par tous les utilisateurs.
+
+- **Texte alternatif** : les images doivent avoir un attribut `alt` descriptif. Les images décoratives doivent avoir `alt=""`.
+
+```html
+<img src="chart.png" alt="Graphique montrant l'évolution des ventes de 2020 à 2024">
+<img src="decoration.png" alt="">
+```
+
+- **Contraste** : le rapport de contraste entre le texte et l'arrière-plan doit être d'au moins 4.5:1 pour le texte normal, 3:1 pour le texte large.
+
+```css
+/* Mauvais contraste */
+background-color: #f0f0f0;
+color: #999999; /* Contraste ~2.5:1 - échoue */
+
+/* Bon contraste */
+background-color: #ffffff;
+color: #333333; /* Contraste ~12:1 - passe */
+```
+
+- **Audio et vidéo** : les fichiers audio et vidéo doivent avoir des sous-titres et des transcriptions.
+
+**Principe 2 : Utilisable** - Les composants de l'interface doivent être utilisables par tous.
+
+- **Navigation clavier** : tous les éléments interactifs doivent être accessibles au clavier. Le focus doit être visible.
+
+```css
+button:focus {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+```
+
+- **Délai suffisant** : les utilisateurs doivent avoir suffisamment de temps pour lire et interagir avec le contenu. Évitez les contenus qui clignotent ou bougent automatiquement sans contrôle.
+
+- **Seizures** : ne pas utiliser de contenu qui clignote plus de 3 fois par seconde (risque de crises d'épilepsie).
+
+**Principe 3 : Compréhensible** - L'information et le fonctionnement de l'interface doivent être compréhensibles.
+
+- **Langue** : spécifiez la langue de la page avec l'attribut `lang` sur l'élément `html`.
+
+```html
+<html lang="fr">
+```
+
+- **Labels** : tous les champs de formulaire doivent avoir un label associé.
+
+```html
+<label for="email">Adresse e-mail</label>
+<input type="email" id="email" name="email">
+```
+
+- **Erreurs** : les messages d'erreur doivent être clairs et indiquer comment les corriger.
+
+**Principe 4 : Robuste** - Le contenu doit être suffisamment robuste pour être interprété de manière fiable par une grande variété d'agents utilisateurs, y compris les technologies d'assistance.
+
+- **HTML valide** : utilisez des éléments HTML sémantiques et un code valide.
+
+- **ARIA** : Accessible Rich Internet Applications étend HTML avec des attributs supplémentaires pour les composants complexes.
+
+```html
+<div role="button" tabindex="0" aria-label="Fermer la fenêtre">✕</div>
+```
+
+<Callout type="tip">
+L'accessibilité ne profite pas seulement aux utilisateurs handicapés. Elle améliore l'expérience pour tous : navigation clavier plus rapide, contenu plus lisible, meilleure performance sur mobile, et meilleur SEO.
+</Callout>
+
+### Performance web
+
+La performance web influence directement l'expérience utilisateur et le classement dans les moteurs de recherche. Google a introduit les Core Web Vitals comme métriques essentielles.
+
+**Core Web Vitals** :
+
+- **LCP (Largest Contentful Paint)** : temps de chargement du plus grand élément visible. Doit être &lt; 2.5s.
+- **FID (First Input Delay)** : délai avant que le premier utilisateur puisse interagir. Doit être &lt; 100ms.
+- **CLS (Cumulative Layout Shift)** : stabilité visuelle (déplacements inattendus). Doit être &lt; 0.1.
+
+**Optimisations courantes** :
+
+- **Images** : utilisez le format moderne (WebP), redimensionnez aux dimensions nécessaires, utilisez lazy loading.
+
+```html
+<img src="image.webp" loading="lazy" width="800" height="600" alt="Description">
+```
+
+- **CSS/JS** : minifiez et compressez les fichiers, chargez le CSS critique en tête, reportez le JavaScript non critique.
+
+- **Réseau** : utilisez HTTP/2 ou HTTP/3, activez la compression gzip/brotli, servez depuis un CDN.
+
+- **Cache** : utilisez les en-têtes de cache pour les ressources statiques.
+
+```http
+Cache-Control: max-age=31536000, immutable
+```
+
+**Outils de mesure** :
+
+- **Lighthouse** : outil intégré aux DevTools Chrome qui évalue la performance, l'accessibilité, les bonnes pratiques, et le SEO.
+
+- **WebPageTest** : outil en ligne pour des tests de performance détaillés depuis plusieurs lieux.
+
+<Callout type="info">
+Les Core Web Vitals sont des métriques centrées sur l'utilisateur, pas sur la technique. Elles mesurent l'expérience réelle, pas le temps de chargement du serveur.
+</Callout>
+
+### SEO de base
+
+Le SEO (Search Engine Optimization) améliore la visibilité d'un site dans les moteurs de recherche. Les techniques de base sont accessibles à tous les développeurs.
+
+**Structure HTML** :
+
+- **Title** : chaque page doit avoir un titre unique et descriptif (60-70 caractères).
+
+```html
+<title>LWY - Apprendre le développement web sérieusement</title>
+```
+
+- **Meta description** : description de la page (150-160 caractères).
+
+```html
+<meta name="description" content="Plateforme éducative pour apprendre le développement web avec des cours approfondis et des exercices pratiques.">
+```
+
+- **Headings** : utilisez une hiérarchie de titres cohérente (un seul h1, puis h2, h3).
+
+**Contenu** :
+
+- **Contenu de qualité** : créez du contenu original, utile et régulièrement mis à jour.
+
+- **Mots-clés** : utilisez les mots-clés naturellement dans le contenu, les titres, et les URLs.
+
+- **URLs** : créez des URLs descriptives et courtes.
+
+```
+https://example.com/parcours/devweb/html-structure
+```
+
+**Technique** :
+
+- **Robots.txt** : indique aux robots d'indexation quelles pages peuvent être explorées.
+
+```
+User-agent: *
+Allow: /
+Disallow: /admin/
+```
+
+- **Sitemap.xml** : liste des pages à indexer.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://example.com/</loc>
+    <lastmod>2025-01-01</lastmod>
+  </url>
+</urlset>
+```
+
+- **Open Graph** : métadonnées pour un meilleur affichage sur les réseaux sociaux.
+
+```html
+<meta property="og:title" content="LWY - Apprendre le développement web">
+<meta property="og:description" content="Plateforme éducative...">
+<meta property="og:image" content="https://example.com/og-image.jpg">
+```
+
+<Callout type="tip">
+Le SEO n'est pas une technique de "triche" pour tromper les moteurs de recherche. C'est l'art de créer un site que les moteurs de recherche recommandent naturellement parce qu'il est utile, rapide, et accessible.
+</Callout>
+
+### Validation
+
+La validation garantit que le code HTML et CSS est conforme aux standards du W3C, ce qui améliore la compatibilité entre navigateurs et l'accessibilité.
+
+**Validation HTML** :
+
+- **W3C Markup Validator** : outil en ligne pour valider le HTML.
+
+```html
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Titre</title>
+</head>
+<body>
+  <h1>Titre principal</h1>
+</body>
+</html>
+```
+
+Erreurs courantes :
+- Balises non fermées
+- Attributs manquants (alt sur images)
+- Attributs obsolètes
+- Imbrication incorrecte des balises
+
+**Validation CSS** :
+
+- **W3C CSS Validator** : outil en ligne pour valider le CSS.
+
+```css
+body {
+  font-family: sans-serif;
+  color: #333;
+}
+```
+
+Erreurs courantes :
+- Propriétés invalides
+- Valeurs incorrectes
+- Syntaxe incorrecte (point-virgule manquant)
+
+<Callout type="warn">
+La validation ne garantit pas que le site fonctionne parfaitement, mais elle élimine de nombreuses sources d'erreurs. Un code valide est plus robuste et plus maintenable.
+</Callout>
+
+### Audit complet
+
+Un audit complet évalue un site selon tous les critères de qualité : accessibilité, performance, SEO, validation, et bonnes pratiques.
+
+**Processus d'audit** :
+
+1. **Analyse manuelle** : navigation du site, test des fonctionnalités, vérification visuelle.
+
+2. **Outils automatisés** :
+   - Lighthouse (performance, accessibilité, SEO)
+   - WAVE (accessibilité)
+   - axe DevTools (accessibilité)
+   - WebPageTest (performance)
+
+3. **Tests utilisateurs** : observation de vrais utilisateurs utilisant le site.
+
+4. **Priorisation** : classement des problèmes par impact et effort de correction.
+
+**Rapport d'audit** :
+
+Un bon rapport d'audit contient :
+- Résumé exécutif
+- Liste des problèmes identifiés
+- Impact de chaque problème
+- Recommandations de correction
+- Priorité (critique, important, mineur)
+
+## Erreurs fréquentes
+
+**Oublier alt sur les images**
+
+```html
+<img src="photo.jpg">
+```
+
+Les utilisateurs de lecteurs d'écran entendent "image" sans contexte. Les moteurs de recherche ne peuvent pas indexer le contenu de l'image.
+
+<Callout type="warn">
+```html
+<img src="photo.jpg" alt="Portrait de l'auteur">
+```
+Toujours inclure un attribut `alt` descriptif sur les images informatives. Utilisez `alt=""` pour les images purement décoratives.
+</Callout>
+
+**Contraste insuffisant**
+
+```css
+background-color: #f0f0f0;
+color: #999999;
+```
+
+Le texte est difficile à lire pour les utilisateurs malvoyants et en conditions de faible luminosité.
+
+<Callout type="warn">
+```css
+background-color: #ffffff;
+color: #333333;
+```
+Vérifiez toujours le contraste avec un outil comme WebAIM Contrast Checker. Le ratio minimum est 4.5:1 pour le texte normal.
+</Callout>
+
+**Navigation clavier impossible**
+
+```css
+.button:focus {
+  outline: none;
+}
+```
+
+Les utilisateurs clavier ne peuvent pas voir quel élément a le focus, rendant la navigation impossible.
+
+<Callout type="warn">
+```css
+.button:focus {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+```
+Ne supprimez jamais le focus visible. Si vous devez le personnaliser, assurez-vous qu'il reste visible et contrasté.
+</Callout>
+
+**Images non optimisées**
+
+```html
+<img src="photo-haute-resolution.jpg" width="300">
+```
+
+L'image haute résolution est téléchargée intégralement même si elle est affichée à 300px, gaspillant la bande passante.
+
+<Callout type="warn">
+```html
+<img src="photo-optimisee-300w.webp" width="300" height="200" loading="lazy" alt="Description">
+```
+Redimensionnez les images aux dimensions d'affichage, utilisez le format WebP, et ajoutez lazy loading pour les images hors écran.
+</Callout>
+
+## Exercices
+
+<Exercise n="12.1" title="Vérifier le contraste d'une palette">
+Prenez la palette de couleurs de votre projet (background, text, accent). Utilisez le WebAIM Contrast Checker pour vérifier :
+
+1. Texte normal sur background
+2. Texte large sur background
+3. Texte accent sur background
+4. Texte sur accent
+
+Quels couples échouent ? Comment les corriger ?
+</Exercise>
+
+<Solution>
+Testez chaque couple sur https://webaim.org/resources/contrastchecker/
+
+Si un couple échoue (ratio &lt; 4.5:1 pour le texte normal), vous avez deux options :
+- Éclaircir le texte (ex: #333 → #222)
+- Assombrir l'arrière-plan (ex: #f0f0f0 → #e0e0e0)
+
+Ne changez pas la palette arbitrairement : documentez les couples qui échouent dans le README et corrigez-les en priorisant les zones de contenu.
+</Solution>
+
+<Exercise n="12.2" title="Auditer l'accessibilité d'une page">
+Choisissez une page de votre projet et utilisez Lighthouse pour auditer l'accessibilité. Notez :
+
+1. Le score d'accessibilité
+2. Les problèmes critiques
+3. Les recommandations fournies
+
+Corrigez au moins 3 problèmes identifiés.
+</Exercise>
+
+<Solution>
+Dans Chrome DevTools :
+1. Ouvrez Lighthouse (onglet Lighthouse)
+2. Sélectionnez "Accessibility"
+3. Cliquez sur "Analyze page load"
+
+Problèmes courants à corriger :
+- Ajouter des attributs alt sur les images
+- Améliorer le contraste du texte
+- Ajouter des labels aux champs de formulaire
+- Assurer une hiérarchie de titres cohérente
+- Rendre les boutons navigables au clavier
+</Solution>
+
+<Exercise n="12.3" title="Mesurer les performances avec Lighthouse">
+Utilisez Lighthouse pour auditer la performance d'une page de votre projet. Notez :
+
+1. Le score de performance
+2. Les Core Web Vitals (LCP, FID, CLS)
+3. Les opportunités d'optimisation
+
+Implémentez au moins 2 optimisations suggérées.
+</Exercise>
+
+<Solution>
+Dans Chrome DevTools :
+1. Ouvrez Lighthouse
+2. Sélectionnez "Performance"
+3. Cliquez sur "Analyze page load"
+
+Optimisations courantes :
+- Redimensionner les images
+- Convertir les images en WebP
+- Minifier le CSS et JavaScript
+- Supprimer le JavaScript inutilisé
+- Activer la compression textuelle
+- Utiliser un CDN
+</Solution>
+
+<Exercise n="12.4" title="Valider le HTML d'une page">
+Utilisez le W3C Markup Validator pour valider une page de votre projet. Notez :
+
+1. Le nombre d'erreurs
+2. Le nombre d'avertissements
+3. Les erreurs les plus fréquentes
+
+Corrigez toutes les erreurs de validation.
+</Exercise>
+
+<Solution>
+Allez sur https://validator.w3.org/ et entrez l'URL de votre page, ou collez le code HTML directement.
+
+Erreurs courantes à corriger :
+- Balises non fermées (ex: `<p>` sans `</p>`)
+- Attributs obligatoires manquants (ex: `alt` sur `img`)
+- Attributs obsolètes (ex: `align` sur les éléments)
+- Imbrication incorrecte (ex: `<p><div></div></p>`)
+- Caractères invalides dans les attributs
+</Solution>
+
+<Exercise n="12.5" title="Améliorer le SEO d'une page">
+Prenez une page de votre projet et améliorez son SEO en :
+
+1. Ajoutant/modifiant le title
+2. Ajoutant/modifiant la meta description
+3. Vérifiant la hiérarchie des headings
+4. Ajoutant des liens internes
+5. Ajoutant les métadonnées Open Graph
+
+Expliquez chaque modification et son impact sur le SEO.
+</Exercise>
+
+<Solution>
+```html
+<!-- Title amélioré -->
+<title>LWY - Cours de développement web : HTML, CSS, JavaScript</title>
+
+<!-- Meta description ajoutée -->
+<meta name="description" content="Apprenez le développement web avec LWY. Cours approfondis sur HTML, CSS, JavaScript, accessibilité, performance, et SEO. Exercices pratiques et projets concrets.">
+
+<!-- Hiérarchie des headings vérifiée -->
+<h1>LWY - Apprendre le développement web</h1>
+<h2>Parcours Développement Web</h2>
+<h3>Module 1 : Fondamentaux du web</h3>
+
+<!-- Liens internes ajoutés -->
+<nav>
+  <a href="/parcours/devweb">Parcours Développement Web</a>
+  <a href="/ressources">Ressources</a>
+</nav>
+
+<!-- Open Graph ajouté -->
+<meta property="og:title" content="LWY - Apprendre le développement web">
+<meta property="og:description" content="Plateforme éducative pour apprendre le développement web avec des cours approfondis.">
+<meta property="og:image" content="https://lwy.dev/og-image.jpg">
+<meta property="og:url" content="https://lwy.dev/">
+<meta property="og:type" content="website">
+```
+
+Impact :
+- Title : meilleure visibilité dans les résultats de recherche
+- Meta description : augmentation du taux de clic
+- Headings : meilleure compréhension du contenu par les moteurs
+- Liens internes : amélioration de la navigation et du crawling
+- Open Graph : meilleur affichage sur les réseaux sociaux
+</Solution>
+
+<Exercise n="12.6" title="Tester la navigation clavier">
+Testez la navigation clavier de votre site :
+
+1. Utilisez uniquement Tab pour naviguer
+2. Vérifiez que tous les éléments interactifs sont accessibles
+3. Vérifiez que le focus est visible
+4. Vérifiez que l'ordre de focus est logique
+5. Vérifiez que Escape ferme les modals/menus
+
+Notez les problèmes et corrigez-les.
+</Exercise>
+
+<Solution>
+Pour tester :
+1. Désactivez votre souris
+2. Utilisez Tab pour avancer, Shift+Tab pour reculer
+3. Utilisez Enter pour activer
+4. Utilisez Escape pour fermer les modals
+
+Problèmes courants à corriger :
+- Boutons sans tabindex ou avec tabindex incorrect
+- Focus non visible (outline: none sans alternative)
+- Ordre de focus illogique (éléments non dans l'ordre visuel)
+- Modals/menus non fermables avec Escape
+- Contenu scrollable non accessible avec les flèches du clavier
+</Solution>
+
+<Exercise n="12.7" title="Créer un rapport d'audit">
+Effectuez un audit complet d'une page de votre projet (accessibilité, performance, SEO, validation). Créez un rapport structuré avec :
+
+1. Résumé exécutif
+2. Scores Lighthouse
+3. Liste des problèmes par catégorie
+4. Impact de chaque problème
+5. Recommandations de correction
+6. Priorité (critique, important, mineur)
+</Exercise>
+
+<Solution>
+Structure du rapport :
+
+# Audit de qualité - [Nom de la page]
+
+## Résumé exécutif
+Score global : X/100
+Accessibilité : X/100
+Performance : X/100
+SEO : X/100
+
+## Accessibilité
+**Score : X/100**
+
+### Critique
+- [ ] Images sans alt : impact élevé pour les utilisateurs aveugles
+- [ ] Contraste insuffisant : impact élevé pour les utilisateurs malvoyants
+
+### Important
+- [ ] Headings non hiérarchiques : impact moyen pour la navigation
+
+### Mineur
+- [ ] Labels manquants sur certains champs : impact faible
+
+## Performance
+**Score : X/100**
+
+### Critique
+- [ ] Images non optimisées : impact élevé sur le temps de chargement
+
+### Important
+- [ ] JavaScript non minifié : impact moyen sur le temps de chargement
+
+## SEO
+**Score : X/100**
+
+### Critique
+- [ ] Title manquant : impact élevé sur la visibilité
+
+### Important
+- [ ] Meta description manquante : impact moyen sur le taux de clic
+
+## Validation
+- HTML : X erreurs, Y avertissements
+- CSS : X erreurs, Y avertissements
+
+## Recommandations prioritaires
+1. Corriger les images sans alt (accessibilité critique)
+2. Optimiser les images (performance critique)
+3. Ajouter le title (SEO critique)
+</Solution>
+
+<Exercise n="12.8" title='Défi : Audit complet d&apos;un site existant'>
+Choisissez un site web existant (pas le vôtre) et effectuez un audit complet :
+
+1. Accessibilité (Lighthouse + tests manuels)
+2. Performance (Lighthouse + WebPageTest)
+3. SEO (analyse manuelle + outils)
+4. Validation (W3C validators)
+5. Bonnes pratiques (code review)
+
+Créez un rapport détaillé avec des recommandations concrètes et priorisées.
+</Exercise>
+
+<Solution>
+Sélectionnez un site (ex: le site d'une entreprise locale, un blog personnel, etc.).
+
+Outils à utiliser :
+- Lighthouse (Chrome DevTools)
+- WebAIM Contrast Checker
+- WAVE (accessibilité)
+- W3C Markup Validator
+- W3C CSS Validator
+- WebPageTest (performance)
+- SEO Checker (ex: seoptimer.com)
+
+Structure du rapport :
+
+# Audit de qualité - [Nom du site]
+
+## Informations générales
+- URL : [URL]
+- Date de l'audit : [Date]
+- Auditeur : [Votre nom]
+
+## Accessibilité
+**Score Lighthouse : X/100**
+
+### Points forts
+- [ ] ...
+
+### Points faibles
+- [ ] ...
+
+### Recommandations
+1. [Priorité] : ...
+2. [Priorité] : ...
+
+## Performance
+**Score Lighthouse : X/100**
+
+### Core Web Vitals
+- LCP : Xs (objectif &lt; 2.5s)
+- FID : Xms (objectif &lt; 100ms)
+- CLS : X (objectif &lt; 0.1)
+
+### Recommandations
+1. [Priorité] : ...
+2. [Priorité] : ...
+
+## SEO
+**Score Lighthouse : X/100**
+
+### Points forts
+- [ ] ...
+
+### Points faibles
+- [ ] ...
+
+### Recommandations
+1. [Priorité] : ...
+2. [Priorité] : ...
+
+## Validation
+- HTML : X erreurs, Y avertissements
+- CSS : X erreurs, Y avertissements
+
+## Conclusion
+Résumé des principaux problèmes et recommandations globales.
+</Solution>
+
+## Livrable
+
+Effectuez un audit complet d'un site existant. L'audit doit inclure :
+
+**Audit obligatoire**
+- Accessibilité (Lighthouse + tests manuels clavier)
+- Performance (Lighthouse + Core Web Vitals)
+- SEO (analyse manuelle + métriques)
+- Validation HTML et CSS (W3C validators)
+- Bonnes pratiques (code review)
+
+**Rapport obligatoire**
+- Résumé exécutif avec scores
+- Liste des problèmes par catégorie
+- Impact de chaque problème
+- Recommandations de correction
+- Priorité (critique, important, mineur)
+
+**Critères d'évaluation**
+- [ ] Utilisation d'outils automatisés (Lighthouse, validators)
+- [ ] Tests manuels (navigation clavier, contraste)
+- [ ] Rapport structuré et professionnel
+- [ ] Recommandations concrètes et actionnables
+- [ ] Priorisation claire des problèmes
+- [ ] Documentation des méthodes utilisées
+
+**Pistes d'extension**
+- Proposez un plan d'amélioration sur 3 mois
+- Estimez l'effort pour chaque recommandation
+- Implémentez les corrections critiques
+- Effectuez un audit de suivi après corrections
+- Créez un checklist de qualité pour les futurs projets
+
+## Pour aller plus loin
+
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/) : Référence rapide des WCAG 2.1.
+- [WebAIM Accessibility Checklist](https://webaim.org/standards/wcag/checklist) : Checklist pour vérifier la conformité WCAG.
+- [MDN - Performance](https://developer.mozilla.org/fr/docs/Web/Performance) : Guide sur la performance web.
+- [Google Core Web Vitals](https://web.dev/vitals/) : Documentation des Core Web Vitals.
+- [Google SEO Starter Guide](https://developers.google.com/search/docs) : Guide de base du SEO selon Google.

@@ -1,0 +1,660 @@
+# Fonctions
+
+Ce module explore les fonctions en Python, qui permettent d'organiser le code en blocs réutilisables. Il explique la définition de fonctions, les paramètres et arguments, les valeurs de retour, les fonctions lambda, les décorateurs, et la portée des variables. Les fonctions sont essentielles pour écrire du code modulaire, lisible et maintenable. À l'issue de ce module, vous serez capable de créer des fonctions réutilisables, de comprendre la portée, et d'utiliser des fonctions avancées comme les décorateurs.
+
+## Objectifs
+
+- Définir et appeler des fonctions
+- Comprendre les paramètres positionnels et nommés
+- Utiliser les valeurs par défaut et les arguments variables (*args, **kwargs)
+- Comprendre les valeurs de retour et le mot-clé return
+- Utiliser les fonctions lambda pour des fonctions anonymes
+- Comprendre la portée locale et globale des variables
+- Utiliser les décorateurs pour modifier le comportement des fonctions
+
+## Prérequis
+
+- Introduction à Python (scripts, REPL)
+- Variables et types (types primitifs)
+- Structures de contrôle (conditions, boucles)
+
+## Cours
+
+### Définition de fonction
+
+Une fonction est un bloc de code réutilisable qui effectue une tâche spécifique.
+
+**Syntaxe de base** :
+
+```python
+def ma_fonction():
+    print("Bonjour depuis ma fonction")
+
+ma_fonction()  # Appel de la fonction
+```
+
+**Fonction avec paramètres** :
+
+```python
+def saluer(nom):
+    print(f"Bonjour, {nom} !")
+
+saluer("Alice")  # Bonjour, Alice !
+saluer("Bob")    # Bonjour, Bob !
+```
+
+**Fonction avec valeur de retour** :
+
+```python
+def additionner(a, b):
+    return a + b
+
+resultat = additionner(5, 3)
+print(resultat)  # 8
+```
+
+<Callout type="tip">
+Utilisez `return` pour renvoyer une valeur. `print()` affiche simplement une valeur mais ne la renvoie pas.
+</Callout>
+
+### Paramètres et arguments
+
+**Paramètres positionnels** :
+
+```python
+def presenter(nom, age):
+    print(f"Je m'appelle {nom} et j'ai {age} ans")
+
+presenter("Alice", 25)  # Correct
+presenter(25, "Alice")  # Erreur de logique (ordre inversé)
+```
+
+**Paramètres nommés** :
+
+```python
+def presenter(nom, age):
+    print(f"Je m'appelle {nom} et j'ai {age} ans")
+
+presenter(age=25, nom="Alice")  # Correct (ordre indifférent)
+```
+
+**Valeurs par défaut** :
+
+```python
+def saluer(nom, message="Bonjour"):
+    print(f"{message}, {nom} !")
+
+saluer("Alice")                    # Bonjour, Alice !
+saluer("Alice", "Salut")            # Salut, Alice !
+```
+
+<Callout type="warn">
+Les paramètres avec valeurs par défaut doivent toujours être définis après les paramètres sans valeur par défaut.
+</Callout>
+
+**Arguments variables (*args)** :
+
+```python
+def somme(*nombres):
+    return sum(nombres)
+
+print(somme(1, 2, 3))        # 6
+print(somme(1, 2, 3, 4, 5))  # 15
+```
+
+**Arguments variables mots-clés (**kwargs)** :
+
+```python
+def afficher_infos(**infos):
+    for cle, valeur in infos.items():
+        print(f"{cle} : {valeur}")
+
+afficher_infos(nom="Alice", age=25, ville="Paris")
+# nom : Alice
+# age : 25
+# ville : Paris
+```
+
+### Valeur de retour
+
+**Return explicite** :
+
+```python
+def additionner(a, b):
+    return a + b
+
+resultat = additionner(5, 3)
+```
+
+**Return implicite (None)** :
+
+```python
+def afficher(a, b):
+    print(a + b)
+
+resultat = afficher(5, 3)  # None (pas de return)
+```
+
+**Multiple return** :
+
+```python
+def diviser(a, b):
+    if b == 0:
+        return None, "Division par zéro"
+    return a / b, "Succès"
+
+resultat, message = diviser(10, 2)
+print(resultat, message)  # 5.0 Succès
+```
+
+### Portée des variables
+
+**Portée locale** :
+
+```python
+def ma_fonction():
+    x = 10  # Variable locale
+    print(x)
+
+ma_fonction()  # 10
+print(x)      # NameError: x n'est pas défini
+```
+
+**Portée globale** :
+
+```python
+x = 10  # Variable globale
+
+def ma_fonction():
+    print(x)  # Peut lire la variable globale
+
+ma_fonction()  # 10
+print(x)      # 10
+```
+
+**Modification d'une variable globale** :
+
+```python
+x = 10
+
+def modifier():
+    global x  # Déclaration explicite
+    x = 20
+
+modifier()
+print(x)  # 20
+```
+
+<Callout type="warn">
+Évitez d'utiliser des variables globales dans les fonctions. Préférez passer les variables comme paramètres.
+</Callout>
+
+### Fonctions lambda
+
+Les fonctions lambda sont des fonctions anonymes (sans nom) définies en une ligne.
+
+**Syntaxe** :
+
+```python
+lambda arguments: expression
+```
+
+**Exemples** :
+
+```python
+# Lambda équivalente à
+def carre(x):
+    return x ** 2
+
+carre = lambda x: x ** 2
+print(carre(5))  # 25
+```
+
+**Lambda avec plusieurs paramètres** :
+
+```python
+addition = lambda a, b: a + b
+print(addition(3, 4))  # 7
+```
+
+**Lambda avec sorted()** :
+
+```python
+etudiants = [("Alice", 85), ("Bob", 92), ("Charlie", 78)]
+etudiants_tries = sorted(etudiants, key=lambda x: x[1])
+# [("Charlie", 78), ("Alice", 85), ("Bob", 92)]
+```
+
+<Callout type="info">
+Les lambdas sont utiles pour des fonctions simples utilisées comme arguments (sorted, map, filter). Pour des fonctions complexes, préférez les fonctions normales (def).
+</Callout>
+
+### Décorateurs
+
+Les décorateurs modifient le comportement d'une fonction sans changer son code.
+
+**Fonction comme décorateur** :
+
+```python
+def mon_decorateur(fonction):
+    def fonction_enveloppee():
+        print("Avant l'exécution")
+        fonction()
+        print("Après l'exécution")
+    return fonction_enveloppee
+
+@mon_decorateur
+def ma_fonction():
+    print("Exécution de la fonction")
+
+ma_fonction()
+# Avant l'exécution
+# Exécution de la fonction
+# Après l'exécution
+```
+
+**Décorateur avec paramètres** :
+
+```python
+def repetition(nombre_fois):
+    def decorateur(fonction):
+        def fonction_enveloppee(*args, **kwargs):
+            for _ in range(nombre_fois):
+                fonction(*args, **kwargs)
+        return fonction_enveloppee
+    return decorateur
+
+@repetition(3)
+def saluer():
+    print("Bonjour")
+
+saluer()
+# Bonjour
+# Bonjour
+# Bonjour
+```
+
+### Docstrings
+
+Les docstrings documentent les fonctions.
+
+```python
+def additionner(a, b):
+    """
+    Additionne deux nombres.
+
+    Args:
+        a (int/float): Premier nombre
+        b (int/float): Deuxième nombre
+
+    Returns:
+        int/float: La somme de a et b
+    """
+    return a + b
+
+help(additionner)  # Affiche la docstring
+```
+
+### Fonctions intégrées utiles
+
+**map()** : applique une fonction à chaque élément d'un itérable.
+
+```python
+nombres = [1, 2, 3, 4, 5]
+carres = list(map(lambda x: x ** 2, nombres))
+# [1, 4, 9, 16, 25]
+```
+
+**filter()** : filtre les éléments selon une condition.
+
+```python
+nombres = [1, 2, 3, 4, 5]
+pairs = list(filter(lambda x: x % 2 == 0, nombres))
+# [2, 4]
+```
+
+**reduce()** : réduit un itérable à une seule valeur.
+
+```python
+from functools import reduce
+
+nombres = [1, 2, 3, 4, 5]
+somme = reduce(lambda x, y: x + y, nombres)
+# 15
+```
+
+## Erreurs fréquentes
+
+**Oublier return dans une fonction**
+
+```python
+def additionner(a, b):
+    a + b  # Oublie return
+
+resultat = additionner(5, 3)
+print(resultat)  # None
+```
+
+La fonction renvoie `None` par défaut si `return` est omis.
+
+<Callout type="warn">
+```python
+def additionner(a, b):
+    return a + b  # Ajoutez return
+
+resultat = additionner(5, 3)
+print(resultat)  # 8
+```
+Toujours utiliser `return` pour renvoyer une valeur.
+</Callout>
+
+**Paramètres sans valeur par défaut après ceux avec valeur par défaut**
+
+```python
+def ma_fonction(a=1, b):  # Erreur : SyntaxError
+    pass
+```
+
+Python exige que les paramètres sans valeur par défaut soient définis en premier.
+
+<Callout type="warn">
+```python
+def ma_fonction(a, b=1):  # Correct
+    pass
+```
+Définissez d'abord les paramètres sans valeur par défaut, puis ceux avec valeur par défaut.
+</Callout>
+
+**Modifier une variable locale comme si elle était globale**
+
+```python
+x = 10
+
+def modifier():
+    x = 20  # Crée une nouvelle variable locale
+    print(x)
+
+modifier()
+print(x)  # 10 (la variable globale n'est pas modifiée)
+```
+
+Sans `global`, Python crée une nouvelle variable locale.
+
+<Callout type="warn">
+```python
+x = 10
+
+def modifier():
+    global x  # Déclare l'intention de modifier la globale
+    x = 20
+
+modifier()
+print(x)  # 20
+```
+Utilisez `global` pour modifier une variable globale, ou préférez passer la variable comme paramètre.
+</Callout>
+
+**Lambda trop complexe**
+
+```python
+# Mauvais : lambda trop complexe
+fonction = lambda x: x ** 2 if x > 0 else 0 if x < 0 else 0
+```
+
+Les lambdas complexes sont difficiles à lire.
+
+<Callout type="warn">
+```python
+# Bon : fonction normale pour la logique complexe
+def fonction(x):
+    if x > 0:
+        return x ** 2
+    else:
+        return 0
+```
+Utilisez `def` pour les fonctions complexes, `lambda` uniquement pour des fonctions simples.
+</Callout>
+
+## Exercices
+
+<Exercise n="4.1" title="Créer une fonction simple">
+Créez une fonction `dire_bonjour(nom)` qui affiche "Bonjour, [nom] !". Appelez la fonction avec votre nom.
+</Exercise>
+
+<Solution>
+```python
+def dire_bonjour(nom):
+    print(f"Bonjour, {nom} !")
+
+dire_bonjour("Alice")
+```
+</Solution>
+
+<Exercise n="4.2" title="Fonction avec return">
+Créez une fonction `calculer_aire_carre(cote)` qui calcule et renvoie l'aire d'un carré. Appelez la fonction et affichez le résultat.
+</Exercise>
+
+<Solution>
+```python
+def calculer_aire_carre(cote):
+    return cote ** 2
+
+aire = calculer_aire_carre(5)
+print(f"L'aire du carré est : {aire}")
+```
+</Solution>
+
+<Exercise n="4.3" title="Paramètres par défaut">
+Créez une fonction `puissance(nombre, exposant=2)` qui calcule la puissance d'un nombre. Testez la fonction avec et sans le deuxième paramètre.
+</Exercise>
+
+<Solution>
+```python
+def puissance(nombre, exposant=2):
+    return nombre ** exposant
+
+print(puissance(5))      # 25 (exposant par défaut)
+print(puissance(5, 3))   # 125 (exposant spécifié)
+```
+</Solution>
+
+<Exercise n="4.4" title="Arguments variables">
+Créez une fonction `moyenne(*nombres)` qui calcule la moyenne d'un nombre variable d'arguments. Gérez le cas où aucun argument n'est passé (renvoyer 0).
+</Exercise>
+
+<Solution>
+```python
+def moyenne(*nombres):
+    if not nombres:
+        return 0
+    return sum(nombres) / len(nombres)
+
+print(moyenne(1, 2, 3, 4, 5))  # 3.0
+print(moyenne())                # 0
+```
+</Solution>
+
+<Exercise n="4.5" title="Fonction lambda">
+Créez une fonction lambda qui vérifie si un nombre est pair. Utilisez cette lambda avec filter() pour filtrer une liste de nombres.
+</Exercise>
+
+<Solution>
+```python
+est_pair = lambda x: x % 2 == 0
+
+nombres = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+pairs = list(filter(est_pair, nombres))
+
+print(pairs)  # [2, 4, 6, 8, 10]
+```
+</Solution>
+
+<Exercise n="4.6" title="Décorateur simple">
+Créez un décorateur `timer` qui mesure le temps d'exécution d'une fonction. Appliquez-le à une fonction qui effectue un calcul.
+</Exercise>
+
+<Solution>
+```python
+import time
+
+def timer(fonction):
+    def enveloppe(*args, **kwargs):
+        debut = time.time()
+        resultat = fonction(*args, **kwargs)
+        fin = time.time()
+        print(f"Temps d'exécution : {fin - debut:.4f} secondes")
+        return resultat
+    return enveloppe
+
+@timer
+def calcul_lent():
+    time.sleep(1)
+    return "Terminé"
+
+resultat = calcul_lent()
+# Temps d'exécution : 1.000x secondes
+```
+</Solution>
+
+<Exercise n="4.7" title="Portée des variables">
+Créez une fonction qui utilise une variable globale. Modifiez cette variable dans la fonction et vérifiez qu'elle est modifiée globalement.
+</Exercise>
+
+<Solution>
+```python
+compteur = 0
+
+def incrementer():
+    global compteur
+    compteur += 1
+    print(f"Compteur dans la fonction : {compteur}")
+
+incrementer()
+print(f"Compteur global : {compteur}")
+```
+</Solution>
+
+<Exercise n="4.8" title="Défi : Bibliothèque de fonctions utilitaires">
+Créez une bibliothèque de fonctions utilitaires avec au moins 5 fonctions :
+
+1. `somme(*nombres)` : somme de nombres
+2. `moyenne(*nombres)` : moyenne de nombres
+3. `maximum(*nombres)` : maximum de nombres
+4. `minimum(*nombres)` : minimum de nombres
+5. `est_pair(nombre)` : vérifie si un nombre est pair
+
+Chaque fonction doit avoir une docstring.
+</Exercise>
+
+<Solution>
+```python
+def somme(*nombres):
+    """
+    Calcule la somme de nombres.
+
+    Args:
+        *nombres: Nombres à additionner
+
+    Returns:
+        La somme des nombres
+    """
+    return sum(nombres)
+
+def moyenne(*nombres):
+    """
+    Calcule la moyenne de nombres.
+
+    Args:
+        *nombres: Nombres pour calculer la moyenne
+
+    Returns:
+        La moyenne des nombres
+    """
+    if not nombres:
+        return 0
+    return sum(nombres) / len(nombres)
+
+def maximum(*nombres):
+    """
+    Trouve le maximum de nombres.
+
+    Args:
+        *nombres: Nombres à comparer
+
+    Returns:
+        Le maximum des nombres
+    """
+    return max(nombres) if nombres else None
+
+def minimum(*nombres):
+    """
+    Trouve le minimum de nombres.
+
+    Args:
+        *nombres: Nombres à comparer
+
+    Returns:
+        Le minimum des nombres
+    """
+    return min(nombres) if nombres else None
+
+def est_pair(nombre):
+    """
+    Vérifie si un nombre est pair.
+
+    Args:
+        nombre: Nombre à vérifier
+
+    Returns:
+        True si le nombre est pair, False sinon
+    """
+    return nombre % 2 == 0
+
+# Tests
+print(somme(1, 2, 3, 4, 5))      # 15
+print(moyenne(1, 2, 3, 4, 5))   # 3.0
+print(maximum(1, 2, 3, 4, 5))   # 5
+print(minimum(1, 2, 3, 4, 5))   # 1
+print(est_pair(4))               # True
+print(est_pair(7))               # False
+```
+</Solution>
+
+## Livrable
+
+Créez une bibliothèque de fonctions utilitaires en Python. La bibliothèque doit inclure :
+
+**Fonctions obligatoires**
+- Au moins 5 fonctions utilitaires
+- Docstrings pour chaque fonction
+- Paramètres et valeurs de retour appropriés
+- Gestion des cas limites (ex: liste vide)
+
+**Code obligatoire**
+- Fonctions bien nommées (snake_case)
+- Docstrings complètes
+- Gestion d'erreurs basique
+- Exemples d'utilisation
+
+**Critères d'évaluation**
+- [ ] Au moins 5 fonctions
+- [ ] Docstrings complètes
+- [ ] Fonctions testées
+- [ ] Code documenté
+- [ ] Conventions PEP 8 respectées
+- [ ] Gestion des cas limites
+
+**Pistes d'extension**
+- Ajoutez des fonctions de manipulation de chaînes
+- Implémentez des fonctions mathématiques avancées
+- Créez des décorateurs pour le logging
+- Ajoutez des tests unitaires
+- Créez un module importable
+
+## Pour aller plus loin
+
+- [Python Functions](https://docs.python.org/3/tutorial/controlflow.html#defining-functions) : Documentation officielle sur les fonctions.
+- [Real Python - Functions](https://realpython.com/defining-your-own-python-function/) : Guide complet sur les fonctions Python.
+- [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/) : Conventions pour les docstrings.
+- [Real Python - Decorators](https://realpython.com/primer-on-python-decorators/) : Guide sur les décorateurs.
+- [Python Lambda Functions](https://www.w3schools.com/python/python_lambda.asp) : Tutoriel sur les fonctions lambda.

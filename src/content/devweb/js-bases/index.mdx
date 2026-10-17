@@ -1,0 +1,879 @@
+# JavaScript — Bases
+
+Ce module introduit JavaScript, le langage de programmation du web qui permet d'ajouter de l'interactivité et de la logique aux pages web. Il explique les types de données primitifs et objets, les variables et les conventions de nommage, les opérateurs arithmétiques et logiques, les structures de contrôle (conditions, boucles), les fonctions et la portée. Ces fondamentaux sont essentiels pour comprendre comment le JavaScript fonctionne et pour progresser vers des concepts plus avancés. À l'issue de ce module, vous serez capable d'écrire des scripts JavaScript simples et de créer une calculatrice fonctionnelle en console.
+
+## Objectifs
+
+- Comprendre les types de données primitifs (string, number, boolean, null, undefined, symbol, bigint).
+- Déclarer des variables avec let et const et comprendre les différences avec var.
+- Utiliser les opérateurs arithmétiques, de comparaison et logiques.
+- Écrire des conditions avec if/else et switch.
+- Créer des boucles avec for, while, et for...of.
+- Définir et appeler des fonctions avec des paramètres et des valeurs de retour.
+- Comprendre la portée (scope) des variables et le hoisting.
+
+## Prérequis
+
+- Fondamentaux du web (console du navigateur)
+- HTML — Structure (DOM basique)
+
+## Cours
+
+### Introduction à JavaScript
+
+JavaScript est un langage de programmation interprété, orienté objet et dynamique. Créé en 1995 par Brendan Eich, il est désormais le langage le plus utilisé sur le web, mais aussi sur le serveur (Node.js), dans les applications mobiles (React Native), et bien d'autres environnements.
+
+<Callout type="info">
+JavaScript n'est pas Java. Les deux langages partagent une syntaxe similaire (syntaxe en C) mais sont fondamentalement différents. Le nom "JavaScript" était un choix marketing à l'époque de sa création.
+</Callout>
+
+JavaScript peut être exécuté de plusieurs manières :
+
+- **Console du navigateur** : ouvrir les DevTools (F12), onglet Console, et taper du JavaScript directement.
+- **Script interne** : dans un élément `<script>` dans le HTML.
+- **Script externe** : dans un fichier `.js` lié via `<script src="script.js">`.
+
+Pour ce module, nous utiliserons principalement la console du navigateur pour expérimenter avec les concepts.
+
+```javascript
+// Dans la console du navigateur
+console.log("Bonjour, monde !");
+```
+
+### Types de données
+
+JavaScript a deux catégories de types : les types primitifs et les objets.
+
+**Types primitifs** :
+
+- `string` : chaîne de caractères, délimitée par des guillemets simples, doubles ou backticks.
+
+```javascript
+let nom = "Jean";
+let message = 'Bonjour';
+let template = `Bonjour, ${nom}`; // Template literal
+```
+
+- `number` : nombre entier ou décimal.
+
+```javascript
+let entier = 42;
+let decimal = 3.14;
+let negatif = -10;
+```
+
+- `boolean` : valeur logique, true ou false.
+
+```javascript
+let vrai = true;
+let faux = false;
+```
+
+- `null` : absence intentionnelle de valeur.
+
+```javascript
+let vide = null;
+```
+
+- `undefined` : valeur non définie (valeur par défaut des variables non initialisées).
+
+```javascript
+let nonDefini;
+console.log(nonDefini); // undefined
+```
+
+- `symbol` : valeur unique et immuable (ES2015).
+
+```javascript
+let sym = Symbol("description");
+```
+
+- `bigint` : nombre entier de taille arbitraire (ES2020).
+
+```javascript
+let grand = 9007199254740991n;
+```
+
+**Objets** : collections de propriétés. Les objets incluent les tableaux, les fonctions, les dates, etc.
+
+```javascript
+let objet = {
+  nom: "Jean",
+  age: 30,
+};
+```
+
+<Callout type="tip">
+Pour vérifier le type d'une valeur, utilisez l'opérateur `typeof`. Notez que `typeof null` renvoie "object" (un bug historique) et `typeof []` renvoie "object" (les tableaux sont des objets).
+</Callout>
+
+### Variables
+
+JavaScript a trois mots-clés pour déclarer des variables : `var`, `let`, et `const`.
+
+**`var`** : ancienne méthode (avant ES2015). La variable est fonction-scoped (accessible dans toute la fonction où elle est déclarée) et peut être redéclarée. Déconseillé dans le code moderne.
+
+```javascript
+var x = 10;
+var x = 20; // Redéclaration autorisée
+```
+
+**`let`** : méthode moderne (ES2015). La variable est block-scoped (accessible uniquement dans le bloc où elle est déclarée) et ne peut pas être redéclarée. Utilisez `let` pour les variables dont la valeur change.
+
+```javascript
+let y = 10;
+y = 20; // Réassignation autorisée
+// let y = 30; // Erreur : redéclaration non autorisée
+```
+
+**`const`** : méthode moderne (ES2015). La variable est block-scoped et ne peut être ni réassignée ni redéclarée. Utilisez `const` pour les variables dont la valeur ne change pas.
+
+```javascript
+const z = 10;
+// z = 20; // Erreur : réassignation non autorisée
+```
+
+Notez que `const` ne rend pas l'objet immuable, seulement la référence. Pour un objet, vous pouvez toujours modifier ses propriétés.
+
+```javascript
+const personne = { nom: "Jean" };
+personne.nom = "Marie"; // Autorisé : modification de propriété
+// personne = {}; // Erreur : réassignation de la référence
+```
+
+<Callout type="warn">
+Préférez toujours `const` par défaut, et utilisez `let` uniquement si vous avez besoin de réassigner la variable. N'utilisez jamais `var` dans le code moderne.
+</Callout>
+
+### Conventions de nommage
+
+Les variables JavaScript suivent des conventions de nommage spécifiques :
+
+- **camelCase** : première lettre en minuscule, chaque mot suivant commence par une majuscule.
+
+```javascript
+let nomUtilisateur = "Jean";
+let prixTotal = 100;
+```
+
+- Les noms peuvent contenir des lettres, chiffres, underscore `_`, et dollar `$`, mais ne peuvent pas commencer par un chiffre.
+- Les noms sont case-sensitive (`nom` et `Nom` sont deux variables différentes).
+- Utilisez des noms descriptifs en anglais (standard de l'industrie).
+
+```javascript
+let count = 0; // Bon
+let n = 0; // Éviter : pas descriptif
+let numberOfItems = 0; // Bon
+```
+
+### Opérateurs
+
+**Opérateurs arithmétiques** :
+
+```javascript
+let a = 10, b = 3;
+
+console.log(a + b);  // 13 (addition)
+console.log(a - b);  // 7 (soustraction)
+console.log(a * b);  // 30 (multiplication)
+console.log(a / b);  // 3.333... (division)
+console.log(a % b);  // 1 (modulo, reste de la division)
+console.log(a ** b); // 1000 (exponentiation, ES2016)
+```
+
+**Opérateurs d'affectation composée** :
+
+```javascript
+let x = 10;
+x += 5;  // x = x + 5 (15)
+x -= 3;  // x = x - 3 (12)
+x *= 2;  // x = x * 2 (24)
+x /= 4;  // x = x / 4 (6)
+```
+
+**Opérateurs d'incrémentation/décrémentation** :
+
+```javascript
+let y = 5;
+y++;     // y = y + 1 (6)
+y--;     // y = y - 1 (5)
+++y;    // Incrémente puis renvoie la valeur
+--y;    // Décrémente puis renvoie la valeur
+```
+
+**Opérateurs de comparaison** :
+
+```javascript
+console.log(10 == "10");   // true (égalité lax, conversion de type)
+console.log(10 === "10");  // false (égalité stricte, pas de conversion)
+console.log(10 != "10");   // false (inégalité lax)
+console.log(10 !== "10");  // true (inégalité stricte)
+console.log(10 > 5);       // true
+console.log(10 >= 10);     // true
+console.log(10 < 5);       // false
+console.log(10 <= 10);     // true
+```
+
+<Callout type="tip">
+Toujours utiliser l'égalité stricte (`===` et `!==`) pour éviter les conversions de type imprévues. L'égalité lax (`==` et `!=`) peut conduire à des bugs difficiles à détecter.
+</Callout>
+
+**Opérateurs logiques** :
+
+```javascript
+let a = true, b = false;
+
+console.log(a && b);  // false (ET logique)
+console.log(a || b);  // true (OU logique)
+console.log(!a);      // false (NON logique)
+```
+
+Les opérateurs logiques ont un comportement de "short-circuit" : ils évaluent le deuxième opérande uniquement si nécessaire.
+
+```javascript
+console.log(true && "bonjour"); // "bonjour"
+console.log(false && "bonjour"); // false (deuxième opérande non évalué)
+console.log(false || "bonjour"); // "bonjour"
+console.log(true || "bonjour"); // true (deuxième opérande non évalué)
+```
+
+### Conditions
+
+Les structures conditionnelles permettent d'exécuter du code uniquement si une condition est vraie.
+
+**if / else if / else** :
+
+```javascript
+let score = 85;
+
+if (score >= 90) {
+  console.log("Excellent");
+} else if (score >= 70) {
+  console.log("Bien");
+} else if (score >= 50) {
+  console.log("Passable");
+} else {
+  console.log("Insuffisant");
+}
+```
+
+**Opérateur ternaire** : raccourci pour une condition simple if/else.
+
+```javascript
+let age = 18;
+let statut = age >= 18 ? "majeur" : "mineur";
+console.log(statut); // "majeur"
+```
+
+**switch** : alternative à if/else when when comparing a single value against multiple possibilities.
+
+```javascript
+let jour = "lundi";
+
+switch (jour) {
+  case "lundi":
+    console.log("Début de semaine");
+    break;
+  case "vendredi":
+    console.log("Presque le week-end");
+    break;
+  case "samedi":
+  case "dimanche":
+    console.log("Week-end");
+    break;
+  default:
+    console.log("Jour de la semaine");
+}
+```
+
+### Boucles
+
+Les boucles permettent d'exécuter un bloc de code plusieurs fois.
+
+**for** : boucle avec un compteur.
+
+```javascript
+for (let i = 0; i < 5; i++) {
+  console.log(i); // 0, 1, 2, 3, 4
+}
+```
+
+**while** : boucle qui continue tant qu'une condition est vraie.
+
+```javascript
+let i = 0;
+while (i < 5) {
+  console.log(i);
+  i++;
+}
+```
+
+**do...while** : boucle qui s'exécute au moins une fois, puis continue tant que la condition est vraie.
+
+```javascript
+let i = 0;
+do {
+  console.log(i);
+  i++;
+} while (i < 5);
+```
+
+**for...of** : boucle sur les valeurs d'un itérable (tableau, string).
+
+```javascript
+const fruits = ["pomme", "banane", "orange"];
+for (const fruit of fruits) {
+  console.log(fruit);
+}
+```
+
+**for...in** : boucle sur les clés d'un objet (à utiliser avec précaution).
+
+```javascript
+const personne = { nom: "Jean", age: 30 };
+for (const key in personne) {
+  console.log(key, personne[key]);
+}
+```
+
+**break et continue** : `break` termine la boucle, `continue` passe à l'itération suivante.
+
+```javascript
+for (let i = 0; i < 10; i++) {
+  if (i === 5) break; // Termine la boucle à i = 5
+  console.log(i);
+}
+
+for (let i = 0; i < 10; i++) {
+  if (i === 5) continue; // Saute i = 5
+  console.log(i);
+}
+```
+
+<Callout type="warn">
+Attention aux boucles infinies : assurez-vous que la condition de la boucle devient fausse à un moment donné. Une boucle `while (true)` sans break bloquera le navigateur.
+</Callout>
+
+### Fonctions
+
+Les fonctions sont des blocs de code réutilisables qui peuvent être appelés avec des paramètres.
+
+**Déclaration de fonction** :
+
+```javascript
+function saluer(nom) {
+  return `Bonjour, ${nom} !`;
+}
+
+console.log(saluer("Jean")); // "Bonjour, Jean !"
+```
+
+**Expression de fonction** :
+
+```javascript
+const saluer = function(nom) {
+  return `Bonjour, ${nom} !`;
+};
+```
+
+**Fonction fléchée** (ES2015) : syntaxe plus concise, et `this` lié lexicalement.
+
+```javascript
+const saluer = (nom) => {
+  return `Bonjour, ${nom} !`;
+};
+
+// Raccourci pour une fonction qui renvoie une seule expression
+const saluerCourt = (nom) => `Bonjour, ${nom} !`;
+```
+
+**Paramètres par défaut** (ES2015) :
+
+```javascript
+function saluer(nom = "visiteur") {
+  return `Bonjour, ${nom} !`;
+}
+
+console.log(saluer()); // "Bonjour, visiteur !"
+console.log(saluer("Marie")); // "Bonjour, Marie !"
+```
+
+**Paramètres rest** (ES2015) : permet de capturer un nombre variable d'arguments.
+
+```javascript
+function somme(...nombres) {
+  return nombres.reduce((acc, n) => acc + n, 0);
+}
+
+console.log(somme(1, 2, 3)); // 6
+console.log(somme(1, 2, 3, 4, 5)); // 15
+```
+
+**Fonctions anonymes** : fonctions sans nom, souvent utilisées comme callbacks.
+
+```javascript
+setTimeout(function() {
+  console.log("Exécuté après 1 seconde");
+}, 1000);
+
+// Équivalent avec fonction fléchée
+setTimeout(() => {
+  console.log("Exécuté après 1 seconde");
+}, 1000);
+```
+
+### Portée (Scope)
+
+La portée détermine l'accessibilité des variables. JavaScript a deux types de portée : fonctionnelle et de bloc.
+
+**Portée fonctionnelle** : les variables déclarées avec `var` sont accessibles dans toute la fonction où elles sont déclarées.
+
+```javascript
+function test() {
+  if (true) {
+    var x = 10;
+  }
+  console.log(x); // 10 (accessible ici)
+}
+```
+
+**Portée de bloc** : les variables déclarées avec `let` et `const` sont accessibles uniquement dans le bloc où elles sont déclarées.
+
+```javascript
+function test() {
+  if (true) {
+    let y = 10;
+  }
+  console.log(y); // Erreur : y n'est pas accessible ici
+}
+```
+
+**Portée globale** : les variables déclarées en dehors de toute fonction sont globales et accessibles partout.
+
+```javascript
+let globale = "je suis globale";
+
+function test() {
+  console.log(globale); // "je suis globale"
+}
+```
+
+<Callout type="tip">
+Évitez les variables globales. Elles peuvent entraîner des conflits de noms et rendre le code difficile à maintenir. Déclarez toujours vos variables dans la portée la plus restrictive possible.
+</Callout>
+
+**Hoisting** : les déclarations de fonction et de variables (avec `var`) sont "hisées" au début de leur portée. Cela signifie que vous pouvez utiliser une fonction avant sa déclaration.
+
+```javascript
+console.log(saluer("Jean")); // Fonctionne
+
+function saluer(nom) {
+  return `Bonjour, ${nom} !`;
+}
+```
+
+Pour `let` et `const`, seule la déclaration est hissée, pas l'initialisation. Accéder à la variable avant l'initialisation renvoie une ReferenceError (Temporal Dead Zone).
+
+```javascript
+console.log(x); // ReferenceError : Cannot access 'x' before initialization
+let x = 10;
+```
+
+## Erreurs fréquentes
+
+**Utiliser var au lieu de let/const**
+
+```javascript
+var x = 10;
+```
+
+La variable est function-scoped, peut être redéclarée, et son hoisting peut créer des bugs difficiles à détecter.
+
+<Callout type="warn">
+```javascript
+const x = 10;
+let y = 20;
+```
+Utilisez `const` par défaut, et `let` uniquement si vous avez besoin de réassigner la variable. N'utilisez jamais `var` dans le code moderne.
+</Callout>
+
+**Confondre == et ===**
+
+```javascript
+if (score == 100) {
+  console.log("Parfait");
+}
+```
+
+L'égalité lax peut conduire à des conversions de type imprévues (ex: `0 == ""` est true).
+
+<Callout type="warn">
+```javascript
+if (score === 100) {
+  console.log("Parfait");
+}
+```
+Toujours utiliser l'égalité stricte (`===` et `!==`) pour éviter les conversions de type.
+</Callout>
+
+**Oublier return dans une fonction**
+
+```javascript
+function addition(a, b) {
+  a + b;
+}
+
+console.log(addition(2, 3)); // undefined
+```
+
+La fonction ne renvoie rien explicitement, donc elle renvoie `undefined`.
+
+<Callout type="warn">
+```javascript
+function addition(a, b) {
+  return a + b;
+}
+
+console.log(addition(2, 3)); // 5
+```
+Toujours utiliser `return` pour renvoyer une valeur depuis une fonction.
+</Callout>
+
+**Boucle infinie**
+
+```javascript
+while (true) {
+  console.log("Bonjour");
+}
+```
+
+La condition ne devient jamais fausse, la boucle s'exécute indéfiniment et bloque le navigateur.
+
+<Callout type="warn">
+```javascript
+let i = 0;
+while (i < 10) {
+  console.log("Bonjour");
+  i++;
+}
+```
+Assurez-vous que la condition de la boucle devient fausse à un moment donné. Utilisez `break` si nécessaire pour terminer la boucle.
+</Callout>
+
+**Confondre assignation et comparaison**
+
+```javascript
+if (x = 5) {
+  console.log("x est assigné à 5");
+}
+```
+
+L'opérateur `=` assigne la valeur, puis la condition teste si la valeur est truthy. C'est une erreur courante difficile à détecter.
+
+<Callout type="warn">
+```javascript
+if (x === 5) {
+  console.log("x est égal à 5");
+}
+```
+Utilisez `===` pour la comparaison. Certains linters (ESLint) détectent automatiquement cette erreur (`no-cond-assign`).
+</Callout>
+
+## Exercices
+
+<Exercise n="6.1" title='Comprendre les types de données'>
+Pour chaque valeur, déterminez son type avec `typeof` :
+
+1. `"bonjour"`
+2. `42`
+3. `true`
+4. `null`
+5. `undefined`
+6. `{}`
+7. `[]`
+8. `function() {}`
+
+Quelle est la particularité de `typeof null` et `typeof []` ?
+</Exercise>
+
+<Solution>
+```javascript
+typeof "bonjour"; // "string"
+typeof 42; // "number"
+typeof true; // "boolean"
+typeof null; // "object" (bug historique)
+typeof undefined; // "undefined"
+typeof {}; // "object"
+typeof []; // "object" (les tableaux sont des objets)
+typeof function() {}; // "function"
+```
+
+`typeof null` renvoie "object" au lieu de "null" (bug historique de JavaScript). `typeof []` renvoie "object" car les tableaux sont des objets en JavaScript. Pour vérifier si une valeur est un tableau, utilisez `Array.isArray()`.
+</Solution>
+
+<Exercise n="6.2" title='Prédire le résultat d&apos;opérations'>
+Prédisez le résultat de chaque expression, puis vérifiez dans la console :
+
+1. `10 + "5"`
+2. `10 - "5"`
+3. `10 * "5"`
+4. `10 / "5"`
+5. `"10" + "5"`
+6. `true + 1`
+7. `false + 1`
+8. `null + 1`
+9. `undefined + 1`
+
+Quelle est la règle de conversion de type ?
+</Exercise>
+
+<Solution>
+```javascript
+10 + "5"; // "105" (concaténation de string)
+10 - "5"; // 5 (conversion en number, soustraction)
+10 * "5"; // 50 (conversion en number, multiplication)
+10 / "5"; // 2 (conversion en number, division)
+"10" + "5"; // "105" (concaténation de string)
+true + 1; // 2 (true → 1)
+false + 1; // 1 (false → 0)
+null + 1; // 1 (null → 0)
+undefined + 1; // NaN (undefined → NaN)
+```
+
+Règle : l'opérateur `+` concatène si un des opérandes est une string. Les autres opérateurs arithmétiques convertissent en number. `null` devient 0, `undefined` devient NaN, `true` devient 1, `false` devient 0.
+</Solution>
+
+<Exercise n="6.3" title='Écrire une condition complexe'>
+Écrivez une condition qui vérifie si un nombre est :
+
+- Positif et pair
+- OU négatif et impair
+- OU égal à zéro
+
+Testez avec -3, 0, 2, 4, 5.
+</Exercise>
+
+<Solution>
+```javascript
+function verifierNombre(n) {
+  if (n === 0) {
+    return "Zéro";
+  } else if ((n > 0 && n % 2 === 0) || (n < 0 && n % 2 !== 0)) {
+    return "Valide";
+  } else {
+    return "Non valide";
+  }
+}
+
+console.log(verifierNombre(-3)); // "Valide"
+console.log(verifierNombre(0)); // "Zéro"
+console.log(verifierNombre(2)); // "Valide"
+console.log(verifierNombre(4)); // "Valide"
+console.log(verifierNombre(5)); // "Non valide"
+```
+</Solution>
+
+<Exercise n="6.4" title='Créer une boucle avec break et continue'>
+Écrivez une boucle de 0 à 20 qui :
+
+- Affiche les nombres pairs
+- Saute le nombre 10
+- Termine la boucle si le nombre est 18
+
+Utilisez `continue` et `break`.
+</Exercise>
+
+<Solution>
+```javascript
+for (let i = 0; i <= 20; i++) {
+  if (i === 10) {
+    continue; // Saute 10
+  }
+  if (i === 18) {
+    break; // Termine à 18
+  }
+  if (i % 2 === 0) {
+    console.log(i);
+  }
+}
+// Affiche : 0, 2, 4, 6, 8, 12, 14, 16
+```
+</Solution>
+
+<Exercise n="6.5" title='Créer une fonction avec paramètres par défaut'>
+Créez une fonction `calculerPrix(prix, tva = 0.2)` qui calcule le prix TTC. La fonction doit :
+
+- Prendre un prix HT en paramètre
+- Prendre un taux de TVA (par défaut 20%)
+- Renvoyer le prix TTC
+
+Testez avec `calculerPrix(100)` et `calculerPrix(100, 0.1)`.
+</Exercise>
+
+<Solution>
+```javascript
+function calculerPrix(prix, tva = 0.2) {
+  return prix * (1 + tva);
+}
+
+console.log(calculerPrix(100)); // 120 (TVA 20% par défaut)
+console.log(calculerPrix(100, 0.1)); // 110 (TVA 10%)
+```
+</Solution>
+
+<Exercise n="6.6" title='Comprendre la portée des variables'>
+Que s'affiche-t-il dans la console pour chaque code ? Expliquez pourquoi.
+
+Code 1 :
+```javascript
+function test() {
+  if (true) {
+    var x = 10;
+  }
+  console.log(x);
+}
+test();
+```
+
+Code 2 :
+```javascript
+function test() {
+  if (true) {
+    let y = 10;
+  }
+  console.log(y);
+}
+test();
+```
+</Exercise>
+
+<Solution>
+Code 1 : Affiche `10`. `var` est function-scoped, donc `x` est accessible dans toute la fonction, même en dehors du bloc `if`.
+
+Code 2 : Erreur `ReferenceError: y is not defined`. `let` est block-scoped, donc `y` n'est accessible que dans le bloc `if`. Hors du bloc, la variable n'existe pas.
+
+C'est pourquoi `let` et `const` sont préférés : ils limitent la portée des variables et évitent les bugs liés à une accessibilité involontaire.
+</Solution>
+
+<Exercise n="6.7" title='Créer une fonction de somme flexible'>
+Créez une fonction `somme` qui accepte un nombre variable d'arguments et renvoie leur somme. Utilisez les paramètres rest (`...`).
+
+Testez avec `somme(1, 2, 3)`, `somme(1, 2, 3, 4, 5)`, et `somme()`.
+</Exercise>
+
+<Solution>
+```javascript
+function somme(...nombres) {
+  return nombres.reduce((acc, n) => acc + n, 0);
+}
+
+console.log(somme(1, 2, 3)); // 6
+console.log(somme(1, 2, 3, 4, 5)); // 15
+console.log(somme()); // 0
+```
+
+`reduce` itère sur le tableau et accumule le résultat. La valeur initiale est 0, donc `somme()` avec aucun argument renvoie 0.
+</Solution>
+
+<Exercise n="6.8" title="Défi : Calculatrice en console">
+Créez une calculatrice en console avec les fonctionnalités suivantes :
+
+1. Fonction `addition(a, b)` : additionne deux nombres
+2. Fonction `soustraction(a, b)` : soustrait b de a
+3. Fonction `multiplication(a, b)` : multiplie deux nombres
+4. Fonction `division(a, b)` : divise a par b (gère la division par zéro)
+5. Fonction `calculatrice(operation, a, b)` : appelle la fonction appropriée selon l'opération
+
+La fonction `calculatrice` doit accepter les opérations "add", "sub", "mul", "div". Gérez les erreurs (division par zéro, opération invalide).
+</Exercise>
+
+<Solution>
+```javascript
+function addition(a, b) {
+  return a + b;
+}
+
+function soustraction(a, b) {
+  return a - b;
+}
+
+function multiplication(a, b) {
+  return a * b;
+}
+
+function division(a, b) {
+  if (b === 0) {
+    throw new Error("Division par zéro");
+  }
+  return a / b;
+}
+
+function calculatrice(operation, a, b) {
+  const operations = {
+    add: addition,
+    sub: soustraction,
+    mul: multiplication,
+    div: division,
+  };
+
+  const fn = operations[operation];
+  if (!fn) {
+    throw new Error(`Opération invalide : ${operation}`);
+  }
+
+  try {
+    return fn(a, b);
+  } catch (error) {
+    return `Erreur : ${error.message}`;
+  }
+}
+
+// Tests
+console.log(calculatrice("add", 5, 3)); // 8
+console.log(calculatrice("sub", 5, 3)); // 2
+console.log(calculatrice("mul", 5, 3)); // 15
+console.log(calculatrice("div", 5, 3)); // 1.666...
+console.log(calculatrice("div", 5, 0)); // "Erreur : Division par zéro"
+console.log(calculatrice("mod", 5, 3)); // "Erreur : Opération invalide : mod"
+```
+</Solution>
+
+## Livrable
+
+Créez une calculatrice fonctionnelle en console. La calculatrice doit inclure :
+
+**Fonctions obligatoires**
+- `addition(a, b)` : additionne deux nombres
+- `soustraction(a, b)` : soustrait b de a
+- `multiplication(a, b)` : multiplie deux nombres
+- `division(a, b)` : divise a par b
+- `calculatrice(operation, a, b)` : fonction principale
+
+**Gestion d'erreurs obligatoire**
+- Division par zéro : message d'erreur explicite
+- Opération invalide : message d'erreur explicite
+- Types incorrects : message d'erreur explicite
+
+**Critères d'évaluation**
+- [ ] Toutes les fonctions utilisent `const` ou `let` (pas de var)
+- [ ] Comparaisons avec `===` et `!==` (pas de == ou !=)
+- [ ] Fonctions nommées descriptivement
+- [ ] Paramètres par défaut si appropriés
+- [ ] Gestion des erreurs avec try/catch ou conditions
+- [ ] Code testé dans la console du navigateur
+- [ ] Comments explicatifs sur la logique
+
+**Pistes d'extension**
+- Ajoutez d'autres opérations (modulo, puissance)
+- Implémentez une calculatrice qui accepte plusieurs nombres (ex: somme de n nombres)
+- Ajoutez un historique des calculs
+- Créez une interface HTML avec des boutons (module suivant)
+- Implémentez la persistance avec localStorage (module JS-Moderne)
+
+## Pour aller plus loin
+
+- [MDN - JavaScript Guide](https://developer.mozilla.org/fr/docs/Web/JavaScript/Guide) : Guide complet des fondamentaux de JavaScript.
+- [JavaScript.info - The JavaScript Language](https://javascript.info/) : Cours moderne de JavaScript, du débutant à l'avancé.
+- [You Don't Know JS](https://github.com/getify/You-Dont-Know-JS) : Série de livres approfondis sur les mécanismes internes de JavaScript.
+- [Eloquent JavaScript](https://eloquentjavascript.net/) : Livre gratuit sur JavaScript, avec exercices.
+- [JavaScript30](https://javascript30.com/) : Challenge de 30 jours pour construire 30 projets JavaScript.

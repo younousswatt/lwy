@@ -1,0 +1,891 @@
+# HTML — Structure
+
+Ce module approfondit la structure des documents HTML en introduisant les éléments sémantiques qui donnent du sens au contenu. Il explique comment organiser le texte avec les titres et les paragraphes, créer des liens hypertextes, insérer des images accessibles, structurer des listes et des tableaux, et comprendre la différence entre les chemins relatifs et absolus. À l'issue de ce module, vous serez capable de créer un document HTML structuré, sémantique et accessible, en particulier un CV personnel qui servira de base pour les exercices ultérieurs.
+
+## Objectifs
+
+- Choisir les éléments HTML sémantiques appropriés en fonction du rôle du contenu.
+- Structurer un document avec une hiérarchie de titres cohérente (h1 à h6).
+- Créer des liens internes et externes avec des textes d'ancrage descriptifs.
+- Insérer des images avec des alternatives textuelles pour l'accessibilité.
+- Organiser des informations en listes (ordonnées, non ordonnées, de définitions).
+- Créer des tableaux de données avec des en-têtes appropriés.
+- Distinguer les chemins relatifs des chemins absolus et savoir quand les utiliser.
+
+## Prérequis
+
+- Fondamentaux du web (architecture client-serveur, HTTP, navigation)
+
+## Cours
+
+### Sémantique HTML
+
+La sémantique en HTML consiste à choisir des éléments qui décrivent le sens du contenu plutôt que son apparence. Les éléments sémantiques (`header`, `nav`, `main`, `section`, `article`, `footer`, `aside`) indiquent aux navigateurs, aux moteurs de recherche et aux technologies d'assistance la structure et le rôle de chaque partie du document.
+
+<Callout type="info">
+Les technologies d'assistance (lecteurs d'écran, synthèses vocales) utilisent la sémantique HTML pour naviguer dans le document. Un utilisateur aveugle peut, par exemple, sauter directement aux sections principales ou aux éléments de navigation grâce aux landmarks sémantiques.
+</Callout>
+
+Les éléments sémantiques principaux sont :
+
+- `header` : en-tête d'une section ou de la page (titre, navigation, logo).
+- `nav` : section de navigation (liens vers d'autres pages ou sections).
+- `main` : contenu principal unique de la page (ne doit apparaître qu'une fois).
+- `section` : section thématique du document (généralement avec un titre).
+- `article` : contenu autonome (article de blog, commentaire, fiche produit).
+- `aside` : contenu tangentiellement lié (sidebar, notes de marge).
+- `footer` : pied de page (droits d'auteur, contacts, liens secondaires).
+
+```html
+<body>
+  <header>
+    <h1>Mon site</h1>
+    <nav>
+      <a href="/">Accueil</a>
+      <a href="/articles">Articles</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </header>
+  <main>
+    <section>
+      <h2>Derniers articles</h2>
+      <article>
+        <h3>Titre de l'article</h3>
+        <p>Contenu de l'article...</p>
+      </article>
+    </section>
+  </main>
+  <aside>
+    <h2>À propos</h2>
+    <p>Informations complémentaires...</p>
+  </aside>
+  <footer>
+    <p>© 2025 Mon site</p>
+  </footer>
+</body>
+```
+
+Les éléments `div` et `span` sont des éléments génériques sans signification sémantique. Ils doivent être utilisés uniquement pour regrouper du contenu à des fins de stylisation, lorsque aucun élément sémantique n'est approprié. L'abus de `div` rend le document difficile à interpréter pour les technologies d'assistance.
+
+### Hiérarchie des titres
+
+HTML propose six niveaux de titres, de `h1` (le plus important) à `h6` (le moins important). Une page doit avoir exactement un `h1` qui décrit le sujet principal du document. Les titres suivants structurent le contenu de manière hiérarchique : `h2` pour les sections principales, `h3` pour les sous-sections, et ainsi de suite.
+
+```html
+<h1>Mon parcours professionnel</h1>
+<h2>Expérience</h2>
+<h3>Développeur web</h3>
+<p>Description du poste...</p>
+<h3>Designer UI</h3>
+<p>Description du poste...</p>
+<h2>Formation</h2>
+<h3>Master informatique</h3>
+<p>Détails de la formation...</p>
+```
+
+Cette hiérarchie permet aux utilisateurs de lecteurs d'écran de naviguer rapidement dans le document en sautant d'un titre à l'autre. Elle aide également les moteurs de recherche à comprendre la structure du contenu.
+
+<Callout type="tip">
+Évitez de sauter des niveaux de titres (passer de h1 à h3 sans h2). Utilisez toujours les titres dans l'ordre hiérarchique. Ne choisissez pas un titre pour sa taille : la taille doit être définie en CSS, pas par le niveau du titre.
+</Callout>
+
+### Texte et paragraphes
+
+Le paragraphe (`p`) est l'élément de base pour le texte. Les navigateurs ajoutent automatiquement un espacement vertical entre les paragraphes. À l'intérieur d'un paragraphe, vous pouvez utiliser des éléments de mise en forme du texte :
+
+- `strong` : texte important (généralement affiché en gras).
+- `em` : texte emphatique (généralement affiché en italique).
+- `mark` : texte surligné (marqué).
+- `small` : texte plus petit (avertissements, mentions légales).
+- `del` : texte supprimé (barré).
+- `ins` : texte inséré (souligné).
+- `sub` / `sup` : indice et exposant.
+- `code` : code informatique (police monospace).
+- `pre` : texte préformaté (préserve les espaces et sauts de ligne).
+
+```html
+<p>
+  Le <strong>HTML</strong> est le langage de base du web.
+  Il est <em>essentiel</em> de comprendre sa structure.
+  Certains éléments sont <mark>très importants</mark> pour l'accessibilité.
+</p>
+
+<p>
+  Pour écrire du code : <code>console.log("Bonjour")</code>.
+  Pour des blocs de code plus longs :
+</p>
+
+<pre><code>function hello() {
+  console.log("Bonjour");
+}</code></pre>
+```
+
+Les sauts de ligne dans le code HTML ne créent pas de sauts de ligne dans le rendu. Pour forcer un saut de ligne, utilisez l'élément `br`. Pour une séparation thématique entre les sections, utilisez `hr`.
+
+```html
+<p>Première ligne<br>Deuxième ligne</p>
+<hr>
+<p>Section suivante</p>
+```
+
+### Liens hypertextes
+
+Le lien (`a`) permet de créer des hyperliens vers d'autres pages, des sections de la même page, ou des ressources externes. L'attribut `href` spécifie la destination du lien. Le texte entre les balises est le texte d'ancrage visible pour l'utilisateur.
+
+```html
+<a href="https://developer.mozilla.org">Documentation MDN</a>
+<a href="/a-propos">À propos</a>
+<a href="#section">Aller à la section</a>
+<a href="mailto:contact@example.com">Envoyer un e-mail</a>
+```
+
+Le texte d'ancrage doit être descriptif. Évitez des textes comme "cliquez ici" ou "lire la suite". Préférez "Documentation MDN" ou "En savoir plus sur l'accessibilité". Cela améliore l'expérience utilisateur et l'accessibilité : les utilisateurs de lecteurs d'écran peuvent naviguer de lien en lien et comprendre la destination sans lire le contexte.
+
+<Callout type="warn">
+Évitez : <a href="/page">Cliquez ici</a>
+Préférez : <a href="/page">Consulter la page de présentation</a>
+</Callout>
+
+Pour ouvrir un lien dans un nouvel onglet, utilisez l'attribut `target="_blank"`. Pour des raisons de sécurité, ajoutez également `rel="noopener noreferrer"` pour empêcher la nouvelle page d'accéder à l'objet `window.opener` de la page d'origine.
+
+```html
+<a href="https://example.com" target="_blank" rel="noopener noreferrer">
+  Site externe
+</a>
+```
+
+### Images
+
+L'élément `img` insère une image dans le document. Les attributs essentiels sont :
+
+- `src` : chemin vers le fichier image (obligatoire).
+- `alt` : texte alternatif décrivant l'image (obligatoire pour l'accessibilité).
+- `width` / `height` : dimensions en pixels (optionnel, recommandé pour le CLS).
+
+```html
+<img src="photo.jpg" alt="Portrait de Yunus, enseignant en développement web" width="300" height="400">
+```
+
+L'attribut `alt` est crucial pour l'accessibilité. Si l'image est informative (contient du texte, illustre un concept), le texte alternatif doit décrire son contenu visuel. Si l'image est purement décorative (ornement, icône répétitive), l'attribut `alt` doit être vide (`alt=""`) pour que les lecteurs d'écran l'ignorent.
+
+<Callout type="tip">
+Testez l'accessibilité de vos images en désactivant l'affichage des images dans votre navigateur. Le texte alternatif doit suffire à comprendre le contenu sans voir l'image.
+</Callout>
+
+Les formats d'image courants sont :
+
+- JPEG : photographies, images avec dégradés (compression avec perte).
+- PNG : images avec transparence, logos, graphiques (compression sans perte).
+- SVG : graphiques vectoriels (redimensionnables sans perte de qualité).
+- WebP : format moderne avec meilleure compression (support variable selon les navigateurs).
+
+### Listes
+
+HTML propose trois types de listes :
+
+**Liste non ordonnée (`ul`)** : éléments sans ordre particulier (puces par défaut).
+
+```html
+<ul>
+  <li>HTML</li>
+  <li>CSS</li>
+  <li>JavaScript</li>
+</ul>
+```
+
+**Liste ordonnée (`ol`)** : éléments avec un ordre séquentiel (chiffres par défaut).
+
+```html
+<ol>
+  <li>Comprendre les fondamentaux</li>
+  <li>Apprendre HTML</li>
+  <li>Apprendre CSS</li>
+  <li>Apprendre JavaScript</li>
+</ol>
+```
+
+L'attribut `start` permet de spécifier le numéro de départ, et `reversed` inverse l'ordre.
+
+```html
+<ol start="5" reversed>
+  <li>Cinquième étape</li>
+  <li>Quatrième étape</li>
+  <li>Troisième étape</li>
+</ol>
+```
+
+**Liste de définitions (`dl`)** : termes et leurs définitions.
+
+```html
+<dl>
+  <dt>HTML</dt>
+  <dd>HyperText Markup Language, langage de structure des pages web.</dd>
+  <dt>CSS</dt>
+  <dd>Cascading Style Sheets, langage de mise en forme des pages web.</dd>
+</dl>
+```
+
+Les listes peuvent être imbriquées pour créer des structures hiérarchiques.
+
+```html
+<ul>
+  <li>Fondamentaux
+    <ul>
+      <li>Client-serveur</li>
+      <li>HTTP</li>
+    </ul>
+  </li>
+  <li>HTML
+    <ul>
+      <li>Structure</li>
+      <li>Formulaires</li>
+    </ul>
+  </li>
+</ul>
+```
+
+### Tableaux
+
+Les tableaux (`table`) servent à présenter des données tabulaires (grilles d'informations), pas pour la mise en page. La structure sémantique d'un tableau comprend :
+
+- `caption` : titre ou description du tableau.
+- `thead` : en-tête du tableau (groupement de lignes d'en-tête).
+- `tbody` : corps du tableau (groupement de lignes de données).
+- `tfoot` : pied de tableau (groupement de lignes de pied).
+- `tr` : ligne de tableau.
+- `th` : cellule d'en-tête (généralement en gras et centrée).
+- `td` : cellule de données.
+
+```html
+<table>
+  <caption>Comparaison des langages de programmation</caption>
+  <thead>
+    <tr>
+      <th>Langage</th>
+      <th>Année</th>
+      <th>Utilisation principale</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>JavaScript</td>
+      <td>1995</td>
+      <td>Développement web</td>
+    </tr>
+    <tr>
+      <td>Python</td>
+      <td>1991</td>
+      <td>Data science, automatisation</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+Les attributs `scope` sur les cellules d'en-tête précisent si l'en-tête s'applique à une colonne (`scope="col"`) ou à une ligne (`scope="row"`). Cela améliore l'accessibilité pour les utilisateurs de lecteurs d'écran.
+
+```html
+<thead>
+  <tr>
+    <th scope="col">Langage</th>
+    <th scope="col">Année</th>
+  </tr>
+</thead>
+```
+
+<Callout type="warn">
+N'utilisez jamais les tableaux pour la mise en page (créer des colonnes, aligner des éléments). Utilisez CSS (Flexbox, Grid) pour la mise en page. Les tableaux sont réservés aux données tabulaires.
+</Callout>
+
+### Chemins relatifs et absolus
+
+Le chemin d'une ressource (image, lien, script) peut être relatif ou absolu.
+
+**Chemin absolu** : chemin complet depuis la racine du site ou l'URL complète.
+
+```html
+<a href="https://example.com/page.html">Lien externe</a>
+<img src="/images/logo.png" alt="Logo">
+```
+
+Un chemin absolu commençant par `/` est relatif à la racine du domaine. Un chemin commençant par `https://` est une URL complète vers un site externe.
+
+**Chemin relatif** : chemin relatif à l'emplacement du fichier actuel.
+
+```html
+<!-- Dans /pages/index.html -->
+<a href="about.html">Page à propos</a>
+<img src="../images/photo.jpg" alt="Photo">
+```
+
+Les conventions des chemins relatifs :
+
+- `fichier.html` : fichier dans le même répertoire.
+- `dossier/fichier.html` : fichier dans un sous-répertoire.
+- `../fichier.html` : fichier dans le répertoire parent.
+- `../../dossier/fichier.html` : deux niveaux au-dessus, puis dans un sous-répertoire.
+
+<Callout type="tip">
+Préférez les chemins relatifs pour les ressources internes de votre site. Cela permet de déplacer le projet entier sans casser les liens. Utilisez les chemins absolus (avec `/`) pour les liens vers des sections majeures du site qui ne changeront pas d'emplacement.
+</Callout>
+
+## Erreurs fréquentes
+
+**Utiliser div au lieu d'éléments sémantiques**
+
+```html
+<div class="header">
+  <div class="title">Mon site</div>
+</div>
+<div class="content">
+  <div class="section">...</div>
+</div>
+```
+
+Le document ne contient aucune information sémantique. Les technologies d'assistance ne peuvent pas identifier les régions importantes (navigation, contenu principal).
+
+<Callout type="warn">
+```html
+<header>
+  <h1>Mon site</h1>
+</header>
+<main>
+  <section>...</section>
+</main>
+```
+Utilisez toujours les éléments sémantiques (`header`, `nav`, `main`, `section`, `article`, `footer`) pour structurer le contenu. Réservez `div` au regroupement pour le stylage uniquement.
+</Callout>
+
+**Plusieurs h1 dans une page**
+
+```html
+<h1>Mon nom</h1>
+<h1>Mon parcours</h1>
+<h1>Mes compétences</h1>
+```
+
+La hiérarchie des titres est brisée. Les moteurs de recherche et les lecteurs d'écran ne peuvent pas identifier le sujet principal du document.
+
+<Callout type="warn">
+```html
+<h1>Mon nom</h1>
+<h2>Mon parcours</h2>
+<h3>Expérience</h3>
+<h3>Formation</h3>
+<h2>Mes compétences</h2>
+```
+Une page doit avoir exactement un `h1`. Utilisez `h2` pour les sections principales, `h3` pour les sous-sections, en respectant l'ordre hiérarchique.
+</Callout>
+
+**Texte d'ancrage non descriptif**
+
+```html
+<a href="/documentation">Cliquez ici</a>
+<a href="/article">Lire la suite</a>
+```
+
+Les utilisateurs de lecteurs d'écran naviguant de lien en lien entendent "Cliquez ici", "Lire la suite" sans contexte. Ils ne peuvent pas déterminer la destination du lien.
+
+<Callout type="warn">
+```html
+<a href="/documentation">Documentation technique</a>
+<a href="/article">Article sur l'accessibilité</a>
+```
+Utilisez des textes d'ancrage qui décrivent la destination ou l'action du lien. Le texte doit être compréhensible hors contexte.
+</Callout>
+
+**Oublier l'attribut alt sur les images**
+
+```html
+<img src="photo.jpg">
+<img src="chart.png">
+```
+
+Les utilisateurs de lecteurs d'écran entendent "image" sans description. Si l'image contient des informations importantes, ces informations sont inaccessibles.
+
+<Callout type="warn">
+```html
+<img src="photo.jpg" alt="Portrait de Yunus">
+<img src="chart.png" alt="Graphique montrant l'évolution des ventes de 2020 à 2024">
+```
+Toujours inclure un attribut `alt` descriptif pour les images informatives. Utilisez `alt=""` pour les images purement décoratives.
+</Callout>
+
+**Sauter des niveaux de titres**
+
+```html
+<h1>Titre principal</h1>
+<h3>Sous-section</h3>
+<h4>Sous-sous-section</h4>
+```
+
+La hiérarchie est incohérente. Le niveau `h2` est manquant, ce qui peut perturber la navigation et l'interprétation du document.
+
+<Callout type="warn">
+```html
+<h1>Titre principal</h1>
+<h2>Section principale</h2>
+<h3>Sous-section</h3>
+<h4>Sous-sous-section</h4>
+```
+Respectez toujours l'ordre hiérarchique des titres. Ne sautez jamais de niveaux. Si vous avez besoin d'un titre plus petit visuellement, utilisez CSS pour réduire la taille.
+</Callout>
+
+## Exercices
+
+<Exercise n="2.1" title="Analyser la sémantique d'une page">
+Ouvrez un site web connu (ex: Wikipedia, un blog technique) et utilisez les DevTools pour inspecter la structure HTML. Identifiez :
+
+1. Les éléments sémantiques utilisés (header, nav, main, section, article, footer)
+2. La hiérarchie des titres (h1, h2, h3)
+3. Les éléments de liste (ul, ol, dl)
+4. Les tableaux et leur structure (thead, tbody, th, td)
+
+La page respecte-t-elle les bonnes pratiques sémantiques ? Quelles améliorations pourriez-vous suggérer ?
+</Exercise>
+
+<Solution>
+Pour inspecter : F12 → onglet Elements. Observez la structure HTML.
+
+Une page bien structurée aura :
+- Un seul `h1` décrivant le sujet principal
+- Des éléments sémantiques (header, nav, main, footer) pour les régions
+- Une hiérarchie de titres cohérente (h1 → h2 → h3)
+- Des listes pour regrouper des éléments apparentés
+- Des tableaux uniquement pour des données tabulaires
+
+Améliorations courantes :
+- Remplacer des `div` par des éléments sémantiques
+- Corriger une hiérarchie de titres incohérente
+- Ajouter des `alt` descriptifs sur les images
+- Utiliser des listes au lieu de paragraphes séparés par des puces manuelles
+</Solution>
+
+<Exercise n="2.2" title="Créer une structure de CV">
+Créez un fichier HTML pour un CV avec la structure suivante :
+
+1. En-tête avec nom et titre
+2. Section "Expérience" avec plusieurs postes
+3. Section "Formation" avec plusieurs diplômes
+4. Section "Compétences" avec une liste
+5. Pied de page avec informations de contact
+
+Utilisez les éléments sémantiques appropriés (header, main, section, footer) et une hiérarchie de titres correcte.
+</Exercise>
+
+<Solution>
+```html
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CV - Jean Dupont</title>
+  </head>
+  <body>
+    <header>
+      <h1>Jean Dupont</h1>
+      <p>Développeur web full-stack</p>
+    </header>
+    <main>
+      <section>
+        <h2>Expérience</h2>
+        <article>
+          <h3>Développeur senior</h3>
+          <p><em>2020 - Présent | TechCorp</em></p>
+          <p>Développement d'applications React et Node.js, architecture microservices.</p>
+        </article>
+        <article>
+          <h3>Développeur frontend</h3>
+          <p><em>2017 - 2020 | StartupXYZ</em></p>
+          <p>Création d'interfaces utilisateur avec Vue.js et TypeScript.</p>
+        </article>
+      </section>
+      <section>
+        <h2>Formation</h2>
+        <article>
+          <h3>Master informatique</h3>
+          <p><em>2015 - 2017 | Université Paris</em></p>
+          <p>Spécialisation développement web et systèmes distribués.</p>
+        </article>
+      </section>
+      <section>
+        <h2>Compétences</h2>
+        <ul>
+          <li>HTML5, CSS3, JavaScript ES6+</li>
+          <li>React, Vue.js, Node.js</li>
+          <li>Git, CI/CD, Docker</li>
+          <li>Accessibilité (WCAG), Performance</li>
+        </ul>
+      </section>
+    </main>
+    <footer>
+      <p>jean.dupont@email.com | +33 6 12 34 56 78</p>
+    </footer>
+  </body>
+</html>
+```
+</Solution>
+
+<Exercise n="2.3" title="Créer des liens internes et externes">
+Ajoutez à votre CV des liens vers :
+
+1. Votre portfolio (lien externe avec target="_blank")
+2. Votre profil LinkedIn (lien externe avec target="_blank")
+3. Une section de compétences via une ancre interne (#competences)
+4. Votre adresse e-mail (mailto:)
+
+Vérifiez que tous les textes d'ancrage sont descriptifs.
+</Exercise>
+
+<Solution>
+```html
+<header>
+  <h1>Jean Dupont</h1>
+  <p>Développeur web full-stack</p>
+  <nav>
+    <a href="https://portfolio.example.com" target="_blank" rel="noopener noreferrer">Portfolio</a>
+    <a href="https://linkedin.com/in/jeandupont" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    <a href="mailto:jean.dupont@email.com">Contacter par e-mail</a>
+  </nav>
+</header>
+
+<main>
+  <section id="competences">
+    <h2>Compétences</h2>
+    <ul>
+      <li>HTML5, CSS3, JavaScript ES6+</li>
+      <li>React, Vue.js, Node.js</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <p>
+    <a href="#competences">Voir mes compétences</a> |
+    jean.dupont@email.com
+  </p>
+</footer>
+```
+</Solution>
+
+<Exercise n="2.4" title="Ajouter une image accessible">
+Ajoutez une photo de profil à votre CV. Si vous n'avez pas de photo, utilisez une image placeholder (https://via.placeholder.com/300). Assurez-vous que :
+
+1. L'attribut alt décrit l'image de manière appropriée
+2. Les dimensions width et height sont spécifiées
+3. L'image est placée dans un dossier `images/` avec un chemin relatif
+
+Testez en désactivant l'affichage des images dans le navigateur.
+</Exercise>
+
+<Solution>
+```html
+<!-- Structure de dossiers -->
+<!-- images/photo.jpg -->
+
+<header>
+  <img src="../images/photo.jpg" alt="Portrait de Jean Dupont, homme avec lunettes, souriant" width="150" height="150">
+  <h1>Jean Dupont</h1>
+  <p>Développeur web full-stack</p>
+</header>
+```
+
+Pour tester : Chrome → Settings → Privacy and security → Site Settings → Images → "Don't show images". Le texte alternatif doit être suffisant pour comprendre que c'est une photo de profil.
+</Solution>
+
+<Exercise n="2.5" title="Créer un tableau de projets">
+Ajoutez une section "Projets" à votre CV avec un tableau présentant vos projets principaux. Le tableau doit inclure :
+
+1. Un caption descriptif
+2. Des en-têtes (Nom, Technologie, Année, Description)
+3. Au moins 3 projets
+4. Des attributs scope sur les cellules d'en-tête
+
+Vérifiez que le tableau est accessible avec un lecteur d'écran (si disponible).
+</Exercise>
+
+<Solution>
+```html
+<section>
+  <h2>Projets</h2>
+  <table>
+    <caption>Principaux projets réalisés</caption>
+    <thead>
+      <tr>
+        <th scope="col">Nom</th>
+        <th scope="col">Technologie</th>
+        <th scope="col">Année</th>
+        <th scope="col">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>E-commerce platform</td>
+        <td>React, Node.js, MongoDB</td>
+        <td>2024</td>
+        <td>Plateforme de vente en ligne avec paiement intégré</td>
+      </tr>
+      <tr>
+        <td>Task manager app</td>
+        <td>Vue.js, Firebase</td>
+        <td>2023</td>
+        <td>Application de gestion de tâches collaborative</td>
+      </tr>
+      <tr>
+        <td>Portfolio generator</td>
+        <td>Next.js, Markdown</td>
+        <td>2022</td>
+        <td>Générateur de CV personnalisable</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+```
+</Solution>
+
+<Exercise n="2.6" title="Organiser les compétences avec des listes">
+Transformez la section "Compétences" de votre CV pour utiliser différents types de listes :
+
+1. Une liste ordonnée pour les langages (par ordre de maîtrise)
+2. Une liste non ordonnée pour les frameworks
+3. Une liste de définitions pour les outils avec descriptions courtes
+
+Vérifiez que l'imbrication des listes est correcte.
+</Exercise>
+
+<Solution>
+```html
+<section>
+  <h2>Compétences</h2>
+  <h3>Langages de programmation</h3>
+  <ol>
+    <li>JavaScript (expert)</li>
+    <li>TypeScript (avancé)</li>
+    <li>Python (intermédiaire)</li>
+  </ol>
+  <h3>Frameworks et bibliothèques</h3>
+  <ul>
+    <li>React, Next.js</li>
+    <li>Vue.js, Nuxt.js</li>
+    <li>Node.js, Express</li>
+  </ul>
+  <h3>Outils</h3>
+  <dl>
+    <dt>Git</dt>
+    <dd>Contrôle de version et collaboration</dd>
+    <dt>Docker</dt>
+    <dd>Conteneurisation et déploiement</dd>
+    <dt>VS Code</dt>
+    <dd>Éditeur de code principal</dd>
+  </dl>
+</section>
+```
+</Solution>
+
+<Exercise n="2.7" title="Organiser les fichiers avec des chemins relatifs">
+Créez la structure de dossiers suivante pour votre CV :
+
+```
+cv/
+├── index.html
+├── css/
+│   └── style.css
+├── images/
+│   └── photo.jpg
+└── documents/
+    └── cv.pdf
+```
+
+Ajoutez un lien vers le PDF dans le footer et une feuille de style CSS dans le head, en utilisant des chemins relatifs corrects. Vérifiez que les liens fonctionnent depuis le fichier index.html.
+</Exercise>
+
+<Solution>
+```html
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CV - Jean Dupont</title>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+    <header>
+      <img src="images/photo.jpg" alt="Portrait de Jean Dupont" width="150" height="150">
+      <h1>Jean Dupont</h1>
+    </header>
+    <main>
+      <!-- Contenu du CV -->
+    </main>
+    <footer>
+      <p>
+        <a href="documents/cv.pdf" download>Télécharger le CV (PDF)</a>
+      </p>
+    </footer>
+  </body>
+</html>
+```
+
+Chemins expliqués :
+- `css/style.css` : fichier dans le sous-dossier css
+- `images/photo.jpg` : fichier dans le sous-dossier images
+- `documents/cv.pdf` : fichier dans le sous-dossier documents
+</Solution>
+
+<Exercise n="2.8" title="Défi : CV complet et valide">
+Créez un CV HTML complet et valide qui inclut :
+
+1. Structure sémantique complète (header, main, sections, footer)
+2. Hiérarchie de titres correcte (un h1, h2 pour les sections, h3 pour les sous-sections)
+3. Au moins 3 sections (Expérience, Formation, Compétences)
+4. Une image de profil avec alt descriptif
+5. Des liens internes (ancres) et externes
+6. Des listes variées (ul, ol, dl)
+7. Un tableau de projets
+8. Des éléments de mise en forme du texte (strong, em, code)
+9. Validation W3C sans erreur
+
+Le CV doit être servie localement et accessible via un serveur HTTP.
+</Exercise>
+
+<Solution>
+Le CV complet intègre tous les éléments des exercices précédents dans un document cohérent. Voici la structure complète :
+
+```html
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CV - Jean Dupont</title>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+    <header>
+      <img src="images/photo.jpg" alt="Portrait de Jean Dupont" width="150" height="150">
+      <h1>Jean Dupont</h1>
+      <p>Développeur web full-stack</p>
+      <nav>
+        <a href="#experience">Expérience</a>
+        <a href="#formation">Formation</a>
+        <a href="#competences">Compétences</a>
+        <a href="#projets">Projets</a>
+      </nav>
+    </header>
+    <main>
+      <section id="experience">
+        <h2>Expérience</h2>
+        <article>
+          <h3>Développeur senior</h3>
+          <p><em>2020 - Présent | TechCorp</em></p>
+          <p>Développement d'applications <strong>React</strong> et <em>Node.js</em>, architecture microservices.</p>
+        </article>
+        <article>
+          <h3>Développeur frontend</h3>
+          <p><em>2017 - 2020 | StartupXYZ</em></p>
+          <p>Création d'interfaces utilisateur avec Vue.js et TypeScript.</p>
+        </article>
+      </section>
+      <section id="formation">
+        <h2>Formation</h2>
+        <article>
+          <h3>Master informatique</h3>
+          <p><em>2015 - 2017 | Université Paris</em></p>
+          <p>Spécialisation développement web et systèmes distribués.</p>
+        </article>
+      </section>
+      <section id="competences">
+        <h2>Compétences</h2>
+        <h3>Langages</h3>
+        <ol>
+          <li>JavaScript (expert)</li>
+          <li>TypeScript (avancé)</li>
+          <li>Python (intermédiaire)</li>
+        </ol>
+        <h3>Frameworks</h3>
+        <ul>
+          <li>React, Next.js</li>
+          <li>Vue.js, Nuxt.js</li>
+          <li>Node.js, Express</li>
+        </ul>
+      </section>
+      <section id="projets">
+        <h2>Projets</h2>
+        <table>
+          <caption>Principaux projets réalisés</caption>
+          <thead>
+            <tr>
+              <th scope="col">Nom</th>
+              <th scope="col">Technologie</th>
+              <th scope="col">Année</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>E-commerce platform</td>
+              <td>React, Node.js</td>
+              <td>2024</td>
+            </tr>
+            <tr>
+              <td>Task manager app</td>
+              <td>Vue.js, Firebase</td>
+              <td>2023</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+    <footer>
+      <p>
+        <a href="mailto:jean.dupont@email.com">jean.dupont@email.com</a> |
+        <a href="https://linkedin.com/in/jeandupont" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      </p>
+    </footer>
+  </body>
+</html>
+```
+
+Validez avec https://validator.w3.org/ pour vérifier l'absence d'erreurs.
+</Solution>
+
+## Livrable
+
+Créez un CV HTML structuré et sémantique. Le CV doit inclure :
+
+**Structure obligatoire**
+- Élément header avec nom, titre et navigation
+- Élément main contenant le contenu principal
+- Sections sémantiques (Expérience, Formation, Compétences minimum)
+- Élément footer avec informations de contact
+
+**Contenu obligatoire**
+- Hiérarchie de titres correcte (un h1, h2 pour les sections)
+- Une image de profil avec attribut alt descriptif
+- Des liens internes (ancres de navigation) et externes
+- Au moins un type de chaque liste (ul, ol, dl)
+- Un tableau de projets ou réalisations
+- Éléments de mise en forme du texte (strong, em, code)
+
+**Critères d'évaluation**
+- [ ] Validation W3C sans erreur
+- [ ] Utilisation correcte des éléments sémantiques
+- [ ] Hiérarchie de titres cohérente
+- [ ] Textes d'ancrage descriptifs
+- [ ] Attributs alt présents et appropriés sur toutes les images
+- [ ] Chemins relatifs corrects pour les ressources internes
+- [ ] Page servie via un serveur local
+
+**Pistes d'extension**
+- Ajoutez une section "Centres d'intérêt" avec des liens vers des projets
+- Créez une version alternative du CV (format compact)
+- Ajoutez une feuille de style CSS (voir module suivant)
+- Utilisez des microdonnées (schema.org) pour le SEO
+- Créez une version imprimable (@media print)
+
+## Pour aller plus loin
+
+- [MDN - Éléments HTML sémantiques](https://developer.mozilla.org/fr/docs/Web/HTML/Element) : Référence complète de tous les éléments HTML avec exemples et notes d'accessibilité.
+- [MDN - Bonnes pratiques pour l'accessibilité](https://developer.mozilla.org/fr/docs/Web/Accessibility) : Guide sur l'accessibilité web, avec des sections dédiées au HTML sémantique.
+- [W3C HTML5 Specification](https://html.spec.whatwg.org/) : Spécification officielle du HTML5, pour une compréhension approfondie du langage.
+- [WebAIM - WCAG Checklist](https://webaim.org/standards/wcag/checklist) : Liste de contrôle pour vérifier la conformité aux règles d'accessibilité WCAG.
+- [HTML5 Doctor](http://html5doctor.com/) : Articles et ressources sur les nouvelles fonctionnalités HTML5 et leur utilisation correcte.

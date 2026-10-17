@@ -1,0 +1,1083 @@
+# CSS — Bases
+
+Ce module introduit CSS (Cascading Style Sheets), le langage qui définit la présentation des documents HTML. Il explique le fonctionnement de la cascade, la spécificité des sélecteurs, l'héritage des styles, le modèle de boîte, les unités de mesure, les couleurs et la typographie. Ces concepts fondamentaux sont indispensables pour comprendre comment les styles sont appliqués et résoudre les conflits de styles. À l'issue de ce module, vous serez capable de styliser un document HTML avec CSS, en particulier de transformer le CV créé dans le module précédent en un document visuellement soigné.
+
+## Objectifs
+
+- Comprendre le mécanisme de cascade et la résolution des conflits de styles.
+- Utiliser les sélecteurs CSS (élément, classe, id, attribut, pseudo-classe).
+- Calculer la spécificité d'un sélecteur et prédire quel style sera appliqué.
+- Comprendre l'héritage des propriétés et savoir quelles propriétés sont héritées.
+- Maîtriser le modèle de boîte (content, padding, border, margin).
+- Choisir les unités de mesure appropriées (px, em, rem, %, vw, vh).
+- Définir des couleurs avec les différents formats (hex, rgb, hsl, mots-clés).
+- Appliquer des styles typographiques (taille, graisse, interlignage, espacement).
+
+## Prérequis
+
+- Fondamentaux du web (structure des fichiers, liens)
+- HTML — Structure (éléments sémantiques, DOM)
+
+## Cours
+
+### Introduction à CSS
+
+CSS (Cascading Style Sheets) est un langage de feuilles de style utilisé pour décrire la présentation des documents écrits en HTML. CSS sépare la structure (HTML) de la présentation (CSS), ce qui facilite la maintenance et permet de réutiliser les styles sur plusieurs pages.
+
+<Callout type="info">
+La séparation structure/présentation est un principe fondamental du développement web moderne. Elle permet de modifier l'apparence d'un site sans toucher à son contenu, et inversement.
+</Callout>
+
+Il existe trois façons d'appliquer du CSS à un document HTML :
+
+**CSS externe** (recommandé) : le CSS est dans un fichier séparé, lié via l'élément `link`.
+
+```html
+<link rel="stylesheet" href="styles.css">
+```
+
+**CSS interne** : le CSS est dans un élément `style` dans le `head`.
+
+```html
+<style>
+  body { font-family: sans-serif; }
+</style>
+```
+
+**CSS en ligne** : le CSS est dans un attribut `style` sur un élément.
+
+```html
+<p style="color: red;">Texte rouge</p>
+```
+
+Le CSS externe est préférable car il permet la réutilisation sur plusieurs pages, sépare clairement les préoccupations, et facilite la mise en cache par le navigateur.
+
+### Syntaxe CSS
+
+Une règle CSS se compose d'un sélecteur et d'un bloc de déclarations. Le sélecteur indique à quels éléments appliquer les styles. Le bloc de déclarations contient une ou plusieurs déclarations, chacune composée d'une propriété et d'une valeur.
+
+```css
+selecteur {
+  propriete: valeur;
+  propriete: valeur;
+}
+```
+
+Exemple :
+
+```css
+h1 {
+  color: #333;
+  font-size: 2rem;
+  font-weight: 600;
+}
+```
+
+Les conventions de style courantes :
+
+- Les propriétés en kebab-case (`font-size`, pas `fontSize`).
+- Les valeurs terminées par un point-virgule.
+- L'indentation cohérente (2 ou 4 espaces).
+- Une déclaration par ligne pour la lisibilité.
+
+<Callout type="tip">
+Le point-virgule après la dernière déclaration est optionnel mais recommandé. Il évite les erreurs si une nouvelle déclaration est ajoutée par la suite.
+</Callout>
+
+### Sélecteurs CSS
+
+Les sélecteurs identifient les éléments HTML auxquels appliquer les styles.
+
+**Sélecteur d'élément** : sélectionne tous les éléments d'un type.
+
+```css
+p { color: #333; }
+a { text-decoration: none; }
+```
+
+**Sélecteur de classe** : sélectionne les éléments avec un attribut `class` spécifique. Le préfixe `.` indique une classe.
+
+```css
+.highlight { background-color: yellow; }
+.button { padding: 10px 20px; }
+```
+
+```html
+<p class="highlight">Texte surligné</p>
+<button class="button">Cliquez</button>
+```
+
+Un élément peut avoir plusieurs classes, séparées par des espaces.
+
+```html
+<div class="card highlight">...</div>
+```
+
+**Sélecteur d'identifiant** : sélectionne l'élément avec un attribut `id` spécifique. Le préfixe `#` indique un identifiant. Un id doit être unique dans le document.
+
+```css
+#header { background-color: #333; }
+#main-content { max-width: 1200px; }
+```
+
+```html
+<header id="header">...</header>
+```
+
+**Sélecteur descendant** : sélectionne les éléments qui sont descendants d'un autre élément. L'espace indique la relation descendant.
+
+```css
+article p { line-height: 1.6; }
+nav a { color: white; }
+```
+
+```html
+<article>
+  <p>Ce paragraphe est stylisé</p>
+</article>
+```
+
+**Sélecteur d'enfant direct** : sélectionne les éléments qui sont enfants directs (pas petits-enfants). Le symbole `>` indique la relation parent-enfant.
+
+```css
+ul > li { margin-bottom: 8px; }
+```
+
+```html
+<ul>
+  <li>Cet élément est stylisé</li>
+  <li>
+    <ul>
+      <li>Cet élément n'est pas stylisé (petit-enfant)</li>
+    </ul>
+  </li>
+</ul>
+```
+
+**Sélecteur d'attribut** : sélectionne les éléments avec un attribut spécifique ou une valeur d'attribut.
+
+```css
+[href] { color: blue; }
+[type="email"] { border: 1px solid #ccc; }
+[href^="https"] { font-weight: bold; }
+```
+
+**Sélecteur de pseudo-classe** : sélectionne les éléments dans un état particulier.
+
+```css
+a:hover { color: red; }
+input:focus { outline: 2px solid blue; }
+li:first-child { font-weight: bold; }
+```
+
+**Sélecteur de pseudo-élément** : sélectionne une partie d'un élément.
+
+```css
+p::first-letter { font-size: 2rem; }
+a::after { content: " →"; }
+```
+
+### Cascade et spécificité
+
+La cascade est le mécanisme par lequel le navigateur détermine quelles règles CSS appliquer lorsque plusieurs règles ciblent le même élément. La cascade prend en compte trois facteurs : l'origine, la spécificité, et l'ordre de déclaration.
+
+**Origine** : les styles sont appliqués dans l'ordre suivant (du moins prioritaire au plus prioritaire) :
+
+1. Styles utilisateur (navigateur par défaut)
+2. Styles auteur (votre CSS)
+3. Styles utilisateur (préférences utilisateur, ex: taille de police)
+4. Styles avec `!important` (à éviter en général)
+
+**Spécificité** : chaque sélecteur a un poids qui détermine sa priorité. La spécificité est calculée comme un triplet (A, B, C) :
+
+- A : nombre d'identifiants (id)
+- B : nombre de classes, pseudo-classes, attributs
+- C : nombre d'éléments, pseudo-éléments
+
+```css
+/* Spécificité (0, 0, 1) */
+p { color: black; }
+
+/* Spécificité (0, 1, 0) */
+.highlight { color: yellow; }
+
+/* Spécificité (1, 0, 0) */
+#header { color: red; }
+
+/* Spécificité (0, 1, 1) */
+p.highlight { color: blue; }
+
+/* Spécificité (1, 1, 0) */
+#header.highlight { color: green; }
+```
+
+Un sélecteur avec une spécificité plus élevée l'emporte toujours, quel que soit l'ordre de déclaration.
+
+<Callout type="tip">
+Pour éviter les conflits de spécificité, utilisez des sélecteurs simples et évitez d'imbriquer excessivement les sélecteurs. Préférez les classes aux identifiants pour la réutilisabilité.
+</Callout>
+
+**Ordre de déclaration** : si deux règles ont la même spécificité, la dernière déclarée l'emporte.
+
+```css
+p { color: black; }
+p { color: red; } /* L'emporte, même spécificité */
+```
+
+### Héritage
+
+Certaines propriétés CSS sont héritées par les éléments descendants, d'autres non. L'héritage permet de définir des styles globaux qui s'appliquent automatiquement à tout le document.
+
+**Propriétés héritées** (exemples) :
+
+- `color` : couleur du texte
+- `font-family` : police de caractères
+- `font-size` : taille de police
+- `line-height` : interlignage
+- `text-align` : alignement du texte
+
+```css
+body {
+  color: #333;
+  font-family: sans-serif;
+}
+/* Tous les descendants héritent de la couleur et de la police */
+```
+
+**Propriétés non héritées** (exemples) :
+
+- `margin`, `padding` : espacement
+- `border` : bordures
+- `width`, `height` : dimensions
+- `background` : arrière-plan
+
+```css
+div { padding: 20px; }
+/* Les éléments enfants n'héritent pas du padding */
+```
+
+Vous pouvez forcer l'héritage avec la valeur `inherit` ou l'empêcher avec `initial`.
+
+```css
+p { color: inherit; }
+div { padding: initial; }
+```
+
+### Modèle de boîte
+
+Le modèle de boîte (box model) décrit comment chaque élément HTML est représenté comme une boîte rectangulaire. Cette boîte se compose de quatre zones, de l'intérieur vers l'extérieur :
+
+1. **Content** : le contenu de l'élément (texte, image).
+2. **Padding** : l'espace entre le contenu et la bordure.
+3. **Border** : la bordure autour du padding.
+4. **Margin** : l'espace extérieur à la bordure (sépare l'élément des autres).
+
+```css
+.box {
+  width: 300px;
+  padding: 20px;
+  border: 2px solid #333;
+  margin: 10px;
+}
+```
+
+La largeur totale de l'élément est : `width + padding-left + padding-right + border-left + border-right + margin-left + margin-right`.
+
+Par défaut, CSS utilise le modèle `content-box` : la propriété `width` définit uniquement la largeur du contenu. Pour que `width` inclue padding et border, utilisez `box-sizing: border-box`.
+
+```css
+* {
+  box-sizing: border-box;
+}
+```
+
+Cette règle est généralement appliquée au début de la feuille de style pour simplifier les calculs de largeur.
+
+<Callout type="info">
+Avec `border-box`, `width: 300px` signifie que la largeur totale de l'élément (content + padding + border) est de 300px. C'est généralement plus intuitif que `content-box`.
+</Callout>
+
+### Unités de mesure
+
+CSS propose plusieurs unités de mesure pour les longueurs, les tailles de police, et d'autres valeurs dimensionnelles.
+
+**Unités absolues** : ont une taille fixe, indépendante du contexte.
+
+- `px` : pixel (1/96ème de pouce, l'unité la plus courante).
+- `mm`, `cm` : millimètres, centimètres.
+- `in` : pouces (1 in = 96 px).
+- `pt` : points (1 pt = 1/72 in).
+
+```css
+p { font-size: 16px; }
+div { width: 300px; }
+```
+
+**Unités relatives** : leur taille dépend du contexte.
+
+- `em` : relatif à la taille de police de l'élément parent.
+- `rem` : relatif à la taille de police de l'élément racine (html).
+- `%` : relatif à la taille de l'élément parent.
+- `vw` : 1% de la largeur de la fenêtre (viewport width).
+- `vh` : 1% de la hauteur de la fenêtre (viewport height).
+
+```css
+html { font-size: 16px; }
+p { font-size: 1rem; } /* 16px */
+h1 { font-size: 2rem; } /* 32px */
+div { width: 50%; } /* 50% de la largeur du parent */
+```
+
+<Callout type="tip">
+Préférez `rem` pour les tailles de police (cohérence globale) et `em` pour les marges/padding (proportionnels à la taille de police locale). Utilisez `%` pour les largeurs (responsive) et `px` pour les bordures (précision).
+</Callout>
+
+### Couleurs
+
+CSS propose plusieurs formats pour définir les couleurs.
+
+**Mots-clés** : noms de couleurs prédéfinis.
+
+```css
+color: red;
+background-color: blue;
+```
+
+**Hexadécimal** : notation hexadécimale RGB. La forme courte (#RGB) est équivalente à la forme longue (#RRGGBB).
+
+```css
+color: #ff0000; /* rouge */
+color: #f00; /* rouge, forme courte */
+color: #333; /* gris foncé */
+```
+
+**RGB** : notation fonctionnelle avec trois valeurs (rouge, vert, bleu) de 0 à 255.
+
+```css
+color: rgb(255, 0, 0); /* rouge */
+color: rgb(51, 51, 51); /* gris foncé */
+```
+
+**RGBA** : comme RGB avec un canal alpha (transparence) de 0 à 1.
+
+```css
+color: rgba(255, 0, 0, 0.5); /* rouge semi-transparent */
+background-color: rgba(0, 0, 0, 0.8); /* noir semi-transparent */
+```
+
+**HSL** : teinte (0-360), saturation (0-100%), luminosité (0-100%).
+
+```css
+color: hsl(0, 100%, 50%); /* rouge */
+color: hsl(220, 15%, 20%); /* gris foncé bleuté */
+```
+
+**HSLA** : comme HSL avec un canal alpha.
+
+```css
+color: hsla(0, 100%, 50%, 0.5);
+```
+
+<Callout type="tip">
+HSL est souvent plus intuitif pour ajuster une couleur : changer la teinte (H) change la couleur, changer la saturation (S) change l'intensité, changer la luminosité (L) change la clarté.
+</Callout>
+
+### Typographie
+
+CSS permet de contrôler tous les aspects de la typographie.
+
+**Famille de police** : définie avec `font-family`. Liste de polices séparées par des virgules, en ordre de préférence. Le navigateur utilise la première police disponible.
+
+```css
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+```
+
+Les catégories de polices génériques (fallback) :
+
+- `sans-serif` : sans empattements (Arial, Helvetica, Verdana).
+- `serif` : avec empattements (Times New Roman, Georgia).
+- `monospace` : à chasse fixe (Courier New, monospace).
+- `cursive` : style manuscrit.
+- `fantasy` : décoratif.
+
+**Taille de police** : définie avec `font-size`. Les unités relatives (rem, em) sont préférées pour l'accessibilité (l'utilisateur peut redimensionner la police de base).
+
+```css
+html { font-size: 16px; }
+h1 { font-size: 2rem; } /* 32px */
+p { font-size: 1rem; } /* 16px */
+small { font-size: 0.875rem; } /* 14px */
+```
+
+**Graisse de police** : définie avec `font-weight`. Les valeurs sont `normal` (400), `bold` (700), ou des valeurs numériques de 100 à 900.
+
+```css
+h1 { font-weight: 700; }
+strong { font-weight: bold; }
+```
+
+**Style de police** : définie avec `font-style` (`normal`, `italic`, `oblique`).
+
+```css
+em { font-style: italic; }
+```
+
+**Interlignage** : défini avec `line-height`. Une valeur sans unité est relative à la taille de police (recommandé).
+
+```css
+p { line-height: 1.6; } /* 1.6 fois la taille de police */
+```
+
+**Espacement des lettres** : défini avec `letter-spacing`.
+
+```css
+h1 { letter-spacing: -0.02em; }
+```
+
+**Espacement des mots** : défini avec `word-spacing`.
+
+```css
+p { word-spacing: 0.1em; }
+```
+
+**Transformation du texte** : défini avec `text-transform`.
+
+```css
+uppercase { text-transform: uppercase; }
+lowercase { text-transform: lowercase; }
+capitalize { text-transform: capitalize; }
+```
+
+**Décoration du texte** : défini avec `text-decoration`.
+
+```css
+a { text-decoration: none; }
+.underline { text-decoration: underline; }
+```
+
+## Erreurs fréquentes
+
+**Utiliser !important de manière abusive**
+
+```css
+.button { color: blue !important; }
+```
+
+Le recours à `!important` masque les problèmes de spécificité et rend le CSS difficile à maintenir. Il est presque toujours possible de résoudre un conflit de styles en ajustant les sélecteurs.
+
+<Callout type="warn">
+```css
+.button-primary { color: blue; }
+.button-secondary { color: blue; }
+```
+Utilisez des sélecteurs plus spécifiques ou des classes distinctes au lieu de `!important`. Réservez `!important` aux cas extrêmes (ex: override de styles d'une bibliothèque tierce).
+</Callout>
+
+**Sélecteurs trop spécifiques**
+
+```css
+body header nav ul li a.button { color: blue; }
+```
+
+Ce sélecteur a une spécificité élevée (0, 2, 4) et est difficile à surcharger. De plus, il dépend strictement de la structure HTML, ce qui rend le CSS fragile.
+
+<Callout type="warn">
+```css
+.button { color: blue; }
+```
+Utilisez des sélecteurs simples et des classes descriptives. La structure HTML peut changer sans casser le CSS.
+</Callout>
+
+**Oublier box-sizing: border-box**
+
+```css
+.container { width: 300px; padding: 20px; }
+```
+
+La largeur totale de l'élément est 340px (300 + 20*2), ce qui peut casser la mise en page si le parent a exactement 300px de large.
+
+<Callout type="warn">
+```css
+* { box-sizing: border-box; }
+.container { width: 300px; padding: 20px; }
+```
+Appliquez `box-sizing: border-box` globalement. La largeur totale de l'élément sera exactement 300px, padding inclus.
+</Callout>
+
+**Utiliser px pour toutes les tailles de police**
+
+```css
+body { font-size: 16px; }
+h1 { font-size: 32px; }
+```
+
+Les tailles de police en pixels ne sont pas redimensionnables par les utilisateurs qui ont besoin de polices plus grandes pour l'accessibilité.
+
+<Callout type="warn">
+```css
+html { font-size: 16px; }
+body { font-size: 1rem; }
+h1 { font-size: 2rem; }
+```
+Utilisez `rem` pour les tailles de police. L'utilisateur peut modifier la taille de base (`html`) et toutes les tailles s'ajustent proportionnellement.
+</Callout>
+
+**Confondre margin et padding**
+
+```css
+.box { margin: 20px; }
+/* Attendu : espace intérieur de 20px */
+```
+
+Margin crée un espace extérieur (sépare des autres éléments). Padding crée un espace intérieur (entre le contenu et la bordure).
+
+<Callout type="warn">
+```css
+.box { padding: 20px; } /* Espace intérieur */
+.box { margin: 20px; } /* Espace extérieur */
+```
+Souvenez-vous : padding = intérieur, margin = extérieur. Le padding reçoit la couleur de fond de l'élément, le margin est toujours transparent.
+</Callout>
+
+## Exercices
+
+<Exercise n="4.1" title='Calculer la spécificité'>
+Calculez la spécificité (A, B, C) de chaque sélecteur et déterminez quelle couleur sera appliquée au paragraphe.
+
+```css
+p { color: black; }
+.highlight { color: yellow; }
+#content p { color: blue; }
+p.highlight { color: red; }
+#content .highlight { color: green; }
+```
+
+```html
+<div id="content">
+  <p class="highlight">Texte</p>
+</div>
+```
+</Exercise>
+
+<Solution>
+Spécificités :
+- `p` : (0, 0, 1)
+- `.highlight` : (0, 1, 0)
+- `#content p` : (1, 0, 1)
+- `p.highlight` : (0, 1, 1)
+- `#content .highlight` : (1, 1, 0)
+
+Le paragraphe correspond aux sélecteurs : `.highlight`, `#content p`, `p.highlight`, `#content .highlight`.
+
+Spécificités comparées :
+- `#content .highlight` : (1, 1, 0) - la plus élevée
+- `p.highlight` : (0, 1, 1)
+- `#content p` : (1, 0, 1)
+- `.highlight` : (0, 1, 0)
+
+La couleur appliquée est `green` (du sélecteur `#content .highlight`).
+</Solution>
+
+<Exercise n="4.2" title='Comprendre le modèle de boîte'>
+Créez un élément div avec les styles suivants :
+
+```css
+.box {
+  width: 200px;
+  padding: 20px;
+  border: 5px solid black;
+  margin: 10px;
+}
+```
+
+Sans `box-sizing: border-box`, quelle est la largeur totale de l'élément ? Avec `box-sizing: border-box`, quelle est la largeur totale ? Quelle est la largeur du contenu dans chaque cas ?
+</Exercise>
+
+<Solution>
+Sans `box-sizing` (content-box par défaut) :
+- Largeur totale = width + padding-left + padding-right + border-left + border-right + margin-left + margin-right
+- Largeur totale = 200 + 20 + 20 + 5 + 5 + 10 + 10 = 270px
+- Largeur du contenu = 200px
+
+Avec `box-sizing: border-box` :
+- Largeur totale = width + margin-left + margin-right
+- Largeur totale = 200 + 10 + 10 = 220px
+- Largeur du contenu = width - padding-left - padding-right - border-left - border-right
+- Largeur du contenu = 200 - 20 - 20 - 5 - 5 = 150px
+</Solution>
+
+<Exercise n="4.3" title='Comparer les unités de mesure'>
+Créez trois éléments avec les mêmes styles mais des unités différentes pour la largeur :
+
+```css
+.px { width: 300px; }
+.percent { width: 50%; }
+.rem { width: 20rem; }
+```
+
+Placez-les dans un conteneur de 600px de large. Quelle est la largeur de chaque élément ? Si vous changez la taille de police de base (`html`) de 16px à 20px, comment les largeurs changent-elles ?
+</Exercise>
+
+<Solution>
+Avec `html { font-size: 16px; }` :
+- `.px` : 300px (fixe)
+- `.percent` : 50% de 600px = 300px
+- `.rem` : 20 * 16px = 320px
+
+Avec `html { font-size: 20px; }` :
+- `.px` : 300px (inchangé)
+- `.percent` : 50% de 600px = 300px (inchangé)
+- `.rem` : 20 * 20px = 400px (changé)
+
+Seule l'unité `rem` dépend de la taille de police de base. `px` est absolu, `%` est relatif au parent.
+</Solution>
+
+<Exercise n="4.4" title='Convertir des couleurs hexadécimales en RGB'>
+Convertissez les couleurs hexadécimales suivantes en notation RGB :
+
+1. `#ff0000`
+2. `#00ff00`
+3. `#0000ff`
+4. `#ffffff`
+5. `#000000`
+6. `#808080`
+
+Vérifiez vos conversions en créant des éléments avec ces couleurs dans un navigateur.
+</Exercise>
+
+<Solution>
+1. `#ff0000` = `rgb(255, 0, 0)` (rouge)
+2. `#00ff00` = `rgb(0, 255, 0)` (vert)
+3. `#0000ff` = `rgb(0, 0, 255)` (bleu)
+4. `#ffffff` = `rgb(255, 255, 255)` (blanc)
+5. `#000000` = `rgb(0, 0, 0)` (noir)
+6. `#808080` = `rgb(128, 128, 128)` (gris moyen)
+
+Conversion : chaque paire hexadécimale représente une valeur décimale de 0 à 255. `ff` = 255, `00` = 0, `80` = 128.
+</Solution>
+
+<Exercise n="4.5" title='Styliser un CV avec CSS'>
+Prenez le CV HTML créé dans le module précédent et ajoutez une feuille de style CSS avec :
+
+1. Une police de base (Inter ou système)
+2. Des styles pour le header (centré, fond léger)
+3. Des styles pour les sections (marge, bordure)
+4. Des styles pour les titres (hiérarchie visuelle)
+5. Des styles pour les liens (couleur, hover)
+6. Des styles pour le tableau (bordures, alternance de lignes)
+
+Utilisez des classes plutôt que des sélecteurs d'élément pour la réutilisabilité.
+</Exercise>
+
+<Solution>
+```css
+/* CSS */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  color: #333;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.header p {
+  margin: 10px 0 0;
+  color: #666;
+}
+
+.section {
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.section h2 {
+  margin-top: 0;
+  color: #333;
+  border-bottom: 2px solid #6366f1;
+  padding-bottom: 10px;
+}
+
+a {
+  color: #6366f1;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+```
+
+HTML correspondant (ajout des classes) :
+```html
+<body>
+  <header class="header">
+    <h1>Jean Dupont</h1>
+    <p>Développeur web full-stack</p>
+  </header>
+  <main>
+    <section class="section">
+      <h2>Expérience</h2>
+      <!-- ... -->
+    </section>
+  </main>
+</body>
+```
+</Solution>
+
+<Exercise n="4.6" title='Créer un système de typographie cohérent'>
+Définissez un système de typographie avec les variables CSS suivantes (utilisez :root) :
+
+```css
+--font-size-base: 16px;
+--font-size-h1: 2rem;
+--font-size-h2: 1.5rem;
+--font-size-h3: 1.25rem;
+--line-height-body: 1.6;
+--line-height-heading: 1.2;
+```
+
+Appliquez ces variables aux éléments correspondants. Calculez la taille en pixels de chaque titre si la base est 16px.
+</Exercise>
+
+<Solution>
+```css
+:root {
+  --font-size-base: 16px;
+  --font-size-h1: 2rem;
+  --font-size-h2: 1.5rem;
+  --font-size-h3: 1.25rem;
+  --line-height-body: 1.6;
+  --line-height-heading: 1.2;
+}
+
+html {
+  font-size: var(--font-size-base);
+}
+
+body {
+  font-size: 1rem;
+  line-height: var(--line-height-body);
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  line-height: var(--line-height-heading);
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-heading);
+}
+
+h3 {
+  font-size: var(--font-size-h3);
+  line-height: var(--line-height-heading);
+}
+```
+
+Tailles en pixels (base 16px) :
+- h1 : 2 * 16 = 32px
+- h2 : 1.5 * 16 = 24px
+- h3 : 1.25 * 16 = 20px
+</Solution>
+
+<Exercise n="4.7" title='Résoudre un conflit de spécificité'>
+Le code suivant applique une couleur rouge au paragraphe, mais vous voulez qu'il soit bleu. Modifiez le CSS (sans utiliser !important) pour que le paragraphe soit bleu.
+
+```css
+div p { color: red; }
+```
+
+```html
+<div>
+  <p class="blue">Texte</p>
+</div>
+```
+</Exercise>
+
+<Solution>
+Plusieurs solutions possibles, de la moins spécifique à la plus spécifique :
+
+```css
+/* Option 1 : classe (0, 1, 0) vs (0, 0, 1) */
+.blue { color: blue; }
+
+/* Option 2 : classe sur p (0, 1, 1) vs (0, 0, 1) */
+p.blue { color: blue; }
+
+/* Option 3 : id (1, 0, 0) vs (0, 0, 1) */
+#unique { color: blue; }
+```
+
+HTML modifié pour l'option 3 :
+```html
+<div>
+  <p id="unique">Texte</p>
+</div>
+```
+
+L'option 1 (classe simple) est généralement préférée pour la maintenabilité.
+</Solution>
+
+<Exercise n="4.8" title='Défi : CV stylisé complet'>
+Transformez votre CV HTML en un document visuellement soigné avec :
+
+1. Variables CSS pour les couleurs (primary, text, background, border)
+2. Variables CSS pour les espacements (4px, 8px, 16px, 24px, 32px)
+3. Une palette de couleurs cohérente (2-3 couleurs maximum)
+4. Typographie hiérarchique (tailles, graisses, interlignages)
+5. Mise en page avec margin et padding
+6. Effets de hover sur les liens
+7. Styles pour le tableau (bordures, alternance, responsive)
+8. Media query pour mobile (ajustement des tailles)
+
+Le CV doit être lisible et professionnel, sans surcharge visuelle.
+</Exercise>
+
+<Solution>
+```css
+:root {
+  /* Couleurs */
+  --color-primary: #6366f1;
+  --color-text: #333;
+  --color-text-muted: #666;
+  --color-background: #ffffff;
+  --color-background-alt: #f5f5f5;
+  --color-border: #e0e0e0;
+  
+  /* Espacements */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  
+  /* Typographie */
+  --font-size-base: 16px;
+  --font-size-h1: 2rem;
+  --font-size-h2: 1.5rem;
+  --font-size-h3: 1.25rem;
+  --line-height-body: 1.6;
+  --line-height-heading: 1.2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-32);
+}
+
+.header {
+  text-align: center;
+  padding: var(--space-32) var(--space-24);
+  background-color: var(--color-background-alt);
+  border-radius: 8px;
+  margin-bottom: var(--space-32);
+}
+
+.header h1 {
+  font-size: var(--font-size-h1);
+  line-height: var(--line-height-heading);
+  margin: 0 0 var(--space-8);
+}
+
+.header p {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.header nav {
+  margin-top: var(--space-16);
+}
+
+.header nav a {
+  margin: 0 var(--space-8);
+  color: var(--color-primary);
+}
+
+.section {
+  margin-bottom: var(--space-32);
+  padding: var(--space-24);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.section h2 {
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-heading);
+  margin: 0 0 var(--space-16);
+  padding-bottom: var(--space-8);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.section h3 {
+  font-size: var(--font-size-h3);
+  line-height: var(--line-height-heading);
+  margin: var(--space-16) 0 var(--space-8);
+}
+
+.section p {
+  margin: var(--space-8) 0;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+ul, ol {
+  padding-left: var(--space-24);
+  margin: var(--space-8) 0;
+}
+
+li {
+  margin: var(--space-4) 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-16) 0;
+}
+
+th, td {
+  padding: var(--space-12);
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+
+th {
+  background-color: var(--color-background-alt);
+  font-weight: 600;
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--color-background-alt);
+}
+
+footer {
+  margin-top: var(--space-32);
+  padding-top: var(--space-16);
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: var(--space-16);
+  }
+  
+  .header {
+    padding: var(--space-24) var(--space-16);
+  }
+  
+  .section {
+    padding: var(--space-16);
+  }
+  
+  table {
+    font-size: 14px;
+  }
+  
+  th, td {
+    padding: var(--space-8);
+  }
+}
+```
+</Solution>
+
+## Livrable
+
+Transformez le CV HTML créé dans le module précédent en un document stylisé avec CSS. Le CV doit inclure :
+
+**Structure CSS obligatoire**
+- Fichier CSS externe lié au HTML
+- Règle `* { box-sizing: border-box; }` au début
+- Variables CSS pour les couleurs et espacements
+- Organisation logique des règles (sections, typographie, layout)
+
+**Styles obligatoires**
+- Typographie cohérente (police, tailles, interlignages)
+- Palette de couleurs limitée (2-3 couleurs + noir/gris)
+- Mise en page avec margin et padding
+- Styles pour les liens (couleur, hover)
+- Styles pour le tableau (bordures, alternance)
+- Effets de hover sur les éléments interactifs
+- Media query pour mobile (responsive)
+
+**Critères d'évaluation**
+- [ ] CSS dans un fichier externe
+- [ ] Utilisation de classes plutôt que de sélecteurs d'élément
+- [ ] Variables CSS pour les valeurs réutilisées
+- [ ] Spécificité des sélecteurs maîtrisée (pas de !important)
+- [ ] Model de boîte compris (box-sizing: border-box)
+- [ ] Unités appropriées (rem pour polices, % pour largeurs)
+- [ ] Palette cohérente et contrastée
+- [ ] Responsive sur mobile
+
+**Pistes d'extension**
+- Ajoutez des animations CSS (transitions sur hover)
+- Créez un thème clair/sombre avec CSS variables
+- Utilisez des pseudo-classes pour les effets (:hover, :focus)
+- Ajoutez des ombres subtiles (box-shadow)
+- Implémentez une grille CSS pour la mise en page (module suivant)
+
+## Pour aller plus loin
+
+- [MDN - CSS Basics](https://developer.mozilla.org/fr/docs/Learn/CSS/First_steps) : Introduction aux fondamentaux de CSS, syntaxe et sélecteurs.
+- [MDN - Cascade et spécificité](https://developer.mozilla.org/fr/docs/Web/CSS/Cascade) : Documentation détaillée sur la cascade, la spécificité et l'héritage.
+- [CSS Tricks - A Complete Guide to Flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/) : Guide complet sur Flexbox (pour le module suivant).
+- [WebAIM - Color Contrast Checker](https://webaim.org/resources/contrastchecker/) : Outil pour vérifier les contrastes de couleurs pour l'accessibilité.
+- [Can I Use](https://caniuse.com/) : Tableau de compatibilité des fonctionnalités CSS selon les navigateurs.

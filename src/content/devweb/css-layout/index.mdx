@@ -1,0 +1,1187 @@
+# CSS — Mise en page
+
+Ce module explore les techniques de mise en page CSS modernes pour structurer et organiser le contenu des pages web. Il explique les propriétés de display, le positionnement des éléments, Flexbox pour les mises en page unidimensionnelles, CSS Grid pour les mises en page bidimensionnelles, les media queries pour le responsive design, et l'approche mobile-first. Ces outils permettent de créer des interfaces adaptatives qui fonctionnent sur tous les écrans. À l'issue de ce module, vous serez capable de créer une landing page responsive avec une mise en page moderne et cohérente.
+
+## Objectifs
+
+- Comprendre les différentes valeurs de la propriété display et leurs effets.
+- Maîtriser le positionnement CSS (static, relative, absolute, fixed, sticky).
+- Utiliser Flexbox pour les mises en page unidimensionnelles (lignes ou colonnes).
+- Utiliser CSS Grid pour les mises en page bidimensionnelles (lignes et colonnes).
+- Créer des mises en page responsive avec les media queries.
+- Appliquer l'approche mobile-first (concevoir pour mobile, puis adapter pour desktop).
+- Créer une landing page responsive avec une grille et des sections flexibles.
+
+## Prérequis
+
+- CSS — Bases (modèle de boîte, unités, cascade, sélecteurs)
+
+## Cours
+
+### Propriété display
+
+La propriété `display` définit le type de rendu d'un élément et contrôle la mise en page de ses enfants. Les valeurs les plus courantes sont :
+
+**Block** : l'élément occupe toute la largeur disponible et commence sur une nouvelle ligne. Les éléments block par défaut incluent `div`, `p`, `h1`-`h6`, `ul`, `ol`, `li`, `section`, `article`.
+
+```css
+.block { display: block; }
+```
+
+**Inline** : l'élément ne commence pas sur une nouvelle ligne et n'occupe que la largeur nécessaire. Les éléments inline par défaut incluent `span`, `a`, `strong`, `em`, `code`.
+
+```css
+.inline { display: inline; }
+```
+
+**Inline-block** : l'élément se comporte comme inline (ne force pas de nouvelle ligne) mais peut avoir des dimensions (width, height) comme un block.
+
+```css
+.inline-block { display: inline-block; }
+```
+
+**None** : l'élément est supprimé du rendu (ne prend pas d'espace, invisible).
+
+```css
+.hidden { display: none; }
+```
+
+**Flex** : active le contexte Flexbox pour le conteneur et ses enfants directs.
+
+```css
+.flex { display: flex; }
+```
+
+**Grid** : active le contexte CSS Grid pour le conteneur et ses enfants directs.
+
+```css
+.grid { display: grid; }
+```
+
+<Callout type="info">
+Contrairement à `visibility: hidden` (qui masque l'élément mais réserve l'espace), `display: none` supprime complètement l'élément du flux du document.
+</Callout>
+
+### Positionnement
+
+La propriété `position` définit comment un élément est positionné dans le document. Les valeurs possibles sont :
+
+**Static** (par défaut) : l'élément est positionné selon le flux normal du document. Les propriétés `top`, `right`, `bottom`, `left` n'ont aucun effet.
+
+```css
+.static { position: static; }
+```
+
+**Relative** : l'élément est positionné par rapport à sa position normale dans le flux. Les autres éléments ne sont pas affectés. Les propriétés `top`, `right`, `bottom`, `left` décalent l'élément par rapport à sa position d'origine.
+
+```css
+.relative {
+  position: relative;
+  top: 10px;
+  left: 20px;
+}
+```
+
+**Absolute** : l'élément est positionné par rapport à son ancêtre positionné le plus proche (ou au body si aucun ancêtre n'est positionné). L'élément est retiré du flux normal.
+
+```css
+.parent {
+  position: relative;
+}
+
+.child {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+```
+
+**Fixed** : l'élément est positionné par rapport à la fenêtre du navigateur (viewport). Il reste fixe lors du défilement. L'élément est retiré du flux normal.
+
+```css
+.fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+```
+
+**Sticky** : l'élément se comporte comme relative jusqu'à atteindre un seuil de défilement, puis se comporte comme fixed. Utile pour les headers ou sidebars qui doivent rester visibles.
+
+```css
+.sticky {
+  position: sticky;
+  top: 0;
+}
+```
+
+<Callout type="tip">
+Pour positionner un élément en absolute, son parent doit avoir une position autre que static (généralement relative). C'est une erreur courante que d'oublier de positionner le parent.
+</Callout>
+
+### Flexbox
+
+Flexbox (Flexible Box Layout) est un système de mise en page unidimensionnel qui permet d'aligner et distribuer l'espace entre les éléments d'un conteneur, même lorsque leur taille est inconnue ou dynamique.
+
+**Conteneur flex** : un élément avec `display: flex` devient un conteneur flex. Ses enfants directs deviennent des items flex.
+
+```css
+.container {
+  display: flex;
+}
+```
+
+**Direction** : `flex-direction` définit l'orientation des items.
+
+```css
+.row { flex-direction: row; } /* Par défaut, gauche à droite */
+.row-reverse { flex-direction: row-reverse; } /* Droite à gauche */
+.column { flex-direction: column; } /* Haut en bas */
+.column-reverse { flex-direction: column-reverse; } /* Bas en haut */
+```
+
+**Wrap** : `flex-wrap` définit si les items peuvent passer à la ligne suivante.
+
+```css
+.nowrap { flex-wrap: nowrap; } /* Par défaut, tout sur une ligne */
+.wrap { flex-wrap: wrap; } /* Items passent à la ligne si nécessaire */
+.wrap-reverse { flex-wrap: wrap-reverse; } /* Items passent à la ligne en ordre inverse */
+```
+
+**Justify-content** : aligne les items sur l'axe principal (horizontal pour row, vertical pour column).
+
+```css
+.start { justify-content: flex-start; } /* Début de l'axe principal */
+.end { justify-content: flex-end; } /* Fin de l'axe principal */
+.center { justify-content: center; } /* Centre de l'axe principal */
+.between { justify-content: space-between; } /* Espace égal entre les items */
+.around { justify-content: space-around; } /* Espace égal autour des items */
+.evenly { justify-content: space-evenly; } /* Espace égal partout */
+```
+
+**Align-items** : aligne les items sur l'axe secondaire (vertical pour row, horizontal pour column).
+
+```css
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+.items-center { align-items: center; }
+.items-stretch { align-items: stretch; } /* Items étirés pour remplir */
+.items-baseline { align-items: baseline; } /* Alignement sur la ligne de base */
+```
+
+**Gap** : définit l'espace entre les items flex (anciennement, on utilisait margin).
+
+```css
+.container {
+  display: flex;
+  gap: 16px;
+}
+```
+
+**Flex grow** : `flex-grow` définit la capacité d'un item à grandir si nécessaire.
+
+```css
+.grow { flex-grow: 1; } /* L'item grandit pour remplir l'espace disponible */
+.grow-2 { flex-grow: 2; } /* L'item grandit deux fois plus */
+```
+
+**Flex shrink** : `flex-shrink` définit la capacité d'un item à rétrécir si nécessaire.
+
+```css
+.shrink { flex-shrink: 1; } /* Par défaut, l'item peut rétrécir */
+.no-shrink { flex-shrink: 0; } /* L'item ne rétrécit pas */
+```
+
+**Flex basis** : `flex-basis` définit la taille initiale d'un item avant distribution de l'espace.
+
+```css
+.basis { flex-basis: auto; } /* Par défaut, basé sur le contenu */
+.basis-200 { flex-basis: 200px; } /* Taille initiale fixe */
+```
+
+**Raccourci flex** : `flex` combine flex-grow, flex-shrink et flex-basis.
+
+```css
+.flex-1 { flex: 1 1 auto; } /* grow: 1, shrink: 1, basis: auto */
+.flex-none { flex: 0 0 auto; } /* grow: 0, shrink: 0, basis: auto */
+```
+
+Exemple complet d'une barre de navigation avec Flexbox :
+
+```css
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+.nav-brand { flex: 1; }
+.nav-links { display: flex; gap: 16px; }
+```
+
+### CSS Grid
+
+CSS Grid est un système de mise en page bidimensionnel qui permet de créer des grilles complexes avec des lignes et des colonnes. Contrairement à Flexbox (unidimensionnel), Grid gère simultanément les lignes et les colonnes.
+
+**Conteneur grid** : un élément avec `display: grid` devient un conteneur grid.
+
+```css
+.container {
+  display: grid;
+}
+```
+
+**Colonnes** : `grid-template-columns` définit le nombre et la taille des colonnes.
+
+```css
+.grid-3 {
+  grid-template-columns: 1fr 1fr 1fr; /* 3 colonnes égales */
+}
+
+.grid-auto {
+  grid-template-columns: repeat(3, 1fr); /* Répète 3 fois 1fr */
+}
+
+.grid-mixed {
+  grid-template-columns: 200px 1fr; /* Première colonne 200px, le reste remplit */
+}
+```
+
+L'unité `fr` (fraction) représente une fraction de l'espace disponible. `1fr 1fr` signifie deux colonnes de taille égale. `1fr 2fr` signifie la deuxième colonne est deux fois plus large que la première.
+
+**Lignes** : `grid-template-rows` définit le nombre et la taille des lignes.
+
+```css
+.grid-rows {
+  grid-template-rows: auto 1fr auto; /* Première et dernière ligne auto, la ligne du milieu remplit */
+}
+```
+
+**Gap** : `gap` définit l'espace entre les lignes et les colonnes.
+
+```css
+.grid {
+  display: grid;
+  gap: 16px; /* Espace entre lignes et colonnes */
+}
+
+.grid-column-gap {
+  column-gap: 16px; /* Espace entre colonnes uniquement */
+}
+
+.grid-row-gap {
+  row-gap: 16px; /* Espace entre lignes uniquement */
+}
+```
+
+**Placement** : `grid-column` et `grid-row` placent un item dans la grille.
+
+```css
+.span-2 {
+  grid-column: span 2; /* L'item s'étend sur 2 colonnes */
+}
+
+.start-2 {
+  grid-column: 2; /* L'item commence à la colonne 2 */
+}
+
+.row-span-2 {
+  grid-row: span 2; /* L'item s'étend sur 2 lignes */
+}
+```
+
+**Zones nommées** : vous pouvez nommer des zones de la grille et placer les items par nom.
+
+```css
+.container {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "sidebar content"
+    "footer footer";
+  grid-template-columns: 200px 1fr;
+  grid-template-rows: auto 1fr auto;
+}
+
+.header { grid-area: header; }
+.sidebar { grid-area: sidebar; }
+.content { grid-area: content; }
+.footer { grid-area: footer; }
+```
+
+Exemple d'une grille de cartes :
+
+```css
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+```
+
+`auto-fit` remplit la grille avec autant de colonnes que possible. `minmax(300px, 1fr)` signifie chaque colonne a au minimum 300px et au maximum une fraction égale de l'espace disponible.
+
+<Callout type="tip">
+`repeat(auto-fit, minmax(300px, 1fr))` est un pattern très utile pour des grilles responsive : le nombre de colonnes s'adapte automatiquement à la largeur disponible, chaque colonne ayant une largeur minimale de 300px.
+</Callout>
+
+### Media queries
+
+Les media queries permettent d'appliquer des styles CSS selon les caractéristiques du périphérique (largeur d'écran, orientation, résolution). Elles sont essentielles pour le responsive design.
+
+**Syntaxe de base** :
+
+```css
+@media (min-width: 768px) {
+  /* Styles appliqués si la largeur est d'au moins 768px */
+  .container {
+    max-width: 1200px;
+  }
+}
+```
+
+**Opérateurs logiques** :
+
+- `and` : toutes les conditions doivent être vraies.
+- `,` (or) : au moins une condition doit être vraie.
+- `not` : la condition ne doit pas être vraie.
+- `only` : empêche les anciens navigateurs d'appliquer le style.
+
+```css
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Tablette */
+}
+
+@media (max-width: 767px), (orientation: portrait) {
+  /* Mobile ou portrait */
+}
+```
+
+**Points de rupture courants** :
+
+```css
+/* Mobile (par défaut) */
+.container { padding: 16px; }
+
+/* Tablette */
+@media (min-width: 768px) {
+  .container { padding: 24px; }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .container { padding: 32px; }
+}
+
+/* Large desktop */
+@media (min-width: 1280px) {
+  .container { max-width: 1200px; margin: 0 auto; }
+}
+```
+
+<Callout type="info">
+Les media queries peuvent tester d'autres caractéristiques que la largeur : orientation (`portrait`, `landscape`), résolution (`min-resolution: 2dppx` pour les écrans Retina), préférences utilisateur (`prefers-color-scheme: dark`).
+</Callout>
+
+### Approche mobile-first
+
+L'approche mobile-first consiste à concevoir d'abord pour les écrans mobiles (contraintes maximales), puis à adapter le design pour les écrans plus larges avec des media queries. Cette approche offre plusieurs avantages :
+
+- Le code de base est plus simple (pas de hacks pour mobile).
+- Les performances sont meilleures sur mobile (moins de CSS chargé).
+- Le contenu prioritaire est identifié naturellement.
+
+**Exemple mobile-first** :
+
+```css
+/* Mobile (par défaut) */
+.nav {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-links {
+  display: none; /* Menu caché sur mobile */
+}
+
+/* Tablet et desktop */
+@media (min-width: 768px) {
+  .nav {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .nav-links {
+    display: flex;
+  }
+}
+```
+
+<Callout type="tip">
+En mobile-first, vous utilisez principalement `min-width` dans les media queries. En desktop-first (approche déconseillée), vous utiliseriez `max-width` pour "retirer" des styles sur mobile.
+</Callout>
+
+### Responsive complet
+
+Combinaison de Flexbox, Grid et media queries pour une mise en page responsive complète.
+
+```css
+/* Mobile */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+```
+
+Exemple d'une page avec header, sidebar et contenu :
+
+```css
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "header"
+    "content"
+    "footer";
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .layout {
+    grid-template-columns: 250px 1fr;
+    grid-template-areas:
+      "header header"
+      "sidebar content"
+      "footer footer";
+  }
+}
+```
+
+## Erreurs fréquentes
+
+**Oublier de positionner le parent pour absolute**
+
+```css
+.child {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+```
+
+L'élément se positionne par rapport au body ou à un ancêtre non attendu, car le parent n'a pas de position définie.
+
+<Callout type="warn">
+```css
+.parent {
+  position: relative;
+}
+
+.child {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+```
+Toujours définir `position: relative` (ou autre valeur que static) sur le parent lorsque vous utilisez `position: absolute` sur un enfant.
+</Callout>
+
+**Confondre justify-content et align-items**
+
+```css
+.container {
+  display: flex;
+  justify-content: center; /* Attendu : centrage vertical */
+}
+```
+
+`justify-content` aligne sur l'axe principal (horizontal par défaut). Pour le centrage vertical, utilisez `align-items: center`.
+
+<Callout type="warn">
+```css
+.container {
+  display: flex;
+  justify-content: center; /* Horizontal */
+  align-items: center; /* Vertical */
+}
+```
+Souvenez-vous : `justify-content` = axe principal (row = horizontal, column = vertical), `align-items` = axe secondaire (row = vertical, column = horizontal).
+</Callout>
+
+**Utiliser float pour la mise en page**
+
+```css
+.left { float: left; }
+.right { float: right; }
+.clearfix::after { content: ""; display: table; clear: both; }
+```
+
+Float est une technique obsolète pour la mise en page. Flexbox et Grid sont plus simples, plus puissants et mieux supportés.
+
+<Callout type="warn">
+```css
+.container {
+  display: flex;
+  justify-content: space-between;
+}
+```
+Utilisez Flexbox pour les mises en page unidimensionnelles et Grid pour les mises en page bidimensionnelles. Réservez float à son usage originel : faire flotter du texte autour d'images.
+</Callout>
+
+**Ne pas utiliser gap (ancien code avec margin)**
+
+```css
+.container {
+  display: flex;
+}
+
+.item {
+  margin-right: 16px;
+}
+
+.item:last-child {
+  margin-right: 0;
+}
+```
+
+Cette approche nécessite un sélecteur pour le dernier élément et ne gère pas le margin sur le bord du conteneur.
+
+<Callout type="warn">
+```css
+.container {
+  display: flex;
+  gap: 16px;
+}
+```
+Utilisez `gap` pour l'espacement entre items flex ou grid. C'est plus simple, plus cohérent, et gère automatiquement les bords.
+</Callout>
+
+**Media queries desktop-first**
+
+```css
+.container { width: 1200px; }
+
+@media (max-width: 767px) {
+  .container { width: 100%; }
+}
+```
+
+Le code de base est optimisé pour desktop, et les media queries "défaisent" les styles pour mobile. C'est l'inverse de l'approche mobile-first recommandée.
+
+<Callout type="warn">
+```css
+.container { width: 100%; }
+
+@media (min-width: 768px) {
+  .container { max-width: 1200px; margin: 0 auto; }
+}
+```
+Concevez d'abord pour mobile (code de base simple), puis ajoutez des styles pour les écrans plus larges avec `min-width`.
+</Callout>
+
+## Exercices
+
+<Exercise n="4.1" title='Positionner un élément avec absolute'>
+Créez un parent de 300px de hauteur et un enfant. Positionnez l'enfant en absolute pour qu'il soit en bas à droite du parent. Le parent doit avoir `position: relative`.
+
+```html
+<div class="parent">
+  <div class="child">En bas à droite</div>
+</div>
+```
+</Exercise>
+
+<Solution>
+```css
+.parent {
+  position: relative;
+  height: 300px;
+  border: 2px solid #333;
+}
+
+.child {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 8px 16px;
+  background-color: #6366f1;
+  color: white;
+}
+```
+</Solution>
+
+<Exercise n="4.2" title='Créer une barre de navigation avec Flexbox'>
+Créez une barre de navigation avec :
+
+1. Un logo à gauche
+2. Des liens de navigation au centre
+3. Un bouton "Connexion" à droite
+4. Espacement de 16px entre les éléments
+5. Alignement vertical centré
+
+Utilisez Flexbox avec `justify-content` et `align-items`.
+</Exercise>
+
+<Solution>
+```css
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background-color: #333;
+}
+
+.nav-brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+}
+
+.nav-button {
+  padding: 8px 16px;
+  background-color: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+```
+
+```html
+<nav class="nav">
+  <div class="nav-brand">Logo</div>
+  <div class="nav-links">
+    <a href="#">Accueil</a>
+    <a href="#">À propos</a>
+    <a href="#">Contact</a>
+  </div>
+  <button class="nav-button">Connexion</button>
+</nav>
+```
+</Solution>
+
+<Exercise n="4.3" title='Créer une grille de 3 colonnes avec Grid'>
+Créez une grille de 3 colonnes égales avec un gap de 24px. Chaque colonne doit contenir une carte avec un titre et un paragraphe. La grille doit être responsive : 1 colonne sur mobile, 2 sur tablette, 3 sur desktop.
+</Exercise>
+
+<Solution>
+```css
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.card {
+  padding: 24px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.card h3 {
+  margin-top: 0;
+}
+```
+
+```html
+<div class="grid">
+  <div class="card">
+    <h3>Carte 1</h3>
+    <p>Contenu de la carte...</p>
+  </div>
+  <div class="card">
+    <h3>Carte 2</h3>
+    <p>Contenu de la carte...</p>
+  </div>
+  <div class="card">
+    <h3>Carte 3</h3>
+    <p>Contenu de la carte...</p>
+  </div>
+</div>
+```
+</Solution>
+
+<Exercise n="4.4" title='Utiliser auto-fit pour une grille responsive'>
+Créez une grille qui s'adapte automatiquement au nombre de colonnes en fonction de la largeur disponible. Chaque colonne doit avoir une largeur minimale de 250px et une largeur maximale égale. Utilisez `repeat(auto-fit, minmax(...))`.
+
+Combien de colonnes s'affichent sur un écran de 800px de large ? Sur 1200px ?
+</Exercise>
+
+<Solution>
+```css
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+}
+```
+
+Sur 800px de large (avec gap de 24px) :
+- 800 - 24*(n-1) = espace disponible pour les colonnes
+- Pour 2 colonnes : 800 - 24 = 776px, chaque colonne = 388px (> 250px) ✓
+- Pour 3 colonnes : 800 - 48 = 752px, chaque colonne = 250px (exactement le minimum) ✓
+- Donc 3 colonnes
+
+Sur 1200px de large :
+- Pour 4 colonnes : 1200 - 72 = 1128px, chaque colonne = 282px (> 250px) ✓
+- Pour 5 colonnes : 1200 - 96 = 1104px, chaque colonne = 220px (< 250px) ✗
+- Donc 4 colonnes
+</Solution>
+
+<Exercise n="4.5" title="Créer une mise en page avec header, sidebar et contenu">
+Créez une mise en page avec trois zones : header (en haut), sidebar (à gauche), contenu (à droite), footer (en bas). Sur mobile, les zones doivent s'empiler verticalement. Sur desktop, le sidebar doit occuper 250px et le contenu le reste.
+
+Utilisez CSS Grid avec `grid-template-areas`.
+</Exercise>
+
+<Solution>
+```css
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "header"
+    "content"
+    "footer";
+  gap: 16px;
+  min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+  .layout {
+    grid-template-columns: 250px 1fr;
+    grid-template-areas:
+      "header header"
+      "sidebar content"
+      "footer footer";
+  }
+}
+
+.header { grid-area: header; }
+.sidebar { grid-area: sidebar; }
+.content { grid-area: content; }
+.footer { grid-area: footer; }
+```
+
+```html
+<div class="layout">
+  <header class="header">Header</header>
+  <aside class="sidebar">Sidebar</aside>
+  <main class="content">Contenu</main>
+  <footer class="footer">Footer</footer>
+</div>
+```
+</Solution>
+
+<Exercise n="4.6" title="Centrer un élément avec Flexbox">
+Centrez un élément (horizontalement et verticalement) dans son parent avec Flexbox. Le parent doit avoir une hauteur de 300px.
+
+Comparez avec la méthode Grid : quelle approche préférez-vous et pourquoi ?
+</Exercise>
+
+<Solution>
+```css
+/* Flexbox */
+.parent-flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+/* Grid */
+.parent-grid {
+  display: grid;
+  place-items: center;
+  height: 300px;
+}
+```
+
+`place-items: center` est un raccourci pour `align-items: center` et `justify-items: center` en Grid.
+
+Comparaison :
+- Flexbox : plus intuitif pour un centrage simple, fonctionne pour unidimensionnel
+- Grid : plus puissant pour des mises en page complexes, bidimensionnel
+
+Pour un simple centrage, Flexbox est généralement préféré. Pour des mises en page avec plusieurs éléments, Grid est plus adapté.
+</Solution>
+
+<Exercise n="4.7" title="Créer un sticky header">
+Créez un header qui reste fixe en haut de la page lors du défilement. Le header doit avoir une hauteur de 64px et un fond de couleur. Le contenu principal doit avoir un padding-top de 64px pour ne pas être caché par le header.
+
+Utilisez `position: sticky`.
+</Exercise>
+
+<Solution>
+```css
+.header {
+  position: sticky;
+  top: 0;
+  height: 64px;
+  background-color: #333;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  z-index: 100;
+}
+
+.main {
+  padding-top: 64px;
+}
+```
+
+```html
+<header class="header">
+  <h1>Mon site</h1>
+</header>
+<main class="main">
+  <p>Contenu...</p>
+</main>
+```
+</Solution>
+
+<Exercise n="4.8" title="Défi : Landing page responsive complète">
+Créez une landing page complète avec :
+
+1. Header sticky avec logo et navigation
+2. Section hero avec titre centré et bouton CTA
+3. Section features avec grille de 3 cartes (responsive)
+4. Section testimonial avec citation centrée
+5. Footer avec liens
+
+La page doit être responsive (mobile-first) avec les points de rupture suivants :
+- Mobile : par défaut (< 768px)
+- Tablet : 768px - 1023px
+- Desktop : ≥ 1024px
+
+Utilisez Flexbox, Grid et media queries. Le design doit être cohérent et professionnel.
+</Exercise>
+
+<Solution>
+```css
+:root {
+  --color-primary: #6366f1;
+  --color-text: #333;
+  --color-text-muted: #666;
+  --color-background: #ffffff;
+  --color-background-alt: #f5f5f5;
+  --color-border: #e0e0e0;
+  --space-8: 8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Header */
+.header {
+  position: sticky;
+  top: 0;
+  height: 64px;
+  background-color: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-24);
+  z-index: 100;
+}
+
+.header-logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.header-nav {
+  display: none;
+}
+
+.header-nav a {
+  color: var(--color-text);
+  text-decoration: none;
+  margin-left: var(--space-24);
+}
+
+.header-cta {
+  padding: var(--space-8) var(--space-16);
+  background-color: var(--color-primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+/* Hero */
+.hero {
+  padding: var(--space-64) var(--space-24);
+  text-align: center;
+  background-color: var(--color-background-alt);
+}
+
+.hero h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+  margin: 0 0 var(--space-16);
+}
+
+.hero p {
+  font-size: 1.125rem;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-24);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-cta {
+  display: inline-block;
+  padding: var(--space-12) var(--space-24);
+  background-color: var(--color-primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/* Features */
+.features {
+  padding: var(--space-64) var(--space-24);
+}
+
+.features h2 {
+  text-align: center;
+  font-size: 1.75rem;
+  margin: 0 0 var(--space-48);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-24);
+}
+
+.feature-card {
+  padding: var(--space-24);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.feature-card h3 {
+  margin: 0 0 var(--space-8);
+}
+
+/* Testimonial */
+.testimonial {
+  padding: var(--space-64) var(--space-24);
+  background-color: var(--color-background-alt);
+  text-align: center;
+}
+
+.testimonial blockquote {
+  font-size: 1.25rem;
+  font-style: italic;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.testimonial cite {
+  display: block;
+  margin-top: var(--space-16);
+  font-style: normal;
+  color: var(--color-text-muted);
+}
+
+/* Footer */
+.footer {
+  padding: var(--space-32) var(--space-24);
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.footer a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  margin: 0 var(--space-16);
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .header-nav {
+    display: flex;
+  }
+  
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .hero h1 {
+    font-size: 3rem;
+  }
+  
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+```
+
+```html
+<header class="header">
+  <div class="header-logo">Brand</div>
+  <nav class="header-nav">
+    <a href="#">Fonctionnalités</a>
+    <a href="#">Témoignages</a>
+    <a href="#">Tarifs</a>
+  </nav>
+  <a href="#" class="header-cta">Commencer</a>
+</header>
+
+<section class="hero">
+  <h1>Construisez votre présence en ligne</h1>
+  <p>Une plateforme tout-en-un pour créer, gérer et optimiser votre site web. Simple, rapide et efficace.</p>
+  <a href="#" class="hero-cta">Essai gratuit</a>
+</section>
+
+<section class="features">
+  <h2>Fonctionnalités</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <h3>Rapide</h3>
+      <p>Déployez votre site en quelques minutes grâce à notre infrastructure optimisée.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Sécurisé</h3>
+      <p>Vos données sont protégées par un chiffrement de bout en bout.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Scalable</h3>
+      <p>Faites évoluer votre site sans interruption de service.</p>
+    </div>
+  </div>
+</section>
+
+<section class="testimonial">
+  <blockquote>
+    "Cette plateforme a transformé notre workflow. Nous avons gagné 40% de productivité dès le premier mois."
+  </blockquote>
+  <cite>— Marie Dupont, CEO TechCorp</cite>
+</section>
+
+<footer class="footer">
+  <a href="#">Accueil</a>
+  <a href="#">À propos</a>
+  <a href="#">Contact</a>
+  <p>© 2025 Brand. Tous droits réservés.</p>
+</footer>
+```
+</Solution>
+
+## Livrable
+
+Créez une landing page responsive avec une mise en page moderne. La page doit inclure :
+
+**Structure HTML obligatoire**
+- Header sticky avec logo et navigation
+- Section hero avec titre et CTA
+- Section features avec grille de cartes
+- Section testimonial
+- Footer avec liens
+
+**Mise en page obligatoire**
+- Utilisation de Flexbox pour l'alignement (header, hero)
+- Utilisation de CSS Grid pour la grille de features
+- Media queries pour 3 points de rupture (mobile, tablet, desktop)
+- Approche mobile-first
+- Position sticky pour le header
+
+**Styles obligatoires**
+- Variables CSS pour les couleurs et espacements
+- Palette cohérente (2-3 couleurs)
+- Typographie hiérarchique
+- Effets de hover sur les liens et boutons
+- Gap pour l'espacement (pas de margin entre items)
+
+**Critères d'évaluation**
+- [ ] Page responsive sur mobile, tablet et desktop
+- [ ] Header sticky lors du défilement
+- [ ] Grille de features adaptative (1/2/3 colonnes)
+- [ ] Approche mobile-first (code de base pour mobile)
+- [ ] Utilisation de Flexbox et Grid appropriée
+- [ ] Media queries avec min-width
+- [ ] Design cohérent et professionnel
+
+**Pistes d'extension**
+- Ajoutez un menu hamburger pour mobile
+- Créez des animations CSS sur les cartes (hover effects)
+- Utilisez `position: fixed` pour un modal
+- Ajoutez un dark mode avec `prefers-color-scheme`
+- Implémentez un défilement horizontal (horizontal scroll) pour une section
+
+## Pour aller plus loin
+
+- [MDN - Flexbox](https://developer.mozilla.org/fr/docs/Web/CSS/CSS_Flexible_Box_Layout) : Guide complet sur Flexbox avec exemples interactifs.
+- [MDN - CSS Grid](https://developer.mozilla.org/fr/docs/Web/CSS/CSS_Grid_Layout) : Documentation approfondie sur CSS Grid.
+- [CSS Grid Garden](https://cssgridgarden.com/) : Guide visuel interactif pour apprendre CSS Grid.
+- [Flexbox Froggy](https://flexboxfroggy.com/) : Jeu interactif pour apprendre Flexbox.
+- [MDN - Media Queries](https://developer.mozilla.org/fr/docs/Web/CSS/Media_Queries) : Documentation sur les media queries et le responsive design.

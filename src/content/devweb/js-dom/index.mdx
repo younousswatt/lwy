@@ -1,0 +1,778 @@
+# JavaScript — DOM
+
+Ce module explore le DOM (Document Object Model), l'interface qui permet à JavaScript d'interagir avec le HTML et le CSS d'une page web. Il explique comment sélectionner des éléments, modifier leur contenu et leurs styles, répondre aux événements utilisateur (clics, saisies, soumissions), et utiliser la délégation d'événements pour optimiser les performances. Ces concepts sont essentiels pour créer des applications web interactives et dynamiques. À l'issue de ce module, vous serez capable de créer une todo-list fonctionnelle avec ajout, suppression, et persistance des tâches.
+
+## Objectifs
+
+- Comprendre la structure du DOM et la relation entre HTML et JavaScript.
+- Sélectionner des éléments du DOM avec querySelector et querySelectorAll.
+- Modifier le contenu, les attributs et les styles des éléments.
+- Créer et supprimer des éléments dynamiquement.
+- Écouter et gérer les événements utilisateur (click, input, submit).
+- Utiliser la délégation d'événements pour optimiser les performances.
+- Manipuler les formulaires avec JavaScript (lecture, validation, soumission).
+
+## Prérequis
+
+- JavaScript — Bases (variables, fonctions, événements basiques)
+- JavaScript — Structures de données (tableaux, objets, destructuration)
+- HTML — Structure (éléments, attributs, formulaires)
+
+## Cours
+
+### Introduction au DOM
+
+Le DOM (Document Object Model) est une représentation arborescente du document HTML où chaque élément est un nœud. Le navigateur construit automatiquement le DOM lorsqu'il charge une page HTML. JavaScript peut accéder et modifier ce DOM pour changer dynamiquement le contenu et le style de la page.
+
+```html
+<div id="container">
+  <h1>Titre</h1>
+  <p>Paragraphe</p>
+</div>
+```
+
+Le DOM correspondant :
+
+```
+document
+└── div (id="container")
+    ├── h1
+    └── p
+```
+
+<Callout type="info">
+Le DOM est une interface standardisée par le W3C. Tous les navigateurs modernes implémentent le DOM de manière compatible, ce qui permet d'écrire du JavaScript qui fonctionne sur tous les navigateurs.
+</Callout>
+
+### Sélection d'éléments
+
+JavaScript propose plusieurs méthodes pour sélectionner des éléments du DOM. Les méthodes modernes sont `querySelector` et `querySelectorAll`.
+
+**querySelector** : sélectionne le premier élément correspondant au sélecteur CSS.
+
+```javascript
+const titre = document.querySelector("h1");
+const container = document.querySelector("#container");
+const bouton = document.querySelector(".button");
+```
+
+**querySelectorAll** : sélectionne tous les éléments correspondant au sélecteur CSS. Renvoie une NodeList (similaire à un tableau).
+
+```javascript
+const paragraphes = document.querySelectorAll("p");
+const boutons = document.querySelectorAll(".button");
+```
+
+Méthodes historiques (déconseillées, mais encore présentes) :
+
+- `getElementById(id)` : sélectionne par ID
+- `getElementsByClassName(className)` : sélectionne par classe
+- `getElementsByTagName(tagName)` : sélectionne par balise
+
+```javascript
+const titre = document.getElementById("titre");
+const boutons = document.getElementsByClassName("button");
+const paragraphes = document.getElementsByTagName("p");
+```
+
+<Callout type="tip">
+Préférez `querySelector` et `querySelectorAll` pour leur cohérence avec les sélecteurs CSS. Les méthodes historiques (`getElementById`, etc.) sont plus performantes pour les sélections simples, mais moins flexibles.
+</Callout>
+
+### Modification du contenu
+
+Une fois un élément sélectionné, vous pouvez modifier son contenu, ses attributs, et ses styles.
+
+**Modification du texte** :
+
+```javascript
+const titre = document.querySelector("h1");
+titre.textContent = "Nouveau titre"; // Remplace tout le texte
+titre.innerHTML = "<em>Nouveau titre</em>"; // Remplace avec du HTML
+```
+
+`textContent` est plus sûr et plus performant que `innerHTML` pour le texte simple. `innerHTML` interprète le HTML, ce qui peut créer des vulnérabilités XSS si le contenu provient d'une source non fiable.
+
+**Modification des attributs** :
+
+```javascript
+const lien = document.querySelector("a");
+lien.href = "https://example.com";
+lien.target = "_blank";
+lien.setAttribute("data-id", "123");
+```
+
+<Callout type="warn">
+Évitez d'utiliser `setAttribute` pour les attributs standard (href, src, id, class). Utilisez directement la propriété correspondante (`lien.href`). `setAttribute` est utile pour les attributs personnalisés (data-*).
+</Callout>
+
+**Modification des styles** :
+
+```javascript
+const bouton = document.querySelector("button");
+bouton.style.backgroundColor = "blue";
+bouton.style.padding = "10px 20px";
+```
+
+Pour modifier plusieurs styles à la fois, utilisez `cssText` :
+
+```javascript
+bouton.style.cssText = "background-color: blue; padding: 10px 20px;";
+```
+
+L'approche moderne est d'utiliser `classList` pour ajouter/supprimer des classes CSS, plutôt que de modifier les styles inline.
+
+```javascript
+bouton.classList.add("primary");
+bouton.classList.remove("secondary");
+bouton.classList.toggle("active");
+```
+
+### Création et suppression d'éléments
+
+JavaScript peut créer de nouveaux éléments et les ajouter au DOM, ou supprimer des éléments existants.
+
+**Création d'élément** :
+
+```javascript
+const nouveauParagraphe = document.createElement("p");
+nouveauParagraphe.textContent = "Nouveau paragraphe";
+nouveauParagraphe.classList.add("text-muted");
+```
+
+**Ajout au DOM** :
+
+```javascript
+const container = document.querySelector("#container");
+container.appendChild(nouveauParagraphe);
+```
+
+**Insertion à une position spécifique** :
+
+```javascript
+const container = document.querySelector("#container");
+const titre = container.querySelector("h1");
+
+// Insérer avant titre
+container.insertBefore(nouveauParagraphe, titre);
+
+// Insérer après titre
+container.insertBefore(nouveauParagraphe, titre.nextSibling);
+```
+
+**Suppression d'élément** :
+
+```javascript
+const element = document.querySelector("#obsolete");
+element.remove(); // Supprime l'élément du DOM
+```
+
+### Événements
+
+Les événements sont des actions qui se produisent dans le navigateur (clic de souris, pression de touche, soumission de formulaire). JavaScript peut écouter ces événements et exécuter du code en réponse.
+
+**addEventListener** : méthode standard pour écouter un événement.
+
+```javascript
+const bouton = document.querySelector("button");
+bouton.addEventListener("click", function(event) {
+  console.log("Bouton cliqué !");
+});
+```
+
+L'objet `event` contient des informations sur l'événement :
+
+```javascript
+bouton.addEventListener("click", function(event) {
+  console.log(event.type); // "click"
+  console.log(event.target); // L'élément qui a déclenché l'événement
+  console.log(event.clientX, event.clientY); // Position de la souris
+});
+```
+
+**Événements courants** :
+
+- `click` : clic de souris
+- `dblclick` : double-clic
+- `mousedown` / `mouseup` : bouton enfoncé/relâché
+- `mouseover` / `mouseout` : souris entre/sort de l'élément
+- `keydown` / `keyup` : touche enfoncée/relâchée
+- `input` : modification d'un champ de formulaire
+- `submit` : soumission d'un formulaire
+- `load` : chargement complet de la page
+
+**Fonctions fléchées comme callbacks** :
+
+```javascript
+bouton.addEventListener("click", (event) => {
+  console.log("Bouton cliqué !");
+});
+```
+
+### Manipulation de formulaires
+
+JavaScript peut lire et modifier les valeurs des champs de formulaire, et gérer leur soumission.
+
+**Lecture de valeurs** :
+
+```javascript
+const input = document.querySelector("input");
+const valeur = input.value;
+console.log(valeur);
+```
+
+**Modification de valeurs** :
+
+```javascript
+const input = document.querySelector("input");
+input.value = "Nouvelle valeur";
+```
+
+**Événement input** : se déclenche à chaque modification de la valeur.
+
+```javascript
+const input = document.querySelector("input");
+input.addEventListener("input", (event) => {
+  console.log(event.target.value);
+});
+```
+
+**Événement submit** : se déclenche lors de la soumission du formulaire.
+
+```javascript
+const formulaire = document.querySelector("form");
+formulaire.addEventListener("submit", (event) => {
+  event.preventDefault(); // Empêche le rechargement de la page
+  const donnees = new FormData(formulaire);
+  console.log(donnees);
+});
+```
+
+<Callout type="tip">
+Toujours appelez `event.preventDefault()` dans un gestionnaire de submit si vous voulez traiter le formulaire avec JavaScript (AJAX, fetch) sans recharger la page.
+</Callout>
+
+### Délégation d'événements
+
+La délégation d'événements consiste à attacher un seul écouteur d'événement à un élément parent, et à utiliser `event.target` pour déterminer quel élément enfant a déclenché l'événement. Cette technique est plus performante lorsque vous avez beaucoup d'éléments similaires.
+
+**Sans délégation** (approche naïve) :
+
+```javascript
+const boutons = document.querySelectorAll(".button");
+boutons.forEach((bouton) => {
+  bouton.addEventListener("click", (event) => {
+    console.log("Bouton cliqué :", event.target);
+  });
+});
+```
+
+**Avec délégation** (approche optimisée) :
+
+```javascript
+const container = document.querySelector("#container");
+container.addEventListener("click", (event) => {
+  if (event.target.classList.contains("button")) {
+    console.log("Bouton cliqué :", event.target);
+  }
+});
+```
+
+<Callout type="info">
+La délégation d'événements est particulièrement utile pour les listes dynamiques : si vous ajoutez de nouveaux éléments après le chargement de la page, ils n'ont pas besoin d'un nouvel écouteur d'événement.
+</Callout>
+
+**closest** : méthode utile pour trouver l'ancêtre le plus proche correspondant à un sélecteur.
+
+```javascript
+container.addEventListener("click", (event) => {
+  const bouton = event.target.closest(".button");
+  if (bouton) {
+    console.log("Bouton cliqué :", bouton);
+  }
+});
+```
+
+### Template literals et HTML
+
+Les template literals (backticks) permettent d'insérer des variables dans des strings, ce qui est utile pour générer du HTML dynamique.
+
+```javascript
+const nom = "Jean";
+const age = 30;
+const html = `
+  <div class="card">
+    <h2>${nom}</h2>
+    <p>Âge : ${age}</p>
+  </div>
+`;
+```
+
+Pour insérer ce HTML dans le DOM :
+
+```javascript
+const container = document.querySelector("#container");
+container.innerHTML = html;
+```
+
+<Callout type="warn">
+Attention aux attaques XSS (Cross-Site Scripting) lorsque vous insérez du HTML provenant d'une source non fiable (entrée utilisateur). Utilisez `textContent` pour le texte, ou échappez le HTML avec une bibliothèque comme DOMPurify.
+</Callout>
+
+## Erreurs fréquentes
+
+**Accéder à un élément qui n'existe pas**
+
+```javascript
+const titre = document.querySelector("h1");
+titre.textContent = "Nouveau titre"; // Erreur : Cannot read property 'textContent' of null
+```
+
+`querySelector` renvoie `null` si aucun élément ne correspond. Accéder à une propriété de `null` renvoie une erreur.
+
+<Callout type="warn">
+```javascript
+const titre = document.querySelector("h1");
+if (titre) {
+  titre.textContent = "Nouveau titre";
+}
+```
+Vérifiez toujours que l'élément existe avant d'y accéder, ou utilisez optional chaining (`titre?.textContent`) si disponible.
+</Callout>
+
+**Oublier preventDefault sur submit**
+
+```javascript
+const formulaire = document.querySelector("form");
+formulaire.addEventListener("submit", (event) => {
+  // Oublié event.preventDefault()
+  console.log("Formulaire soumis");
+});
+```
+
+Le formulaire soumet normalement, la page se recharge, et le code après le gestionnaire peut ne pas s'exécuter.
+
+<Callout type="warn">
+```javascript
+const formulaire = document.querySelector("form");
+formulaire.addEventListener("submit", (event) => {
+  event.preventDefault();
+  console.log("Formulaire soumis");
+});
+```
+Toujours appelez `event.preventDefault()` dans un gestionnaire de submit si vous voulez traiter le formulaire avec JavaScript sans rechargement.
+</Callout>
+
+**Confondre innerHTML et textContent**
+
+```javascript
+const element = document.querySelector("div");
+element.innerHTML = "<script>alert('XSS')</script>";
+```
+
+`innerHTML` interprète le HTML, ce qui peut exécuter du JavaScript malveillant (XSS). `textContent` est plus sûr pour le texte.
+
+<Callout type="warn">
+```javascript
+const element = document.querySelector("div");
+element.textContent = "Texte sécurisé";
+```
+Utilisez `textContent` pour le texte. Utilisez `innerHTML` uniquement si vous insérez du HTML contrôlé et échappé.
+</Callout>
+
+**Créer un écouteur pour chaque élément d'une liste**
+
+```javascript
+const boutons = document.querySelectorAll(".button");
+boutons.forEach((bouton) => {
+  bouton.addEventListener("click", handler);
+});
+```
+
+Si la liste est longue ou dynamique, cela crée de nombreux écouteurs d'événements, ce qui affecte les performances.
+
+<Callout type="warn">
+```javascript
+const container = document.querySelector("#container");
+container.addEventListener("click", (event) => {
+  if (event.target.classList.contains("button")) {
+    handler(event);
+  }
+});
+```
+Utilisez la délégation d'événements : un seul écouteur sur le parent, et utilisez `event.target` ou `closest` pour identifier l'élément ciblé.
+</Callout>
+
+## Exercices
+
+<Exercise n="8.1" title='Sélectionner et modifier des éléments'>
+Créez un document HTML simple avec un titre h1 et un paragraphe p. Utilisez JavaScript pour :
+
+1. Sélectionner le titre et modifier son texte
+2. Sélectionner le paragraphe et modifier son texte
+3. Ajouter une classe "highlight" au titre
+4. Changer la couleur du paragraphe en rouge
+</Exercise>
+
+<Solution>
+```javascript
+const titre = document.querySelector("h1");
+titre.textContent = "Nouveau titre";
+titre.classList.add("highlight");
+
+const paragraphe = document.querySelector("p");
+paragraphe.textContent = "Nouveau paragraphe";
+paragraphe.style.color = "red";
+```
+</Solution>
+
+<Exercise n="8.2" title='Créer et ajouter des éléments dynamiquement'>
+Créez un conteneur div vide. Utilisez JavaScript pour :
+
+1. Créer un nouvel élément h2
+2. Créer un nouvel élément p
+3. Ajouter du texte à ces éléments
+4. Ajouter les éléments au conteneur
+5. Ajouter une classe "text-muted" au paragraphe
+</Exercise>
+
+<Solution>
+```javascript
+const container = document.querySelector("#container");
+
+const titre = document.createElement("h2");
+titre.textContent = "Titre dynamique";
+
+const paragraphe = document.createElement("p");
+paragraphe.textContent = "Paragraphe dynamique";
+paragraphe.classList.add("text-muted");
+
+container.appendChild(titre);
+container.appendChild(paragraphe);
+```
+</Solution>
+
+<Exercise n="8.3" title='Écouter un événement click'>
+Créez un bouton dans le HTML. Utilisez JavaScript pour :
+
+1. Sélectionner le bouton
+2. Ajouter un écouteur d'événement click
+3. Afficher "Bouton cliqué !" dans la console
+4. Changer le texte du bouton après le clic
+</Exercise>
+
+<Solution>
+```javascript
+const bouton = document.querySelector("button");
+bouton.addEventListener("click", () => {
+  console.log("Bouton cliqué !");
+  bouton.textContent = "Cliqué !";
+});
+```
+</Solution>
+
+<Exercise n="8.4" title='Lire et modifier un champ de formulaire'>
+Créez un formulaire avec un champ input de type text. Utilisez JavaScript pour :
+
+1. Sélectionner l'input
+2. Ajouter un écouteur d'événement input
+3. Afficher la valeur de l'input dans la console à chaque modification
+4. Si la valeur contient plus de 10 caractères, changer la couleur de fond en rouge
+</Exercise>
+
+<Solution>
+```javascript
+const input = document.querySelector("input");
+input.addEventListener("input", (event) => {
+  const valeur = event.target.value;
+  console.log(valeur);
+  
+  if (valeur.length > 10) {
+    event.target.style.backgroundColor = "red";
+  } else {
+    event.target.style.backgroundColor = "";
+  }
+});
+```
+</Solution>
+
+<Exercise n="8.5" title='Gérer la soumission d&apos;un formulaire'>
+Créez un formulaire avec un champ input et un bouton submit. Utilisez JavaScript pour :
+
+1. Sélectionner le formulaire
+2. Ajouter un écouteur d'événement submit
+3. Empêcher le rechargement de la page
+4. Lire la valeur de l'input
+5. Afficher la valeur dans la console
+6. Réinitialiser le formulaire après soumission
+</Exercise>
+
+<Solution>
+```javascript
+const formulaire = document.querySelector("form");
+const input = document.querySelector("input");
+
+formulaire.addEventListener("submit", (event) => {
+  event.preventDefault();
+  
+  const valeur = input.value;
+  console.log("Valeur soumise :", valeur);
+  
+  formulaire.reset();
+});
+```
+</Solution>
+
+<Exercise n="8.6" title='Utiliser la délégation d&apos;événements'>
+Créez une liste (ul) avec plusieurs li, chacun contenant un bouton. Utilisez la délégation d'événements sur le ul pour :
+
+1. Écouter les clics sur la liste
+2. Identifier le bouton cliqué
+3. Afficher le texte du bouton dans la console
+4. Ne pas ajouter d'écouteur sur chaque bouton individuellement
+</Exercise>
+
+<Solution>
+```javascript
+const liste = document.querySelector("ul");
+
+liste.addEventListener("click", (event) => {
+  const bouton = event.target.closest("button");
+  if (bouton) {
+    console.log("Bouton cliqué :", bouton.textContent);
+  }
+});
+```
+
+HTML correspondant :
+```html
+<ul>
+  <li><button>Bouton 1</button></li>
+  <li><button>Bouton 2</button></li>
+  <li><button>Bouton 3</button></li>
+</ul>
+```
+</Solution>
+
+<Exercise n="8.7" title='Supprimer un élément dynamiquement'>
+Créez une liste de tâches (ul) avec plusieurs li, chacun contenant un bouton "Supprimer". Utilisez la délégation d'événements pour :
+
+1. Écouter les clics sur la liste
+2. Identifier le bouton "Supprimer" cliqué
+3. Supprimer le li parent du bouton
+4. Empêcher la propagation de l'événement
+</Exercise>
+
+<Solution>
+```javascript
+const liste = document.querySelector("ul");
+
+liste.addEventListener("click", (event) => {
+  const bouton = event.target.closest("button");
+  if (bouton && bouton.textContent === "Supprimer") {
+    const li = bouton.closest("li");
+    if (li) {
+      li.remove();
+    }
+  }
+});
+```
+
+HTML correspondant :
+```html
+<ul>
+  <li>Tâche 1 <button>Supprimer</button></li>
+  <li>Tâche 2 <button>Supprimer</button></li>
+  <li>Tâche 3 <button>Supprimer</button></li>
+</ul>
+```
+</Solution>
+
+<Exercise n="8.8" title='Défi : Todo-list complète'>
+Créez une todo-list complète avec les fonctionnalités suivantes :
+
+1. Ajouter une tâche (input + bouton)
+2. Lister toutes les tâches
+3. Marquer une tâche comme terminée (clic sur la tâche)
+4. Supprimer une tâche (bouton "Supprimer")
+5. Persister les tâches dans localStorage
+
+Utilisez un tableau d'objets pour stocker les tâches. Chaque tâche doit avoir : id, texte, completed (boolean). La liste doit se mettre à jour automatiquement après chaque action.
+</Exercise>
+
+<Solution>
+```javascript
+// État initial
+let taches = JSON.parse(localStorage.getItem("taches")) || [];
+
+// Sélection des éléments
+const input = document.querySelector("#input");
+const boutonAjouter = document.querySelector("#ajouter");
+const liste = document.querySelector("#liste");
+
+// Fonction pour sauvegarder dans localStorage
+function sauvegarder() {
+  localStorage.setItem("taches", JSON.stringify(taches));
+}
+
+// Fonction pour afficher les tâches
+function afficherTaches() {
+  liste.innerHTML = "";
+  
+  taches.forEach((tache) => {
+    const li = document.createElement("li");
+    li.classList.add("tache");
+    if (tache.completed) {
+      li.classList.add("terminee");
+    }
+    
+    li.innerHTML = `
+      <span class="tache-texte">${tache.texte}</span>
+      <button class="supprimer">Supprimer</button>
+    `;
+    
+    liste.appendChild(li);
+  });
+}
+
+// Ajouter une tâche
+function ajouterTache() {
+  const texte = input.value.trim();
+  if (!texte) return;
+  
+  const tache = {
+    id: Date.now(),
+    texte,
+    completed: false,
+  };
+  
+  taches.push(tache);
+  sauvegarder();
+  afficherTaches();
+  input.value = "";
+}
+
+// Marquer comme terminée
+function toggleTache(id) {
+  const tache = taches.find((t) => t.id === id);
+  if (tache) {
+    tache.completed = !tache.completed;
+    sauvegarder();
+    afficherTaches();
+  }
+}
+
+// Supprimer une tâche
+function supprimerTache(id) {
+  taches = taches.filter((t) => t.id !== id);
+  sauvegarder();
+  afficherTaches();
+}
+
+// Écouteurs d'événements
+boutonAjouter.addEventListener("click", ajouterTache);
+
+liste.addEventListener("click", (event) => {
+  const bouton = event.target.closest(".supprimer");
+  const texte = event.target.closest(".tache-texte");
+  
+  if (bouton) {
+    const li = bouton.closest("li");
+    const id = parseInt(li.dataset.id);
+    supprimerTache(id);
+  }
+  
+  if (texte) {
+    const li = texte.closest("li");
+    const id = parseInt(li.dataset.id);
+    toggleTache(id);
+  }
+});
+
+// Initialisation
+afficherTaches();
+```
+
+HTML correspondant :
+```html
+<input type="text" id="input" placeholder="Nouvelle tâche">
+<button id="ajouter">Ajouter</button>
+<ul id="liste"></ul>
+
+<style>
+.tache {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tache.terminee {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.tache-texte {
+  cursor: pointer;
+}
+
+.supprimer {
+  padding: 4px 8px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+</style>
+```
+</Solution>
+
+## Livrable
+
+Créez une todo-list fonctionnelle. La todo-list doit inclure :
+
+**Fonctionnalités obligatoires**
+- Ajouter une tâche (input + bouton)
+- Lister toutes les tâches (affichage dynamique)
+- Marquer une tâche comme terminée (clic sur la tâche)
+- Supprimer une tâche (bouton "Supprimer")
+- Persistance des tâches dans localStorage
+
+**Structure de données obligatoire**
+- Tableau d'objets pour stocker les tâches
+- Chaque tâche : id (unique), texte, completed (boolean)
+- Chargement depuis localStorage au démarrage
+- Sauvegarde dans localStorage après chaque modification
+
+**Interactions obligatoires**
+- Écouteur d'événement sur le bouton d'ajout
+- Délégation d'événements sur la liste (click)
+- Modification dynamique du DOM (ajout/suppression de li)
+- Mise à jour automatique de l'affichage
+
+**Critères d'évaluation**
+- [ ] Utilisation de localStorage pour la persistance
+- [ ] Délégation d'événements sur la liste
+- [ ] Fonctions séparées pour chaque action
+- [ ] Modification dynamique du DOM
+- [ ] Code testé dans le navigateur
+- [ ] Comments explicatifs
+
+**Pistes d'extension**
+- Ajoutez l'édition de tâches
+- Implémentez le filtrage (toutes, actives, terminées)
+- Ajoutez un compteur de tâches
+- Implémentez le drag-and-drop pour réordonner
+- Ajoutez des animations CSS lors de l'ajout/suppression
+
+## Pour aller plus loin
+
+- [MDN - DOM Introduction](https://developer.mozilla.org/fr/docs/Web/API/Document_Object_Model/Introduction) : Introduction au DOM et à son rôle.
+- [MDN - Event Reference](https://developer.mozilla.org/fr/docs/Web/Events) : Référence complète des événements du DOM.
+- [MDN - Event Delegation](https://davidwalsh.name/blog/2017/09/event-delegation-javascript/) : Article détaillé sur la délégation d'événements.
+- [JavaScript.info - Document Events](https://javascript.info/document-events) : Guide sur les événements du DOM avec exemples.
+- [DOM Enlightenment](https://domenlightenment.com/) : Livre complet sur le DOM, en anglais.

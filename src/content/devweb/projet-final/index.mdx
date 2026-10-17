@@ -1,0 +1,1052 @@
+# Projet Final
+
+Ce module est le point culminant du parcours Développement Web. Il consiste à créer une application complète "Ma bibliothèque de films" qui intègre tous les concepts appris : HTML sémantique, CSS responsive, JavaScript moderne, API asynchrone, manipulation du DOM, stockage local, et déploiement. Ce projet vous permettra de mettre en pratique vos compétences dans un contexte réel et de produire un portfolio tangible démontrant votre capacité à créer une application web fonctionnelle de bout en bout. À l'issue de ce module, vous aurez une application complète déployée sur GitHub Pages, prête à être partagée avec des recruteurs ou des clients.
+
+## Objectifs
+
+- Intégrer tous les concepts appris dans un projet complet.
+- Créer une interface utilisateur responsive et accessible.
+- Utiliser une API réelle (TMDB ou similaire) pour récupérer des données de films.
+- Implémenter la manipulation du DOM pour afficher et interagir avec les données.
+- Utiliser localStorage pour la persistance (films favoris, liste de visionnage).
+- Mettre en place un workflow Git complet (commits, branches, pull requests).
+- Déployer l'application sur GitHub Pages.
+- Documenter le projet et l'architecture.
+
+## Prérequis
+
+- Tous les modules précédents du parcours Développement Web
+- Un compte GitHub
+- Une clé API (TMDB ou similaire)
+
+## Cours
+
+### Présentation du projet
+
+"Ma bibliothèque de films" est une application web qui permet de rechercher des films, d'afficher leurs détails, de gérer une liste de favoris, et de suivre les films visionnés. L'application utilise l'API TMDB (The Movie Database) pour récupérer les données en temps réel.
+
+**Fonctionnalités principales** :
+
+- Recherche de films par titre
+- Affichage des résultats de recherche avec affiches
+- Détails d'un film (titre, année, genre, synopsis, note)
+- Ajout/Suppression des favoris (persisté dans localStorage)
+- Marquage des films comme "visionnés" (persisté dans localStorage)
+- Filtrage (tous, favoris, visionnés)
+- Interface responsive (mobile, tablet, desktop)
+- Navigation intuitive
+
+**Stack technique** :
+
+- HTML5 sémantique
+- CSS moderne (variables, Flexbox, Grid, media queries)
+- JavaScript ES6+ (modules, async/await, localStorage)
+- API TMDB (fetch, gestion d'erreurs)
+- Git et GitHub Pages pour le déploiement
+
+### Architecture du projet
+
+**Structure de fichiers** :
+
+```
+bibliotheque-films/
+├── index.html
+├── css/
+│   ├── variables.css
+│   ├── reset.css
+│   └── main.css
+├── js/
+│   ├── api.js          # Gestion de l'API TMDB
+│   ├── storage.js      # Gestion de localStorage
+│   ├── ui.js           # Manipulation du DOM
+│   └── main.js         # Point d'entrée
+├── images/
+│   └── favicon.svg
+├── .gitignore
+└── README.md
+```
+
+**Modules JavaScript** :
+
+- **api.js** : encapsule les appels à l'API TMDB (recherche, détails, configuration)
+- **storage.js** : gère localStorage (favoris, visionnés)
+- **ui.js** : gère l'affichage et les interactions du DOM
+- **main.js** : initialise l'application et connecte les modules
+
+<Callout type="info">
+Cette architecture modulaire facilite la maintenance et les tests. Chaque module a une responsabilité unique (principe de responsabilité unique).
+</Callout>
+
+### API TMDB
+
+TMDB (The Movie Database) est une API gratuite qui fournit des données sur les films, séries, et acteurs.
+
+**Obtenir une clé API** :
+
+1. Créez un compte sur https://www.themoviedb.org/
+2. Allez dans Settings → API
+3. Créez une nouvelle clé API (Developer)
+4. Notez la clé API (sera utilisée dans le code)
+
+**Endpoints principaux** :
+
+- **Recherche** : `https://api.themoviedb.org/3/search/movie?api_key=YOUR_KEY&query=titre`
+- **Détails** : `https://api.themoviedb.org/3/movie/{movie_id}?api_key=YOUR_KEY`
+- **Populaires** : `https://api.themoviedb.org/3/movie/popular?api_key=YOUR_KEY`
+
+**Exemple de réponse** :
+
+```json
+{
+  "results": [
+    {
+      "id": 550,
+      "title": "Fight Club",
+      "release_date": "1999-10-15",
+      "poster_path": "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+      "vote_average": 8.4,
+      "overview": "A ticking-time-bomb insomniac..."
+    }
+  ]
+}
+```
+
+<Callout type="warn">
+Ne partagez jamais votre clé API publiquement. Dans un projet réel, elle devrait être stockée dans une variable d'environnement côté serveur. Pour ce projet, nous l'utiliserons directement dans le code, mais notez que ce n'est pas une pratique de production.
+</Callout>
+
+### Modèles de données
+
+**Film** :
+
+```javascript
+{
+  id: 550,
+  title: "Fight Club",
+  releaseDate: "1999-10-15",
+  posterPath: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+  voteAverage: 8.4,
+  overview: "A ticking-time-bomb insomniac...",
+  genres: ["Drama", "Thriller"]
+}
+```
+
+**Favori** (stocké dans localStorage) :
+
+```javascript
+{
+  id: 550,
+  title: "Fight Club",
+  posterPath: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+  addedAt: "2025-01-01T12:00:00.000Z"
+}
+```
+
+**Visionné** (stocké dans localStorage) :
+
+```javascript
+{
+  id: 550,
+  title: "Fight Club",
+  watchedAt: "2025-01-01T12:00:00.000Z"
+}
+```
+
+### Interface utilisateur
+
+**Page d'accueil** :
+
+- Header avec logo et navigation
+- Barre de recherche
+- Section "Films populaires" (chargés au démarrage)
+- Section "Mes favoris" (si des favoris existent)
+- Footer
+
+**Page de détails** :
+
+- Affiche du film (en grand)
+- Titre, année, genres
+- Note moyenne
+- Synopsis
+- Boutons : "Ajouter aux favoris", "Marquer comme visionné"
+- Retour à l'accueil
+
+**Responsive design** :
+
+- Mobile : une colonne, navigation simplifiée
+- Tablet : deux colonnes pour les grilles de films
+- Desktop : trois colonnes pour les grilles de films
+
+### Workflow de développement
+
+1. **Planification** : esquissez l'interface et listez les fonctionnalités
+2. **Structure HTML** : créez la structure de base avec des éléments sémantiques
+3. **Styles CSS** : créez le design system et les styles responsive
+4. **Module API** : implémentez la communication avec l'API TMDB
+5. **Module Storage** : implémentez la persistance avec localStorage
+6. **Module UI** : implémentez l'affichage et les interactions
+7. **Intégration** : connectez tous les modules dans main.js
+8. **Tests** : testez manuellement toutes les fonctionnalités
+9. **Déploiement** : poussez sur GitHub et activez GitHub Pages
+10. **Documentation** : créez le README et documentez l'architecture
+
+## Erreurs fréquentes
+
+**Bloquer l'interface pendant les requêtes API**
+
+```javascript
+function rechercherFilms(titre) {
+  const response = await fetch(url);
+  const data = await response.json();
+  afficherResultats(data);
+}
+```
+
+L'utilisateur ne sait pas qu'une requête est en cours. L'interface semble figée.
+
+<Callout type="warn">
+```javascript
+async function rechercherFilms(titre) {
+  afficherLoader();
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    afficherResultats(data);
+  } catch (erreur) {
+    afficherErreur(erreur);
+  } finally {
+    masquerLoader();
+  }
+}
+```
+Affichez toujours un indicateur de chargement pendant les requêtes asynchrones pour informer l'utilisateur.
+</Callout>
+
+**Ignorer les erreurs de l'API**
+
+```javascript
+async function rechercherFilms(titre) {
+  const response = await fetch(url);
+  const data = await response.json();
+  afficherResultats(data);
+}
+```
+
+Si l'API renvoie une erreur ou si la requête échoue, l'application plante sans message d'erreur.
+
+<Callout type="warn">
+```javascript
+async function rechercherFilms(titre) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Erreur API : ${response.status}`);
+    }
+    const data = await response.json();
+    afficherResultats(data);
+  } catch (erreur) {
+    afficherErreur("Impossible de charger les films. Veuillez réessayer.");
+  }
+}
+```
+Gérez toujours les erreurs asynchrones avec try/catch et affichez un message d'erreur clair à l'utilisateur.
+</Callout>
+
+**Ne pas gérer le localStorage plein**
+
+```javascript
+function sauvegarderFavori(film) {
+  const favoris = JSON.parse(localStorage.getItem("favoris")) || [];
+  favoris.push(film);
+  localStorage.setItem("favoris", JSON.stringify(favoris));
+}
+```
+
+Si localStorage est plein, l'application plante sans gestion d'erreur.
+
+<Callout type="warn">
+```javascript
+function sauvegarderFavori(film) {
+  try {
+    const favoris = JSON.parse(localStorage.getItem("favoris")) || [];
+    favoris.push(film);
+    localStorage.setItem("favoris", JSON.stringify(favoris));
+  } catch (erreur) {
+    if (erreur.name === "QuotaExceededError") {
+      afficherErreur("Espace de stockage plein. Supprimez des favoris.");
+    } else {
+      afficherErreur("Erreur lors de la sauvegarde.");
+    }
+  }
+}
+```
+Gérez l'erreur QuotaExceededError pour informer l'utilisateur que le stockage est plein.
+</Callout>
+
+**Ignorer l'accessibilité dans l'interface**
+
+```html
+<img src="poster.jpg">
+<button>+</button>
+```
+
+Les images n'ont pas d'alt, les boutons n'ont pas de labels, l'interface n'est pas accessible au clavier.
+
+<Callout type="warn">
+```html
+<img src="poster.jpg" alt="Affiche du film Fight Club">
+<button aria-label="Ajouter aux favoris">+</button>
+```
+Appliquez les principes d'accessibilité : alt sur les images, aria-label sur les boutons icônes, navigation clavier, contraste suffisant.
+</Callout>
+
+## Exercices
+
+<Exercise n="13.1" title="Planifier l'architecture de l'application">
+Avant de coder, planifiez l'architecture de votre application :
+
+1. Esquissez l'interface (wireframes) pour mobile, tablet, desktop
+2. Listez toutes les fonctionnalités détaillées
+3. Définissez la structure des fichiers
+4. Identifiez les modules JavaScript et leurs responsabilités
+5. Planifiez les routes (si applicable) ou les états de l'application
+
+Documentez votre plan dans un fichier PLAN.md.
+</Exercise>
+
+<Solution>
+PLAN.md :
+
+# Plan de Ma bibliothèque de films
+
+## Interface
+
+### Mobile
+- Header compact (logo + menu)
+- Barre de recherche
+- Grille 1 colonne
+- Modal pour détails
+
+### Tablet
+- Header standard
+- Grille 2 colonnes
+- Page de détails
+
+### Desktop
+- Header complet
+- Grille 3 colonnes
+- Page de détails
+
+## Fonctionnalités
+
+1. Recherche de films par titre
+2. Affichage des films populaires au démarrage
+3. Affichage des détails d'un film
+4. Ajout/Suppression des favoris
+5. Marquage comme visionné
+6. Filtrage (tous, favoris, visionnés)
+7. Tri par date de sortie
+
+## Structure des fichiers
+
+```
+bibliotheque-films/
+├── index.html
+├── css/
+│   ├── variables.css
+│   ├── reset.css
+│   └── main.css
+├── js/
+│   ├── api.js
+│   ├── storage.js
+│   ├── ui.js
+│   └── main.js
+└── images/
+```
+
+## Modules JavaScript
+
+- api.js : fetch, gestion d'erreurs, configuration API
+- storage.js : localStorage, gestion du quota
+- ui.js : affichage, événements, navigation
+- main.js : initialisation, orchestration
+</Solution>
+
+<Exercise n="13.2" title="Créer le module API">
+Créez le module `api.js` avec les fonctions suivantes :
+
+1. `configurerAPI(apiKey)` : configure la clé API
+2. `rechercherFilms(titre)` : recherche des films par titre
+3. `obtenirDetails(id)` : obtient les détails d'un film
+4. `obtenirPopulaires()` : obtient les films populaires
+
+Gérez les erreurs HTTP et réseau. Testez avec l'API TMDB.
+</Exercise>
+
+<Solution>
+```javascript
+// api.js
+const API_BASE = "https://api.themoviedb.org/3";
+let API_KEY = "";
+
+export function configurerAPI(apiKey) {
+  API_KEY = apiKey;
+}
+
+export async function rechercherFilms(titre) {
+  const url = `${API_BASE}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(titre)}`;
+  return await requeterAPI(url);
+}
+
+export async function obtenirDetails(id) {
+  const url = `${API_BASE}/movie/${id}?api_key=${API_KEY}`;
+  return await requeterAPI(url);
+}
+
+export async function obtenirPopulaires() {
+  const url = `${API_BASE}/movie/popular?api_key=${API_KEY}`;
+  return await requeterAPI(url);
+}
+
+async function requeterAPI(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP : ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (erreur) {
+    console.error("Erreur API :", erreur);
+    throw new Error("Impossible de contacter l'API");
+  }
+}
+```
+</Solution>
+
+<Exercise n="13.3" title="Créer le module Storage">
+Créez le module `storage.js` avec les fonctions suivantes :
+
+1. `ajouterFavori(film)` : ajoute un film aux favoris
+2. `supprimerFavori(id)` : supprime un film des favoris
+3. `estFavori(id)` : vérifie si un film est dans les favoris
+4. `obtenirFavoris()` : renvoie tous les favoris
+5. Fonctions équivalentes pour les films visionnés
+
+Gérez l'erreur QuotaExceededError.
+</Exercise>
+
+<Solution>
+```javascript
+// storage.js
+const CLE_FAVORIS = "favoris";
+const CLE_VISIONNES = "visionnes";
+
+export function ajouterFavori(film) {
+  const favoris = obtenirFavoris();
+  if (!favoris.some((f) => f.id === film.id)) {
+    favoris.push({ ...film, addedAt: new Date().toISOString() });
+    sauvegarder(CLE_FAVORIS, favoris);
+  }
+}
+
+export function supprimerFavori(id) {
+  const favoris = obtenirFavoris().filter((f) => f.id !== id);
+  sauvegarder(CLE_FAVORIS, favoris);
+}
+
+export function estFavori(id) {
+  return obtenirFavoris().some((f) => f.id === id);
+}
+
+export function obtenirFavoris() {
+  return charger(CLE_FAVORIS);
+}
+
+export function marquerVisionne(id) {
+  const visionnes = obtenirVisionnes();
+  if (!visionnes.some((v) => v.id === id)) {
+    visionnes.push({ id, watchedAt: new Date().toISOString() });
+    sauvegarder(CLE_VISIONNES, visionnes);
+  }
+}
+
+export function obtenirVisionnes() {
+  return charger(CLE_VISIONNES);
+}
+
+function charger(cle) {
+  try {
+    const valeur = localStorage.getItem(cle);
+    return valeur ? JSON.parse(valeur) : [];
+  } catch (erreur) {
+    console.error("Erreur de chargement :", erreur);
+    return [];
+  }
+}
+
+function sauvegarder(cle, donnees) {
+  try {
+    localStorage.setItem(cle, JSON.stringify(donnees));
+  } catch (erreur) {
+    if (erreur.name === "QuotaExceededError") {
+      throw new Error("Espace de stockage plein");
+    }
+    throw new Error("Erreur de sauvegarde");
+  }
+}
+```
+</Solution>
+
+<Exercise n="13.4" title="Créer le module UI">
+Créez le module `ui.js` avec les fonctions suivantes :
+
+1. `afficherFilms(films, conteneur)` : affiche une grille de films
+2. `afficherDetails(film)` : affiche les détails d'un film
+3. `afficherLoader()` : affiche un indicateur de chargement
+4. `masquerLoader()` : masque l'indicateur de chargement
+5. `afficherErreur(message)` : affiche un message d'erreur
+
+Utilisez des template literals pour générer le HTML.
+</Exercise>
+
+<Solution>
+```javascript
+// ui.js
+const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
+
+export function afficherFilms(films, conteneur) {
+  conteneur.innerHTML = films.map((film) => `
+    <div class="film-card" data-id="${film.id}">
+      <img src="${IMAGE_BASE}${film.posterPath}" alt="${film.title}" loading="lazy">
+      <h3>${film.title}</h3>
+      <p>${film.releaseDate?.split("-")[0] || "N/A"}</p>
+      <p>⭐ ${film.voteAverage?.toFixed(1) || "N/A"}</p>
+    </div>
+  `).join("");
+}
+
+export function afficherDetails(film) {
+  const details = document.getElementById("details");
+  details.innerHTML = `
+    <div class="details-container">
+      <img src="${IMAGE_BASE}${film.posterPath}" alt="${film.title}">
+      <div class="details-info">
+        <h2>${film.title}</h2>
+        <p>${film.releaseDate?.split("-")[0] || "N/A"}</p>
+        <p>⭐ ${film.voteAverage?.toFixed(1) || "N/A"}/10</p>
+        <p>${film.overview || "Pas de synopsis"}</p>
+        <div class="details-actions">
+          <button id="btn-favori">❤️ Favori</button>
+          <button id="btn-visionne">✓ Visionné</button>
+          <button id="btn-retour">← Retour</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+export function afficherLoader() {
+  const loader = document.getElementById("loader");
+  loader.style.display = "block";
+}
+
+export function masquerLoader() {
+  const loader = document.getElementById("loader");
+  loader.style.display = "none";
+}
+
+export function afficherErreur(message) {
+  const erreur = document.getElementById("erreur");
+  erreur.textContent = message;
+  erreur.style.display = "block";
+}
+```
+</Solution>
+
+<Exercise n="13.5" title="Intégrer les modules dans main.js">
+Créez le module `main.js` qui initialise l'application et connecte tous les modules :
+
+1. Configure l'API avec votre clé
+2. Charge les films populaires au démarrage
+3. Gère la recherche (input + bouton)
+4. Gère les clics sur les films (afficher détails)
+5. Gère les boutons favori/visionné
+6. Gère le filtrage
+
+Testez l'intégration complète.
+</Exercise>
+
+<Solution>
+```javascript
+// main.js
+import { configurerAPI, rechercherFilms, obtenirPopulaires, obtenirDetails } from "./api.js";
+import { ajouterFavori, supprimerFavori, estFavori, marquerVisionne, obtenirVisionnes } from "./storage.js";
+import { afficherFilms, afficherDetails, afficherLoader, masquerLoader, afficherErreur } from "./ui.js";
+
+const API_KEY = "VOTRE_CLE_API";
+
+configurerAPI(API_KEY);
+
+// Éléments du DOM
+const inputRecherche = document.getElementById("recherche");
+const boutonRecherche = document.getElementById("btn-recherche");
+const conteneurResultats = document.getElementById("resultats");
+const conteneurDetails = document.getElementById("details");
+const conteneurPopulaires = document.getElementById("populaires");
+
+// Initialisation
+async function initialiser() {
+  try {
+    afficherLoader();
+    const data = await obtenirPopulaires();
+    afficherFilms(data.results, conteneurPopulaires);
+  } catch (erreur) {
+    afficherErreur("Impossible de charger les films populaires");
+  } finally {
+    masquerLoader();
+  }
+}
+
+// Recherche
+async function rechercher() {
+  const titre = inputRecherche.value.trim();
+  if (!titre) return;
+
+  try {
+    afficherLoader();
+    const data = await rechercherFilms(titre);
+    afficherFilms(data.results, conteneurResultats);
+  } catch (erreur) {
+    afficherErreur("Impossible de rechercher les films");
+  } finally {
+    masquerLoader();
+  }
+}
+
+// Afficher détails
+async function afficherDetailsFilm(id) {
+  try {
+    afficherLoader();
+    const film = await obtenirDetails(id);
+    afficherDetails(film);
+    mettreAJourBoutons(film.id);
+  } catch (erreur) {
+    afficherErreur("Impossible de charger les détails");
+  } finally {
+    masquerLoader();
+  }
+}
+
+// Mettre à jour les boutons
+function mettreAJourBoutons(id) {
+  const btnFavori = document.getElementById("btn-favori");
+  const btnVisionne = document.getElementById("btn-visionne");
+
+  if (estFavori(id)) {
+    btnFavori.textContent = "❤️ Retirer des favoris";
+  } else {
+    btnFavori.textContent = "❤️ Ajouter aux favoris";
+  }
+}
+
+// Écouteurs d'événements
+boutonRecherche.addEventListener("click", rechercher);
+inputRecherche.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") rechercher();
+});
+
+conteneurResultats.addEventListener("click", (e) => {
+  const card = e.target.closest(".film-card");
+  if (card) {
+    afficherDetailsFilm(parseInt(card.dataset.id));
+  }
+});
+
+conteneurPopulaires.addEventListener("click", (e) => {
+  const card = e.target.closest(".film-card");
+  if (card) {
+    afficherDetailsFilm(parseInt(card.dataset.id));
+  }
+});
+
+conteneurDetails.addEventListener("click", (e) => {
+  if (e.target.id === "btn-favori") {
+    const id = parseInt(document.querySelector(".details-container").dataset.id);
+    if (estFavori(id)) {
+      supprimerFavori(id);
+    } else {
+      const film = { id, title: document.querySelector("h2").textContent };
+      ajouterFavori(film);
+    }
+    mettreAJourBoutons(id);
+  }
+
+  if (e.target.id === "btn-visionne") {
+    const id = parseInt(document.querySelector(".details-container").dataset.id);
+    marquerVisionne(id);
+    e.target.textContent = "✓ Visionné";
+  }
+
+  if (e.target.id === "btn-retour") {
+    conteneurDetails.innerHTML = "";
+  }
+});
+
+// Démarrage
+initialiser();
+```
+</Solution>
+
+<Exercise n="13.6" title='Créer les styles CSS'>
+Créez les styles CSS pour l'application avec :
+
+1. Variables CSS pour les couleurs et espacements
+2. Design responsive (mobile-first)
+3. Grille de films avec Flexbox ou Grid
+4. Styles pour le loader et les messages d'erreur
+5. Modal ou page de détails stylisée
+
+Appliquez le design system créé dans le module CSS Avancé.
+</Exercise>
+
+<Solution>
+```css
+/* variables.css */
+:root {
+  --color-primary: #6366f1;
+  --color-text: #333;
+  --color-text-muted: #666;
+  --color-background: #ffffff;
+  --color-background-alt: #f5f5f5;
+  --color-border: #e0e0e0;
+  --space-8: 8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+}
+
+/* reset.css */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+/* main.css */
+header {
+  padding: var(--space-16) var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.search-container {
+  display: flex;
+  gap: var(--space-8);
+  margin-bottom: var(--space-24);
+}
+
+#recherche {
+  flex: 1;
+  padding: var(--space-8) var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+#btn-recherche {
+  padding: var(--space-8) var(--space-16);
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.film-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-24);
+  padding: var(--space-24);
+}
+
+@media (min-width: 768px) {
+  .film-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .film-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.film-card {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+
+.film-card:hover {
+  border-color: var(--color-primary);
+}
+
+.film-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.film-card h3 {
+  padding: var(--space-16);
+  font-size: 1rem;
+}
+
+.film-card p {
+  padding: 0 var(--space-16) var(--space-16);
+  color: var(--color-text-muted);
+}
+
+#loader {
+  display: none;
+  text-align: center;
+  padding: var(--space-32);
+}
+
+#erreur {
+  display: none;
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: var(--space-16);
+  margin: var(--space-24);
+  border-radius: 8px;
+}
+
+.details-container {
+  max-width: 800px;
+  margin: var(--space-32) auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-24);
+}
+
+@media (min-width: 768px) {
+  .details-container {
+    grid-template-columns: 300px 1fr;
+  }
+}
+
+.details-actions {
+  display: flex;
+  gap: var(--space-8);
+  margin-top: var(--space-24);
+}
+
+.details-actions button {
+  padding: var(--space-8) var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-background-alt);
+  cursor: pointer;
+}
+```
+</Solution>
+
+<Exercise n="13.7" title="Déployer sur GitHub Pages">
+Déployez votre application sur GitHub Pages :
+
+1. Initialisez Git dans le projet
+2. Créez un repository sur GitHub
+3. Pussez le code
+4. Activez GitHub Pages
+5. Vérifiez que l'application fonctionne en ligne
+
+Documentez les étapes dans le README.
+</Exercise>
+
+<Solution>
+```bash
+# Initialisation Git
+git init
+git add .
+git commit -m "Initial commit: Ma bibliothèque de films"
+
+# Lier à GitHub
+git remote add origin https://github.com/VOTRE_UTILISATEUR/bibliotheque-films.git
+git push -u origin main
+```
+
+Sur GitHub :
+1. Allez dans Settings → Pages
+2. Source : Deploy from a branch
+3. Branch : main, Folder : /root
+4. Cliquez sur Save
+
+L'application sera accessible à : https://VOTRE_UTILISATEUR.github.io/bibliotheque-films/
+
+README.md :
+```markdown
+# Ma bibliothèque de films
+
+Application web pour rechercher et gérer des films favoris.
+
+## Déploiement
+
+L'application est déployée sur GitHub Pages : https://VOTRE_UTILISATEUR.github.io/bibliotheque-films/
+
+## Installation locale
+
+1. Clonez le repository
+2. Ouvrez index.html dans un navigateur
+
+## Configuration
+
+Remplacez `VOTRE_CLE_API` dans js/main.js par votre clé TMDB.
+```
+</Solution>
+
+<Exercise n="13.8" title="Défi : Application complète">
+Créez l'application complète "Ma bibliothèque de films" avec toutes les fonctionnalités :
+
+1. Recherche de films
+2. Affichage des détails
+3. Gestion des favoris (persisté)
+4. Marquage comme visionné (persisté)
+5. Filtrage (tous, favoris, visionnés)
+6. Interface responsive
+7. Gestion d'erreurs robuste
+8. Déploiement sur GitHub Pages
+
+L'application doit être complète, testée, et documentée.
+</Exercise>
+
+<Solution>
+L'application complète intègre tous les modules créés dans les exercices précédents. Structure finale :
+
+```
+bibliotheque-films/
+├── index.html
+├── css/
+│   ├── variables.css
+│   ├── reset.css
+│   └── main.css
+├── js/
+│   ├── api.js
+│   ├── storage.js
+│   ├── ui.js
+│   └── main.js
+├── images/
+│   └── favicon.svg
+├── .gitignore
+└── README.md
+```
+
+index.html :
+```html
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ma bibliothèque de films</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <header>
+    <h1>🎬 Ma bibliothèque de films</h1>
+    <div class="search-container">
+      <input type="text" id="recherche" placeholder="Rechercher un film...">
+      <button id="btn-recherche">Rechercher</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Films populaires</h2>
+      <div id="populaires" class="film-grid"></div>
+    </section>
+
+    <section id="resultats-section" style="display: none;">
+      <h2>Résultats de recherche</h2>
+      <div id="resultats" class="film-grid"></div>
+    </section>
+
+    <div id="details"></div>
+    <div id="loader">Chargement...</div>
+    <div id="erreur"></div>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
+```
+
+L'application est maintenant complète, fonctionnelle, et prête à être partagée.
+</Solution>
+
+## Livrable
+
+Créez l'application complète "Ma bibliothèque de films". L'application doit inclure :
+
+**Fonctionnalités obligatoires**
+- Recherche de films par titre
+- Affichage des films populaires au démarrage
+- Détails d'un film (affiche, titre, année, note, synopsis)
+- Ajout/Suppression des favoris (persisté dans localStorage)
+- Marquage comme visionné (persisté dans localStorage)
+- Filtrage (tous, favoris, visionnés)
+- Interface responsive (mobile, tablet, desktop)
+
+**Architecture obligatoire**
+- Modules JavaScript séparés (api.js, storage.js, ui.js, main.js)
+- Structure de fichiers organisée
+- CSS avec variables et design system
+- HTML sémantique et accessible
+
+**Déploiement obligatoire**
+- Repository Git avec historique de commits
+- Repository GitHub public
+- GitHub Pages activé et fonctionnel
+- Application accessible via URL GitHub Pages
+
+**Documentation obligatoire**
+- README avec instructions d'installation
+- Documentation de l'architecture
+- Explication de la configuration (clé API)
+- Captures d'écran de l'application
+
+**Critères d'évaluation**
+- [ ] Application fonctionnelle avec toutes les features
+- [ ] Architecture modulaire (séparation des responsabilités)
+- [ ] Interface responsive et accessible
+- [ ] Gestion d'erreurs robuste
+- [ ] Persistance localStorage fonctionnelle
+- [ ] Déploiement GitHub Pages réussi
+- [ ] Documentation complète
+- [ ] Code propre et commenté
+
+**Pistes d'extension**
+- Ajoutez le tri par date de sortie ou note
+- Implémentez la pagination des résultats
+- Ajoutez des suggestions de films similaires
+- Créez un mode sombre/clair
+- Ajoutez des animations CSS
+- Implémentez le partage de favoris
+
+## Pour aller plus loin
+
+- [TMDB API Documentation](https://developers.themoviedb.org/3) : Documentation complète de l'API TMDB.
+- [GitHub Pages Documentation](https://docs.github.com/en/pages) : Documentation officielle de GitHub Pages.
+- [Web Application Architecture](https://github.com/fnando/35) : Guide sur l'architecture d'applications web.
+- [JavaScript Design Patterns](https://addyosmani.com/resources/essentialjsdesignpatterns/book/) : Livre sur les patterns de conception en JavaScript.
+- [Clean Code JavaScript](https://github.com/ryanmcdermott/clean-code-javascript) : Guide sur les bonnes pratiques en JavaScript.

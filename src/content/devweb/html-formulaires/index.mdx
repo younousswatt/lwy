@@ -1,0 +1,820 @@
+# HTML — Formulaires
+
+Ce module explore la création de formulaires HTML, le mécanisme principal d'interaction entre l'utilisateur et le serveur. Il explique les différents types de champs de saisie, les méthodes de validation native, l'association des labels aux champs pour l'accessibilité, et le processus de soumission des données. À l'issue de ce module, vous serez capable de créer des formulaires accessibles et fonctionnels, en particulier un formulaire d'inscription complet avec validation native.
+
+## Objectifs
+
+- Comprendre le rôle de l'élément form et ses attributs essentiels (action, method).
+- Choisir les types d'input appropriés en fonction du type de données attendu.
+- Associer correctement chaque champ à son label pour l'accessibilité.
+- Utiliser les attributs de validation native (required, pattern, min, max).
+- Créer des groupes de champs (checkbox, radio) avec fieldset et legend.
+- Comprendre la différence entre les méthodes GET et POST pour la soumission.
+- Créer un formulaire d'inscription complet avec validation.
+
+## Prérequis
+
+- Fondamentaux du web (HTTP, requêtes et réponses)
+- HTML — Structure (éléments sémantiques, accessibilité)
+
+## Cours
+
+### L'élément form
+
+L'élément `form` regroupe tous les champs de saisie d'un formulaire et définit comment les données seront envoyées au serveur. Les attributs essentiels sont :
+
+- `action` : URL vers laquelle les données seront envoyées (optionnel, par défaut la page actuelle).
+- `method` : méthode HTTP utilisée (GET ou POST, par défaut GET).
+- `enctype` : type d'encodage des données (application/x-www-form-urlencoded par défaut, multipart/form-data pour les fichiers).
+- `name` : identifiant du formulaire (utile en JavaScript).
+
+```html
+<form action="/inscription" method="post">
+  <!-- Champs du formulaire -->
+</form>
+```
+
+<Callout type="info">
+La méthode GET envoie les données dans l'URL (visibles dans la barre d'adresse). Elle convient aux formulaires de recherche. La méthode POST envoie les données dans le corps de la requête (invisibles). Elle convient aux formulaires qui modifient des données (inscription, modification de profil).
+</Callout>
+
+### Champs de saisie de texte
+
+L'élément `input` est le champ de saisie le plus polyvalent. L'attribut `type` détermine le comportement et la validation du champ :
+
+- `text` : texte court (une ligne).
+- `email` : adresse e-mail (validation du format).
+- `password` : mot de passe (caractères masqués).
+- `tel` : numéro de téléphone.
+- `url` : URL web.
+- `search` : champ de recherche.
+- `number` : nombre (validation numérique).
+- `date` : date (calendrier).
+- `time` : heure.
+- `datetime-local` : date et heure locale.
+- `month` : mois et année.
+- `week` : semaine et année.
+
+```html
+<label for="nom">Nom</label>
+<input type="text" id="nom" name="nom" required>
+
+<label for="email">E-mail</label>
+<input type="email" id="email" name="email" required>
+
+<label for="naissance">Date de naissance</label>
+<input type="date" id="naissance" name="naissance">
+```
+
+Les attributs utiles sur les champs de texte :
+
+- `id` : identifiant unique (pour l'association au label).
+- `name` : nom du champ (utilisé dans les données envoyées au serveur).
+- `placeholder` : texte indicatif disparaisse lors de la saisie.
+- `required` : champ obligatoire.
+- `minlength` / `maxlength` : longueur minimale/maximale.
+- `pattern` : expression régulière pour la validation.
+- `autocomplete` : suggestions de saisie automatique.
+
+<Callout type="tip">
+N'utilisez pas `placeholder` comme substitut de `label`. Le placeholder disparaît dès que l'utilisateur commence à saisir, ce qui peut créer de la confusion. Toujours associer un label explicite à chaque champ.
+</Callout>
+
+### Zones de texte multilignes
+
+Pour les textes plus longs (commentaires, descriptions), utilisez l'élément `textarea`. Contrairement à `input`, `textarea` a une balise d'ouverture et de fermeture.
+
+```html
+<label for="message">Message</label>
+<textarea id="message" name="message" rows="5" cols="40" placeholder="Votre message..."></textarea>
+```
+
+Les attributs spécifiques :
+
+- `rows` : nombre de lignes visibles.
+- `cols` : nombre de colonnes visibles (largeur approximative en caractères).
+- `maxlength` : nombre maximum de caractères.
+- `wrap` : comportement du retour à la ligne (soft, hard, off).
+
+Le texte entre les balises est le contenu par défaut du champ. Pour un champ vide, laissez simplement la balise fermante sur la même ligne ou sur la ligne suivante sans texte.
+
+### Listes déroulantes et menus
+
+L'élément `select` crée une liste déroulante. Chaque option est définie avec `option`. L'attribut `selected` sur une option la pré-sélectionne.
+
+```html
+<label for="pays">Pays</label>
+<select id="pays" name="pays">
+  <option value="">Sélectionnez un pays</option>
+  <option value="fr">France</option>
+  <option value="be">Belgique</option>
+  <option value="ch">Suisse</option>
+  <option value="ca">Canada</option>
+</select>
+```
+
+L'attribut `multiple` permet de sélectionner plusieurs options (avec Ctrl ou Cmd). L'attribut `size` définit le nombre d'options visibles (transforme la liste déroulante en liste à défilement).
+
+```html
+<label for="interets">Centres d'intérêt (Ctrl+clic pour plusieurs)</label>
+<select id="interets" name="interets" multiple size="5">
+  <option value="dev">Développement</option>
+  <option value="design">Design</option>
+  <option value="data">Data science</option>
+  <option value="devops">DevOps</option>
+  <option value="security">Sécurité</option>
+</select>
+```
+
+Pour créer des groupes d'options hiérarchiques, utilisez `optgroup`.
+
+```html
+<select id="langage" name="langage">
+  <optgroup label="Frontend">
+    <option value="html">HTML</option>
+    <option value="css">CSS</option>
+    <option value="js">JavaScript</option>
+  </optgroup>
+  <optgroup label="Backend">
+    <option value="python">Python</option>
+    <option value="php">PHP</option>
+    <option value="node">Node.js</option>
+  </optgroup>
+</select>
+```
+
+### Cases à cocher et boutons radio
+
+Les cases à cocher (`checkbox`) permettent des sélections multiples (choix non exclusifs). Les boutons radio (`radio`) permettent une sélection unique (choix exclusif).
+
+```html
+<fieldset>
+  <legend>Centres d'intérêt</legend>
+  <input type="checkbox" id="dev" name="interets" value="dev">
+  <label for="dev">Développement</label>
+  
+  <input type="checkbox" id="design" name="interets" value="design">
+  <label for="design">Design</label>
+  
+  <input type="checkbox" id="data" name="interets" value="data">
+  <label for="data">Data science</label>
+</fieldset>
+
+<fieldset>
+  <legend>Niveau d'expérience</legend>
+  <input type="radio" id="debutant" name="niveau" value="debutant">
+  <label for="debutant">Débutant</label>
+  
+  <input type="radio" id="intermediaire" name="niveau" value="intermediaire">
+  <label for="intermediaire">Intermédiaire</label>
+  
+  <input type="radio" id="expert" name="niveau" value="expert">
+  <label for="expert">Expert</label>
+</fieldset>
+```
+
+Pour les boutons radio, l'attribut `name` doit être identique pour tous les boutons du même groupe. Le navigateur garantit qu'un seul bouton du groupe peut être sélectionné. Pour les cases à cocher, le même `name` peut être utilisé pour envoyer plusieurs valeurs au serveur.
+
+<Callout type="info">
+L'élément `fieldset` regroupe logiquement les champs liés. L'élément `legend` fournit une légende pour le groupe. Ces éléments améliorent l'accessibilité : les utilisateurs de lecteurs d'écran comprennent la relation entre les champs et leur groupe.
+</Callout>
+
+### Labels et accessibilité
+
+Chaque champ de formulaire doit être associé à un label. L'association se fait via l'attribut `for` du label correspondant à l'attribut `id` du champ. Cette association explicite permet aux utilisateurs de lecteurs d'écran de comprendre la relation entre le label et le champ.
+
+```html
+<label for="email">Adresse e-mail</label>
+<input type="email" id="email" name="email">
+```
+
+Une alternative est d'imbriquer le champ directement dans le label :
+
+```html
+<label>
+  Adresse e-mail
+  <input type="email" name="email">
+</label>
+```
+
+Cette approche est valide mais moins flexible pour le stylisme. L'approche avec `for` et `id` est préférée pour la séparation de la structure et de la présentation.
+
+<Callout type="warn">
+Jamais utiliser un label textuel séparé sans association explicite :
+```html
+<span>Nom</span>
+<input type="text" name="nom">
+```
+Les lecteurs d'écran ne peuvent pas associer le texte au champ. Toujours utiliser l'élément `label` avec l'attribut `for`.
+</Callout>
+
+Pour les champs sans label visible (ex: bouton de recherche), utilisez `aria-label` ou `aria-labelledby` pour fournir un label accessible.
+
+```html
+<input type="search" name="q" aria-label="Rechercher">
+<button type="submit">Rechercher</button>
+```
+
+### Validation native
+
+HTML5 propose des attributs de validation native qui fonctionnent sans JavaScript :
+
+- `required` : champ obligatoire.
+- `min` / `max` : valeur minimale/maximale (pour nombres, dates).
+- `step` : incrément valide (pour nombres).
+- `minlength` / `maxlength` : longueur minimale/maximale du texte.
+- `pattern` : expression régulière que la valeur doit respecter.
+
+```html
+<label for="age">Âge</label>
+<input type="number" id="age" name="age" min="18" max="120" required>
+
+<label for="code">Code postal</label>
+<input type="text" id="code" name="code" pattern="[0-9]{5}" required>
+
+<label for="mdp">Mot de passe</label>
+<input type="password" id="mdp" name="mdp" minlength="8" required>
+```
+
+Le navigateur affiche un message d'erreur natif lorsque la validation échoue. Vous pouvez personnaliser ce message avec l'attribut `title` ou utiliser des messages d'erreur personnalisés en JavaScript.
+
+<Callout type="tip">
+La validation native est un premier filtre de sécurité côté client. Elle améliore l'expérience utilisateur en fournissant un retour immédiat. Cependant, elle ne remplace pas la validation côté serveur, qui est obligatoire pour la sécurité.
+</Callout>
+
+### Boutons de soumission
+
+Les boutons de formulaire sont créés avec l'élément `button` ou `input type="submit"`. L'élément `button` est plus flexible car il peut contenir du HTML (texte + icône).
+
+```html
+<button type="submit">S'inscrire</button>
+<button type="reset">Réinitialiser</button>
+<button type="button">Annuler</button>
+```
+
+L'attribut `type` définit le comportement :
+
+- `submit` : soumet le formulaire (par défaut).
+- `reset` : réinitialise tous les champs à leurs valeurs par défaut.
+- `button` : bouton générique (soumet le formulaire dans les anciens navigateurs, ne fait rien par défaut en HTML5).
+
+Pour soumettre le formulaire avec une image, utilisez `input type="image"`.
+
+```html
+<input type="image" src="submit.png" alt="Envoyer">
+```
+
+### Méthodes de soumission
+
+La méthode HTTP utilisée pour la soumission influence la manière dont les données sont transmises et traitées.
+
+**GET** : les données sont encodées dans l'URL après le caractère `?`.
+
+```
+https://example.com/recherche?q=html&lang=fr
+```
+
+Convient aux formulaires idempotents (qui ne modifient pas de données) : recherche, filtrage, pagination. Les données sont visibles dans l'historique du navigateur et peuvent être bookmarkées.
+
+**POST** : les données sont envoyées dans le corps de la requête HTTP, non visibles dans l'URL.
+
+Convient aux formulaires qui modifient des données : inscription, modification de profil, envoi de message. Les données ne sont pas visibles dans l'historique ni bookmarkables, mais sont plus sécurisées pour les données sensibles.
+
+```html
+<!-- Recherche : GET -->
+<form action="/recherche" method="get">
+  <input type="search" name="q">
+  <button type="submit">Rechercher</button>
+</form>
+
+<!-- Inscription : POST -->
+<form action="/inscription" method="post">
+  <input type="email" name="email" required>
+  <input type="password" name="password" required>
+  <button type="submit">S'inscrire</button>
+</form>
+```
+
+### Upload de fichiers
+
+Pour permettre le téléchargement de fichiers, le formulaire doit utiliser la méthode POST et l'encodage `multipart/form-data`. Le champ de fichier est créé avec `input type="file"`.
+
+```html
+<form action="/upload" method="post" enctype="multipart/form-data">
+  <label for="avatar">Avatar</label>
+  <input type="file" id="avatar" name="avatar" accept="image/png, image/jpeg">
+  
+  <button type="submit">Envoyer</button>
+</form>
+```
+
+L'attribut `accept` restreint les types de fichiers acceptés (MIME types ou extensions). L'attribut `multiple` permet la sélection de plusieurs fichiers.
+
+## Erreurs fréquentes
+
+**Oublier l'association label-champ**
+
+```html
+<span>Nom</span>
+<input type="text" name="nom">
+```
+
+Les utilisateurs de lecteurs d'écran ne peuvent pas identifier la relation entre le texte et le champ. Le navigateur ne peut pas activer le champ en cliquant sur le texte.
+
+<Callout type="warn">
+```html
+<label for="nom">Nom</label>
+<input type="text" id="nom" name="nom">
+```
+Toujours associer chaque champ à un label avec les attributs `for` et `id`. Pour les champs sans label visible, utilisez `aria-label`.
+</Callout>
+
+**Utiliser placeholder comme label**
+
+```html
+<input type="email" name="email" placeholder="Adresse e-mail">
+```
+
+Le placeholder disparaît lors de la saisie. L'utilisateur ne peut plus voir ce qui est attendu. Les technologies d'assistance ne traitent pas les placeholders comme des labels.
+
+<Callout type="warn">
+```html
+<label for="email">Adresse e-mail</label>
+<input type="email" id="email" name="email" placeholder="exemple@email.com">
+```
+Utilisez un label explicite. Le placeholder peut fournir un exemple mais ne remplace jamais le label.
+</Callout>
+
+**Même id sur plusieurs éléments**
+
+```html
+<label for="nom">Nom</label>
+<input type="text" id="nom" name="nom">
+
+<label for="nom">Prénom</label>
+<input type="text" id="nom" name="prenom">
+```
+
+L'attribut `id` doit être unique dans le document. Le label pointe vers le premier élément avec cet id, créant une association incorrecte.
+
+<Callout type="warn">
+```html
+<label for="nom">Nom</label>
+<input type="text" id="nom" name="nom">
+
+<label for="prenom">Prénom</label>
+<input type="text" id="prenom" name="prenom">
+```
+Chaque élément doit avoir un id unique. Utilisez des préfixes ou des noms descriptifs pour éviter les conflits.
+</Callout>
+
+**Oublier required sur les champs obligatoires**
+
+```html
+<label for="email">E-mail</label>
+<input type="email" id="email" name="email">
+
+<label for="password">Mot de passe</label>
+<input type="password" id="password" name="password">
+```
+
+L'utilisateur peut soumettre le formulaire sans remplir ces champs. Le serveur doit effectuer une validation supplémentaire, mais l'expérience utilisateur est dégradée.
+
+<Callout type="warn">
+```html
+<label for="email">E-mail</label>
+<input type="email" id="email" name="email" required>
+
+<label for="password">Mot de passe</label>
+<input type="password" id="password" name="password" required>
+```
+Ajoutez l'attribut `required` sur tous les champs obligatoires pour une validation native immédiate.
+</Callout>
+
+**Utiliser GET pour des données sensibles**
+
+```html
+<form action="/inscription" method="get">
+  <input type="password" name="password">
+  <button type="submit">S'inscrire</button>
+</form>
+```
+
+Le mot de passe apparaît dans l'URL et dans l'historique du navigateur. C'est une faille de sécurité grave.
+
+<Callout type="warn">
+```html
+<form action="/inscription" method="post">
+  <input type="password" name="password">
+  <button type="submit">S'inscrire</button>
+</form>
+```
+Utilisez toujours POST pour les formulaires qui contiennent des données sensibles ou qui modifient des données sur le serveur.
+</Callout>
+
+## Exercices
+
+<Exercise n="3.1" title='Créer un formulaire de contact simple'>
+Créez un formulaire de contact avec les champs suivants :
+
+1. Nom (text, obligatoire)
+2. E-mail (email, obligatoire)
+3. Sujet (select avec options : Information, Support, Partenariat)
+4. Message (textarea, obligatoire)
+5. Bouton de soumission
+
+Associez chaque champ à son label et utilisez la méthode POST.
+</Exercise>
+
+<Solution>
+```html
+<form action="/contact" method="post">
+  <div>
+    <label for="nom">Nom</label>
+    <input type="text" id="nom" name="nom" required>
+  </div>
+  
+  <div>
+    <label for="email">E-mail</label>
+    <input type="email" id="email" name="email" required>
+  </div>
+  
+  <div>
+    <label for="sujet">Sujet</label>
+    <select id="sujet" name="sujet">
+      <option value="info">Information</option>
+      <option value="support">Support</option>
+      <option value="partenariat">Partenariat</option>
+    </select>
+  </div>
+  
+  <div>
+    <label for="message">Message</label>
+    <textarea id="message" name="message" rows="5" required></textarea>
+  </div>
+  
+  <button type="submit">Envoyer</button>
+</form>
+```
+</Solution>
+
+<Exercise n="3.2" title='Ajouter la validation native'>
+Améliorez le formulaire de contact en ajoutant :
+
+1. Une longueur minimale de 10 caractères pour le nom
+2. Une longueur minimale de 20 caractères pour le message
+3. Un pattern pour le code postal si vous ajoutez ce champ
+4. Testez la validation en essayant de soumettre le formulaire avec des données invalides
+
+Quels messages d'erreur affiche le navigateur ?
+</Exercise>
+
+<Solution>
+```html
+<form action="/contact" method="post">
+  <div>
+    <label for="nom">Nom</label>
+    <input type="text" id="nom" name="nom" minlength="10" required>
+  </div>
+  
+  <div>
+    <label for="email">E-mail</label>
+    <input type="email" id="email" name="email" required>
+  </div>
+  
+  <div>
+    <label for="code">Code postal</label>
+    <input type="text" id="code" name="code" pattern="[0-9]{5}">
+  </div>
+  
+  <div>
+    <label for="message">Message</label>
+    <textarea id="message" name="message" rows="5" minlength="20" required></textarea>
+  </div>
+  
+  <button type="submit">Envoyer</button>
+</form>
+```
+
+Le navigateur affiche des messages comme :
+- "Veuillez remplir ce champ" (required)
+- "La valeur doit comporter au moins X caractères" (minlength)
+- "Veuillez respecter le format demandé" (pattern)
+</Solution>
+
+<Exercise n="3.3" title='Créer des groupes de boutons radio et checkbox'>
+Créez un formulaire d'inscription avec :
+
+1. Un groupe de boutons radio pour le civilité (M., Mme, Non précisé)
+2. Un groupe de cases à cocher pour les centres d'intérêt (Développement, Design, Data, DevOps)
+3. Utilisez fieldset et legend pour chaque groupe
+
+Testez que seul un bouton radio peut être sélectionné, mais plusieurs cases à cocher.
+</Exercise>
+
+<Solution>
+```html
+<form action="/inscription" method="post">
+  <fieldset>
+    <legend>Civilité</legend>
+    <input type="radio" id="monsieur" name="civilite" value="M." required>
+    <label for="monsieur">M.</label>
+    
+    <input type="radio" id="madame" name="civilite" value="Mme">
+    <label for="madame">Mme</label>
+    
+    <input type="radio" id="np" name="civilite" value="np">
+    <label for="np">Non précisé</label>
+  </fieldset>
+  
+  <fieldset>
+    <legend>Centres d'intérêt</legend>
+    <input type="checkbox" id="dev" name="interets" value="dev">
+    <label for="dev">Développement</label>
+    
+    <input type="checkbox" id="design" name="interets" value="design">
+    <label for="design">Design</label>
+    
+    <input type="checkbox" id="data" name="interets" value="data">
+    <label for="data">Data</label>
+    
+    <input type="checkbox" id="devops" name="interets" value="devops">
+    <label for="devops">DevOps</label>
+  </fieldset>
+  
+  <button type="submit">S'inscrire</button>
+</form>
+```
+</Solution>
+
+<Exercise n="3.4" title='Créer un formulaire avec différents types d&apos;input'>
+Créez un formulaire de profil utilisateur avec :
+
+1. Nom (text)
+2. Âge (number, min 18, max 120)
+3. Date de naissance (date)
+4. Site web (url)
+5. Téléphone (tel)
+6. Newsletter (checkbox)
+7. Boutons submit et reset
+
+Testez que chaque type d'input affiche l'interface appropriée (calendrier pour date, clavier numérique pour tel sur mobile).
+</Exercise>
+
+<Solution>
+```html
+<form action="/profil" method="post">
+  <div>
+    <label for="nom">Nom</label>
+    <input type="text" id="nom" name="nom" required>
+  </div>
+  
+  <div>
+    <label for="age">Âge</label>
+    <input type="number" id="age" name="age" min="18" max="120">
+  </div>
+  
+  <div>
+    <label for="naissance">Date de naissance</label>
+    <input type="date" id="naissance" name="naissance">
+  </div>
+  
+  <div>
+    <label for="site">Site web</label>
+    <input type="url" id="site" name="site" placeholder="https://">
+  </div>
+  
+  <div>
+    <label for="tel">Téléphone</label>
+    <input type="tel" id="tel" name="tel" placeholder="06 12 34 56 78">
+  </div>
+  
+  <div>
+    <input type="checkbox" id="newsletter" name="newsletter">
+    <label for="newsletter">S'abonner à la newsletter</label>
+  </div>
+  
+  <button type="submit">Enregistrer</button>
+  <button type="reset">Réinitialiser</button>
+</form>
+```
+</Solution>
+
+<Exercise n="3.5" title="Comparer GET et POST">
+Créez deux formulaires identiques (recherche avec un champ q) : un avec method="get", l'autre avec method="post". Soumettez les deux formulaires et observez :
+
+1. L'URL après soumission
+2. Les données dans les DevTools (onglet Network)
+3. Le comportement lors du rechargement de la page
+
+Quelle méthode est appropriée pour un formulaire de recherche ?
+</Exercise>
+
+<Solution>
+```html
+<!-- GET -->
+<form action="/recherche" method="get">
+  <label for="q-get">Recherche</label>
+  <input type="search" id="q-get" name="q">
+  <button type="submit">Rechercher (GET)</button>
+</form>
+
+<!-- POST -->
+<form action="/recherche" method="post">
+  <label for="q-post">Recherche</label>
+  <input type="search" id="q-post" name="q">
+  <button type="submit">Rechercher (POST)</button>
+</form>
+```
+
+Observations :
+- GET : URL devient `/recherche?q=terme`, données visibles, rechargement ne renvoie pas les données.
+- POST : URL reste `/recherche`, données dans le corps de la requête, navigateur demande confirmation au rechargement.
+
+Pour un formulaire de recherche, GET est approprié car : idempotent, bookmarkable, partageable.
+</Solution>
+
+<Exercise n="3.6" title="Créer un formulaire d'upload">
+Créez un formulaire permettant de télécharger une photo de profil :
+
+1. Champ de fichier (accepter uniquement images)
+2. Champ de texte pour une légende
+3. Utilisez enctype="multipart/form-data"
+4. Ajoutez l'attribut multiple pour permettre plusieurs fichiers
+
+Testez en sélectionnant des fichiers et observez les données envoyées dans les DevTools.
+</Exercise>
+
+<Solution>
+```html
+<form action="/upload" method="post" enctype="multipart/form-data">
+  <div>
+    <label for="photo">Photo de profil</label>
+    <input type="file" id="photo" name="photo" accept="image/*" multiple>
+  </div>
+  
+  <div>
+    <label for="legende">Légende</label>
+    <input type="text" id="legende" name="legende">
+  </div>
+  
+  <button type="submit">Envoyer</button>
+</form>
+```
+
+Dans les DevTools (onglet Network), observez que :
+- Content-Type est `multipart/form-data; boundary=...`
+- Les données sont encodées avec un séparateur (boundary)
+- Les fichiers sont envoyés en binaire
+</Solution>
+
+<Exercise n="3.7" title="Défi : Formulaire d'inscription complet">
+Créez un formulaire d'inscription complet avec :
+
+1. Civilité (radio : M., Mme, Non précisé)
+2. Nom (text, minlength 2, required)
+3. Prénom (text, minlength 2, required)
+4. E-mail (email, required)
+5. Mot de passe (password, minlength 8, required)
+6. Confirmation du mot de passe (password, minlength 8, required)
+7. Date de naissance (date)
+8. Pays (select avec au moins 5 pays)
+9. Centres d'intérêt (checkbox : Dev, Design, Data, DevOps)
+10. Newsletter (checkbox)
+11. Conditions générales (checkbox, required)
+12. Boutons submit et reset
+
+Tous les champs doivent avoir un label associé. Les groupes doivent utiliser fieldset et legend.
+</Exercise>
+
+<Solution>
+```html
+<form action="/inscription" method="post">
+  <fieldset>
+    <legend>Civilité</legend>
+    <input type="radio" id="m" name="civilite" value="M." required>
+    <label for="m">M.</label>
+    
+    <input type="radio" id="mme" name="civilite" value="Mme">
+    <label for="mme">Mme</label>
+    
+    <input type="radio" id="np" name="civilite" value="np">
+    <label for="np">Non précisé</label>
+  </fieldset>
+  
+  <div>
+    <label for="nom">Nom</label>
+    <input type="text" id="nom" name="nom" minlength="2" required>
+  </div>
+  
+  <div>
+    <label for="prenom">Prénom</label>
+    <input type="text" id="prenom" name="prenom" minlength="2" required>
+  </div>
+  
+  <div>
+    <label for="email">E-mail</label>
+    <input type="email" id="email" name="email" required>
+  </div>
+  
+  <div>
+    <label for="password">Mot de passe</label>
+    <input type="password" id="password" name="password" minlength="8" required>
+  </div>
+  
+  <div>
+    <label for="password-confirm">Confirmer le mot de passe</label>
+    <input type="password" id="password-confirm" name="password-confirm" minlength="8" required>
+  </div>
+  
+  <div>
+    <label for="naissance">Date de naissance</label>
+    <input type="date" id="naissance" name="naissance">
+  </div>
+  
+  <div>
+    <label for="pays">Pays</label>
+    <select id="pays" name="pays">
+      <option value="">Sélectionnez</option>
+      <option value="fr">France</option>
+      <option value="be">Belgique</option>
+      <option value="ch">Suisse</option>
+      <option value="ca">Canada</option>
+      <option value="de">Allemagne</option>
+    </select>
+  </div>
+  
+  <fieldset>
+    <legend>Centres d'intérêt</legend>
+    <input type="checkbox" id="dev" name="interets" value="dev">
+    <label for="dev">Développement</label>
+    
+    <input type="checkbox" id="design" name="interets" value="design">
+    <label for="design">Design</label>
+    
+    <input type="checkbox" id="data" name="interets" value="data">
+    <label for="data">Data</label>
+    
+    <input type="checkbox" id="devops" name="interets" value="devops">
+    <label for="devops">DevOps</label>
+  </fieldset>
+  
+  <div>
+    <input type="checkbox" id="newsletter" name="newsletter">
+    <label for="newsletter">Recevoir la newsletter</label>
+  </div>
+  
+  <div>
+    <input type="checkbox" id="cgu" name="cgu" required>
+    <label for="cgu">J'accepte les conditions générales</label>
+  </div>
+  
+  <button type="submit">S'inscrire</button>
+  <button type="reset">Réinitialiser</button>
+</form>
+```
+</Solution>
+
+## Livrable
+
+Créez un formulaire d'inscription complet et accessible. Le formulaire doit inclure :
+
+**Structure obligatoire**
+- Élément form avec method="post" et action="/inscription"
+- Champs regroupés logiquement (avec fieldset si approprié)
+- Labels associés à chaque champ (attributs for et id)
+- Boutons de soumission et réinitialisation
+
+**Champs obligatoires**
+- Civilité (radio avec 3 options)
+- Nom et prénom (text, minlength 2, required)
+- E-mail (email, required)
+- Mot de passe et confirmation (password, minlength 8, required)
+- Date de naissance (date)
+- Pays (select avec 5+ options)
+- Centres d'intérêt (checkbox avec 4+ options)
+- Acceptation des conditions (checkbox, required)
+
+**Critères d'évaluation**
+- [ ] Tous les champs ont un label associé
+- [ ] Les ids sont uniques dans le document
+- [ ] La validation native fonctionne (required, minlength)
+- [ ] Les groupes utilisent fieldset et legend
+- [ ] La méthode POST est utilisée
+- [ ] Le formulaire est accessible (test avec lecteur d'écran si possible)
+- [ ] Validation W3C sans erreur
+
+**Pistes d'extension**
+- Ajoutez une validation JavaScript (vérifier que les mots de passe correspondent)
+- Ajoutez des messages d'erreur personnalisés
+- Créez une page de confirmation après soumission
+- Ajoutez un indicateur de force du mot de passe
+- Implémentez la soumission asynchrone avec fetch (module JS-API)
+
+## Pour aller plus loin
+
+- [MDN - Formulaires HTML](https://developer.mozilla.org/fr/docs/Learn/Forms) : Guide complet sur les formulaires HTML, de la structure à la validation.
+- [MDN - Attributs de validation](https://developer.mozilla.org/fr/docs/Web/HTML/Constraint_validation) : Documentation détaillée des attributs de validation native.
+- [WebAIM - Créer des formulaires accessibles](https://webaim.org/techniques/forms/) : Guide spécifique à l'accessibilité des formulaires.
+- [W3C HTML5 Forms](https://www.w3.org/TR/html5/forms.html) : Spécification officielle des formulaires HTML5.
+- [UX Collective - Design de formulaires](https://uxdesign.cc/designing-better-forms-20d8b0b6e0c9) : Article sur les bonnes pratiques UX pour les formulaires.

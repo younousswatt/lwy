@@ -1,0 +1,126 @@
+# CSS — Style
+
+CSS sépare la présentation du document HTML et permet de définir précisément la typographie, les couleurs, les espacements et les états visuels.
+
+## Objectifs
+
+- Relier une feuille de style externe à un document HTML.
+- Écrire des sélecteurs et comprendre leur spécificité.
+- Appliquer la cascade et l’héritage sans règles contradictoires.
+- Définir une typographie et une palette cohérentes à l’aide de variables.
+- Ajouter des états de survol et de focus visibles.
+
+## Cours
+
+### Relier une feuille de style et sélectionner des éléments
+
+Une feuille externe peut être réutilisée sur plusieurs pages. Une règle associe un sélecteur à une ou plusieurs déclarations. Les classes conviennent aux styles réutilisables ; les sélecteurs d’élément décrivent les règles générales.
+
+```html
+<link rel="stylesheet" href="styles.css">
+<h1 class="page-title">Mon portfolio</h1>
+```
+
+```css
+.page-title {
+  color: #ededf0;
+  font-size: 2.5rem;
+}
+```
+
+### Cascade, spécificité et héritage
+
+Lorsque plusieurs règles s’appliquent, la cascade tient compte de l’origine, de la spécificité puis de l’ordre des déclarations. Une classe est plus spécifique qu’un sélecteur d’élément. Des règles simples, bien regroupées, sont généralement plus faciles à maintenir que des sélecteurs très spécifiques.
+
+```css
+body {
+  color: #ededf0;
+  font-family: sans-serif;
+}
+
+.muted {
+  color: #8f8f9c;
+}
+```
+
+### Typographie, espacements et états
+
+Les propriétés typographiques structurent la lecture. Les variables CSS évitent de répéter les mêmes valeurs. Les états de focus doivent rester visibles pour permettre une navigation au clavier.
+
+```css
+:root {
+  --text: #ededf0;
+  --accent: #6366f1;
+}
+
+a {
+  color: var(--text);
+  text-underline-offset: 4px;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+```
+
+## Exercices
+
+<Exercise n="2.1" title="Relier les styles au document">
+Ajoutez un fichier `styles.css` à votre CV HTML. Définissez une couleur de texte, une couleur de fond et une police générale.
+
+<Solution>
+
+Dans le document, dans l’élément `head` :
+
+```html
+<link rel="stylesheet" href="styles.css">
+```
+
+Dans `styles.css` :
+
+```css
+body {
+  background: #0d0d10;
+  color: #ededf0;
+  font-family: Arial, sans-serif;
+}
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="2.2" title="Définir une hiérarchie typographique">
+Créez des règles distinctes pour les titres de niveau 1, les titres de niveau 2 et le texte secondaire. Utilisez une classe pour ce dernier.
+
+<Solution>
+
+```css
+h1 {
+  font-size: 2.5rem;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+.muted {
+  color: #8f8f9c;
+}
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="2.3" title="Rendre les liens accessibles">
+Ajoutez un état de survol et un état `:focus-visible` aux liens. Le focus doit être identifiable sans dépendre de la couleur du texte seul.
+</Exercise>
+
+## Livrable
+
+Appliquez une feuille de style complète au CV HTML du module précédent. Créez une hiérarchie visuelle sobre, harmonisez les espacements et vérifiez le contraste ainsi que le focus clavier.
+
+<Callout type="tip">
+Inspectez les règles calculées dans les outils de développement lorsqu’un style ne s’applique pas comme prévu : vous verrez quelle règle gagne dans la cascade.
+</Callout>

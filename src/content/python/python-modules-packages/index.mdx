@@ -1,0 +1,427 @@
+# Modules et packages
+
+Ce module apprend à organiser un programme Python en plusieurs fichiers réutilisables. Vous découvrirez les imports, la création de modules et de packages, les points d'entrée, les environnements virtuels et les bases de la distribution d'un projet. À la fin, vous saurez transformer un script monolithique en un package simple, testable et installable.
+
+## Objectifs
+
+- Comprendre la différence entre un module et un package.
+- Importer des fonctions, des classes et des modules sans créer de dépendances circulaires.
+- Organiser un package avec `__init__.py` et des imports relatifs.
+- Protéger le code exécuté uniquement au lancement d'un fichier.
+- Créer un environnement virtuel et installer des dépendances avec `pip`.
+- Décrire un projet Python avec `pyproject.toml` et l'installer en mode éditable.
+
+## Prérequis
+
+- Modules précédents du parcours Python, en particulier les fonctions, les structures de données, les fichiers, les exceptions et les classes.
+- Python 3.10 ou version ultérieure.
+- Un terminal et un éditeur de code.
+
+## Cours
+
+### Script, module et package
+
+Un fichier Python est un module. Son nom d'importation correspond généralement au nom du fichier sans l'extension `.py`. Un dossier qui contient des modules liés forme un package. Le fichier `__init__.py` marque explicitement un dossier comme package et peut définir son interface publique.
+
+```text
+mon_projet/
+├── main.py
+└── calculs.py
+```
+
+Le module `calculs.py` :
+
+```python
+def additionner(a, b):
+    return a + b
+
+
+def moyenne(valeurs):
+    if not valeurs:
+        raise ValueError("La liste ne peut pas être vide")
+    return sum(valeurs) / len(valeurs)
+```
+
+Depuis `main.py`, importez seulement ce dont le programme a besoin :
+
+```python
+from calculs import additionner, moyenne
+
+print(additionner(2, 3))
+print(moyenne([10, 12, 14]))
+```
+
+<Callout type="tip">
+Donnez aux fichiers des noms simples, en minuscules, sans espaces ni accents. Évitez les noms qui masquent des modules de la bibliothèque standard : par exemple, n'appelez pas votre fichier `json.py`, `random.py` ou `typing.py`.
+</Callout>
+
+### Formes d'importation
+
+`import module` conserve le nom du module dans le code et rend l'origine de la fonction visible :
+
+```python
+import math
+
+racine = math.sqrt(81)
+print(racine)
+```
+
+`from module import nom` importe un nom précis :
+
+```python
+from pathlib import Path
+
+fichier = Path("notes.txt")
+print(fichier.suffix)
+```
+
+Un alias peut raccourcir un nom long ou préciser le rôle d'un module :
+
+```python
+import datetime as dt
+
+aujourdhui = dt.date.today()
+```
+
+Évitez `from module import *`. Cette syntaxe cache l'origine des noms et peut écraser des variables ou des fonctions déjà présentes.
+
+### Le point d'entrée d'un script
+
+Lorsqu'un fichier est exécuté directement, Python lui attribue la valeur `"__main__"` dans `__name__`. Lorsqu'il est importé, `__name__` contient le nom du module.
+
+```python
+def main():
+    print("Le programme démarre")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Cette garde permet d'importer les fonctions d'un fichier sans lancer automatiquement son programme. Elle rend aussi le point de départ du script facile à repérer.
+
+### Créer un package
+
+Regroupez les fonctionnalités qui ont une responsabilité commune :
+
+```text
+gestion_contacts/
+├── __init__.py
+├── modele.py
+└── validation.py
+main.py
+```
+
+`gestion_contacts/modele.py` :
+
+```python
+class Contact:
+    def __init__(self, nom, email):
+        self.nom = nom
+        self.email = email
+```
+
+`gestion_contacts/validation.py` :
+
+```python
+def valider_email(email):
+    if "@" not in email:
+        raise ValueError("L'adresse doit contenir un caractère @")
+    return email
+```
+
+À l'intérieur d'un package, un import relatif commence par un point :
+
+```python
+from .modele import Contact
+from .validation import valider_email
+```
+
+Il est aussi possible de publier une interface pratique dans `gestion_contacts/__init__.py` :
+
+```python
+from .modele import Contact
+from .validation import valider_email
+
+__all__ = ["Contact", "valider_email"]
+```
+
+Les utilisateurs peuvent alors écrire :
+
+```python
+from gestion_contacts import Contact, valider_email
+```
+
+Un import relatif est utile à l'intérieur d'un package, mais ne doit pas être utilisé dans un fichier exécuté seul comme s'il était un script. Pour lancer un module qui appartient à un package, placez-vous à la racine du projet et utilisez `python -m nom_du_package.nom_du_module`.
+
+### Découper sans créer de dépendances circulaires
+
+Un bon découpage suit les responsabilités : les modèles décrivent les données, un module de stockage lit et écrit les fichiers, et le point d'entrée gère les interactions.
+
+Avant d'ajouter un import, dessinez le sens des dépendances. Par exemple, `cli.py` peut importer `modele.py`, mais `modele.py` ne devrait pas importer `cli.py`. Si deux modules s'importent mutuellement, réorganisez les responsabilités ou déplacez le code partagé dans un troisième module.
+
+<Callout type="warn">
+Un import circulaire peut produire une erreur indiquant qu'un nom est indisponible depuis un module partiellement initialisé. Ne contournez pas le problème en déplaçant les imports au hasard dans les fonctions : clarifiez d'abord les responsabilités et le sens des dépendances.
+</Callout>
+
+### Bibliothèque standard et dépendances externes
+
+La bibliothèque standard est fournie avec Python. Elle comprend notamment `pathlib` pour les chemins, `json` pour les données JSON, `argparse` pour les commandes et `unittest` pour les tests. Elle ne nécessite pas d'installation avec `pip`.
+
+Une dépendance externe est un package publié séparément. `pip` permet de l'installer. Utilisez un environnement virtuel propre au projet afin de ne pas mélanger ses dépendances avec celles d'autres projets.
+
+Depuis la racine du projet :
+
+```bash
+python -m venv .venv
+```
+
+Activation dans PowerShell :
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Activation sur macOS ou Linux :
+
+```bash
+source .venv/bin/activate
+```
+
+Puis installez un package et vérifiez sa présence :
+
+```bash
+python -m pip install requests
+python -m pip show requests
+```
+
+La forme `python -m pip` associe explicitement `pip` à l'interpréteur Python qui exécutera le projet. Ajoutez `.venv/` à `.gitignore` : un environnement virtuel contient des fichiers propres à la machine et ne doit pas être versionné.
+
+Pour partager les dépendances utilisées par un projet simple, elles peuvent être inscrites dans `requirements.txt` :
+
+```text
+requests>=2.31,<3
+```
+
+Les versions exactes et les plages autorisées doivent être choisies consciemment : une mise à jour majeure peut introduire des changements incompatibles.
+
+### Décrire un projet avec `pyproject.toml`
+
+Le fichier `pyproject.toml` décrit les métadonnées et la configuration de construction d'un projet Python moderne. Voici un exemple minimal pour un package placé dans le dossier `src` :
+
+```toml
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gestion-contacts-lwy"
+version = "0.1.0"
+description = "Un petit package de gestion de contacts"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+```
+
+Une structure correspondante :
+
+```text
+gestion-contacts-lwy/
+├── pyproject.toml
+└── src/
+    └── gestion_contacts/
+        ├── __init__.py
+        ├── modele.py
+        └── validation.py
+```
+
+Le nom de distribution indiqué dans `pyproject.toml` est celui que l'on installe avec `pip`. Le nom d'importation du package peut différer : ici on installe `gestion-contacts-lwy`, mais le code utilise `import gestion_contacts`.
+
+Depuis la racine du projet, installez le package en mode éditable :
+
+```bash
+python -m pip install -e .
+```
+
+En mode éditable, les modifications apportées au code source sont utilisées sans réinstaller le package à chaque changement. Cette commande peut installer les outils de construction déclarés dans `[build-system]`.
+
+La création d'une archive distribuable s'effectue avec un outil de construction dédié, par exemple `build` :
+
+```bash
+python -m pip install build
+python -m build
+```
+
+La commande produit généralement une archive source et une archive wheel dans `dist/`. Ne versionnez pas le dossier `dist/` ni les dossiers de construction temporaires, sauf besoin explicite de livraison.
+
+<Callout type="info">
+Installer un package sur sa machine et publier une version pour d'autres personnes sont deux opérations distinctes. Avant de publier, vérifiez les métadonnées, les fichiers inclus, la version, la documentation et les tests.
+</Callout>
+
+### Choisir une structure adaptée
+
+Un script court n'a pas besoin d'être transformé immédiatement en package. Commencez par séparer les responsabilités lorsqu'un fichier devient difficile à comprendre, à tester ou à réutiliser.
+
+```text
+mon_projet/
+├── pyproject.toml
+├── README.md
+├── src/
+│   └── mon_package/
+│       ├── __init__.py
+│       ├── __main__.py
+│       └── outils.py
+└── tests/
+    └── test_outils.py
+```
+
+Gardez les tests séparés du code du package. Les tests pourront importer les fonctions publiques et vérifier leur comportement indépendamment de l'interface utilisateur.
+
+## Erreurs fréquentes
+
+**Nommer un fichier comme un module standard**
+
+Un fichier local nommé `json.py` peut être importé à la place du module standard `json`. Choisissez un nom spécifique et supprimez les fichiers `__pycache__` uniquement si un ancien import incorrect est encore mis en cache.
+
+**Exécuter un module interne depuis le mauvais dossier**
+
+Les imports dépendent du package et du répertoire depuis lequel le programme est lancé. Depuis la racine, utilisez `python -m mon_package.module` plutôt que de lancer directement un fichier interne.
+
+**Oublier l'environnement virtuel**
+
+Une dépendance installée globalement peut masquer le fait qu'elle manque au projet. Activez son environnement virtuel avant d'installer ou d'exécuter les dépendances.
+
+**Importer tout le contenu d'un module**
+
+`from module import *` rend les dépendances invisibles et complique la lecture. Importez explicitement les noms utilisés.
+
+**Ajouter du code exécuté à l'import**
+
+Un module devrait surtout définir des fonctions, classes et constantes. Placez le démarrage du programme derrière la garde `if __name__ == "__main__":`.
+
+<Callout type="warn">
+Ne stockez jamais de mot de passe, jeton ou clé privée dans un module ou un fichier de dépendances versionné. Les dépendances et configurations sensibles doivent être gérées séparément du code.
+</Callout>
+
+## Exercices
+
+<Exercise n="8.1" title="Séparer un script en modules">
+Reprenez un script d'un module précédent. Séparez ses fonctions utilitaires dans un fichier `outils.py` et conservez le démarrage du programme dans `main.py`. Importez explicitement les fonctions nécessaires et vérifiez que l'importation de `outils.py` ne lance pas le programme.
+</Exercise>
+
+<Solution>
+```text
+convertisseur/
+├── main.py
+└── outils.py
+```
+
+```python
+# outils.py
+def celsius_vers_fahrenheit(celsius):
+    return celsius * 9 / 5 + 32
+```
+
+```python
+# main.py
+from outils import celsius_vers_fahrenheit
+
+
+def main():
+    print(celsius_vers_fahrenheit(20))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+`outils.py` ne contient que la logique réutilisable. Le programme ne démarre que si `main.py` est exécuté directement.
+</Solution>
+
+<Exercise n="8.2" title="Créer un package réutilisable">
+Créez un package `gestion_contacts` avec un module `modele.py` qui définit une classe `Contact`, et un module `validation.py` qui vérifie qu'une adresse contient `@`. Réexportez `Contact` et `valider_email` depuis `__init__.py`, puis utilisez-les depuis un fichier placé à la racine du projet.
+</Exercise>
+
+<Solution>
+```text
+projet/
+├── gestion_contacts/
+│   ├── __init__.py
+│   ├── modele.py
+│   └── validation.py
+└── main.py
+```
+
+```python
+# gestion_contacts/modele.py
+class Contact:
+    def __init__(self, nom, email):
+        self.nom = nom
+        self.email = email
+```
+
+```python
+# gestion_contacts/validation.py
+def valider_email(email):
+    if "@" not in email:
+        raise ValueError("Adresse invalide")
+    return email
+```
+
+```python
+# gestion_contacts/__init__.py
+from .modele import Contact
+from .validation import valider_email
+```
+
+```python
+# main.py
+from gestion_contacts import Contact, valider_email
+
+contact = Contact("Ada", valider_email("ada@example.com"))
+print(contact.nom, contact.email)
+```
+</Solution>
+
+<Exercise n="8.3" title="Préparer un environnement isolé">
+Créez un environnement virtuel pour votre projet, activez-le selon votre système, vérifiez l'interpréteur utilisé et ajoutez le dossier de l'environnement à `.gitignore`. Expliquez pourquoi `python -m pip` est préférable à un appel ambigu à `pip`.
+</Exercise>
+
+<Solution>
+```bash
+python -m venv .venv
+python -m pip --version
+```
+
+Dans PowerShell, activez l'environnement avec `.\.venv\Scripts\Activate.ps1`. Sur macOS ou Linux, utilisez `source .venv/bin/activate`. Ajoutez `.venv/` à `.gitignore`.
+
+`python -m pip` exécute `pip` avec l'interpréteur `python` sélectionné. Un appel simple à `pip` peut parfois désigner celui d'une autre installation.
+</Solution>
+
+<Exercise n="8.4" title="Décrire et installer un package">
+Créez une structure de package sous `src/` et un `pyproject.toml` qui indique son nom, sa version, la version minimale de Python et le backend de construction. Installez-le en mode éditable, puis importez le package depuis Python.
+</Exercise>
+
+<Solution>
+Un fichier `pyproject.toml` minimal peut déclarer `setuptools.build_meta` comme backend, une dépendance de construction `setuptools`, et les métadonnées du projet dans `[project]`. La recherche de packages doit indiquer `src` comme dossier source. Depuis la racine, exécutez :
+
+```bash
+python -m pip install -e .
+python -c "import mon_package; print(mon_package.__file__)"
+```
+
+Le nom d'importation dépend du dossier contenant le package sous `src/`.
+</Solution>
+
+<Exercise n="8.5" title="Défi : transformer un outil en package">
+Transformez votre gestionnaire de contacts en package. Séparez le modèle, les fonctions de validation et le point d'entrée. Ajoutez un `pyproject.toml`, documentez la commande d'installation et vérifiez que les modules internes peuvent être importés sans démarrer l'application.
+</Exercise>
+
+<Solution>
+Une solution possible contient `src/gestion_contacts/modele.py`, `src/gestion_contacts/validation.py`, `src/gestion_contacts/__init__.py` et `src/gestion_contacts/__main__.py`. Le fichier `__init__.py` expose seulement les classes et fonctions destinées aux utilisateurs. Le point d'entrée appelle `main()` sous une garde `if __name__ == "__main__":`. Après `python -m pip install -e .`, testez l'import public depuis la racine et vérifiez qu'il n'affiche rien et ne modifie aucun fichier.
+</Solution>
+
+## Livrable
+
+Un package Python réutilisable avec des responsabilités séparées, une interface publique claire, un environnement virtuel documenté et un `pyproject.toml` permettant son installation en mode éditable.

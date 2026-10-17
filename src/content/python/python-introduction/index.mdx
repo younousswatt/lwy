@@ -1,0 +1,575 @@
+# Introduction à Python
+
+Ce module introduit Python, un langage de programmation polyvalent et accessible. Il explique comment installer Python, configurer un environnement de développement, comprendre la structure de base du langage, et écrire vos premiers programmes. Python est apprécié pour sa syntaxe claire et lisible, ce qui en fait un excellent choix pour les débutants comme pour les experts. À l'issue de ce module, vous serez capable d'installer Python, d'écrire des scripts simples, et de comprendre les concepts fondamentaux du langage.
+
+## Objectifs
+
+- Installer Python sur votre système (Windows, macOS, Linux)
+- Comprendre le rôle de l'interpréteur Python
+- Utiliser le REPL (Read-Eval-Print Loop) pour tester du code
+- Créer et exécuter des scripts Python
+- Comprendre la structure de base d'un programme Python
+- Utiliser les commentaires et la documentation
+- Configurer un éditeur de code pour Python
+
+## Prérequis
+
+- Aucun prérequis (module introductif)
+
+## Cours
+
+### Installation de Python
+
+Python est disponible sur les principaux systèmes d'exploitation. L'installation diffère selon votre plateforme.
+
+**Windows** :
+
+1. Téléchargez Python depuis https://www.python.org/downloads/
+2. Lancez l'installateur et cochez "Add Python to PATH"
+3. Suivez les instructions de l'assistant
+4. Vérifiez l'installation avec :
+
+```bash
+python --version
+# ou
+python3 --version
+```
+
+<Callout type="tip">
+Sur Windows, l'option "Add Python to PATH" est cruciale. Elle permet d'exécuter Python depuis n'importe quel répertoire dans le terminal. Si vous l'oubliez, vous devrez ajouter manuellement Python au PATH.
+</Callout>
+
+**macOS** :
+
+Python est souvent préinstallé sur macOS, mais il est recommandé d'installer la dernière version.
+
+```bash
+# Via Homebrew
+brew install python
+```
+
+**Linux** :
+
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install python3
+
+# Fedora
+sudo dnf install python3
+```
+
+### L'interpréteur Python
+
+Python est un langage interprété : le code est exécuté ligne par ligne par l'interpréteur Python, au lieu d'être compilé en langage machine.
+
+**REPL (Read-Eval-Print Loop)** :
+
+Le REPL est un environnement interactif où vous pouvez tester du code immédiatement.
+
+```bash
+python
+# ou
+python3
+```
+
+```python
+>>> 2 + 2
+4
+>>> print("Bonjour, monde !")
+Bonjour, monde !
+>>> exit()
+```
+
+Le REPL lit (Read) une commande, l'évalue (Eval), affiche le résultat (Print), et recommence (Loop).
+
+<Callout type="info">
+Le REPL est idéal pour tester rapidement du code ou explorer les bibliothèques. Pour les programmes plus longs, préférez les scripts.
+</Callout>
+
+### Premier script Python
+
+Un script Python est un fichier avec l'extension `.py` contenant du code Python.
+
+**Création du script** :
+
+```python
+# mon_premier_script.py
+print("Bonjour, monde !")
+print("Bienvenue dans le cours Python.")
+```
+
+**Exécution du script** :
+
+```bash
+python mon_premier_script.py
+# ou
+python3 mon_premier_script.py
+```
+
+**Shebang (Unix/Linux/macOS)** :
+
+Pour rendre un script exécutable directement sur Unix :
+
+```python
+#!/usr/bin/env python3
+print("Bonjour, monde !")
+```
+
+```bash
+chmod +x mon_premier_script.py
+./mon_premier_script.py
+```
+
+### Structure de base
+
+**Indentation** :
+
+Python utilise l'indentation pour définir les blocs de code, contrairement à de nombreux langages qui utilisent des accolades `{}`.
+
+```python
+if True:
+    print("Ceci est dans le bloc if")
+    print("Indentation de 4 espaces")
+print("Ceci est hors du bloc if")
+```
+
+L'indentation doit être cohérente : utilisez toujours 4 espaces (PEP 8 recommande de ne pas utiliser de tabulations).
+
+**Lignes et instructions** :
+
+Chaque instruction Python se termine généralement par une nouvelle ligne.
+
+```python
+print("Instruction 1")
+print("Instruction 2")
+```
+
+Pour une instruction sur plusieurs lignes, utilisez une antislash `\` ou des parenthèses.
+
+```python
+total = 1 + 2 + 3 + \
+        4 + 5 + 6
+
+total = (1 + 2 + 3 +
+         4 + 5 + 6)
+```
+
+### Commentaires et documentation
+
+**Commentaires** :
+
+Les commentaires sont ignorés par l'interpréteur et servent à documenter le code.
+
+```python
+# Ceci est un commentaire sur une ligne
+
+print("Bonjour")  # Commentaire en fin de ligne
+
+"""
+Ceci est un commentaire
+sur plusieurs lignes
+(docstring possible)
+"""
+```
+
+**Docstrings** :
+
+Les docstrings sont des chaînes de caractères littérales qui apparaissent comme premier énoncé dans un module, fonction, classe ou méthode. Elles servent de documentation.
+
+```python
+def ma_fonction():
+    """
+    Ceci est une docstring.
+    Elle décrit ce que fait la fonction.
+    """
+    pass
+```
+
+<Callout type="tip">
+Les docstrings sont accessibles via la fonction `help()` et sont essentielles pour la documentation automatique des modules.
+</Callout>
+
+### Variables et affectation
+
+En Python, les variables sont créées par affectation. Pas besoin de déclarer le type.
+
+```python
+message = "Bonjour, monde !"
+nombre = 42
+pi = 3.14159
+est_actif = True
+
+print(message)
+print(nombre)
+print(pi)
+print(est_actif)
+```
+
+Python est dynamiquement typé : le type d'une variable est déterminé à l'exécution.
+
+```python
+x = 10       # int
+x = "texte"  # str (le type change)
+```
+
+### Affichage avec print()
+
+La fonction `print()` affiche du texte ou des variables dans la console.
+
+```python
+print("Texte simple")
+print("Valeur :", 42)
+print("A", "B", "C")  # Affiche : A B C
+print("A", "B", "C", sep="-")  # Affiche : A-B-C
+print("A", end=" ")  # Pas de saut de ligne
+print("B")  # Affiche : A B
+```
+
+**f-strings (Python 3.6+)** :
+
+Les f-strings permettent d'insérer des expressions dans des chaînes de caractères.
+
+```python
+nom = "Alice"
+age = 25
+print(f"Je m'appelle {nom} et j'ai {age} ans.")
+# Affiche : Je m'appelle Alice et j'ai 25 ans.
+```
+
+### Entrée utilisateur
+
+La fonction `input()` lit une entrée depuis l'utilisateur.
+
+```python
+nom = input("Votre nom : ")
+print(f"Bonjour, {nom} !")
+```
+
+`input()` renvoie toujours une chaîne de caractères (str). Pour d'autres types, convertissez explicitement.
+
+```python
+age = input("Votre âge : ")
+age = int(age)  # Conversion en entier
+print(f"L'année prochaine, vous aurez {age + 1} ans.")
+```
+
+### Environnement de développement
+
+**Éditeurs de code** :
+
+- **VS Code** : gratuit, extensible, supporte Python nativement
+- **PyCharm** : IDE professionnel (Community Edition gratuit)
+- **Sublime Text** : léger, rapide
+- **Thonny** : simple, idéal pour débutants
+
+**Extension Python pour VS Code** :
+
+1. Installez VS Code
+2. Installez l'extension "Python" (Microsoft)
+3. Sélectionnez l'interpréteur Python (Ctrl+Shift+P → "Python: Select Interpreter")
+
+**Virtual environments** :
+
+Les environnements virtuels isolent les dépendances de chaque projet.
+
+```bash
+# Création
+python -m venv mon_env
+
+# Activation (Windows)
+mon_env\Scripts\activate
+
+# Activation (macOS/Linux)
+source mon_env/bin/activate
+
+# Désactivation
+deactivate
+```
+
+<Callout type="warn">
+Toujours utiliser un environnement virtuel pour chaque projet Python. Cela évite les conflits de versions entre les bibliothèques de différents projets.
+</Callout>
+
+## Erreurs fréquentes
+
+**Oublier d'ajouter Python au PATH (Windows)**
+
+```bash
+python --version
+# 'python' n'est pas reconnu...
+```
+
+L'interpréteur n'est pas accessible depuis le terminal.
+
+<Callout type="warn">
+Réinstallez Python en cochant "Add Python to PATH", ou ajoutez manuellement le chemin d'installation au PATH système.
+</Callout>
+
+**Indentation incohérente**
+
+```python
+if True:
+    print("Indentation de 4 espaces")
+  print("Indentation de 2 espaces")  # Erreur : IndentationError
+```
+
+Python exige une indentation cohérente dans chaque bloc.
+
+<Callout type="warn">
+```python
+if True:
+    print("Indentation de 4 espaces")
+    print("Indentation de 4 espaces")  # Correct
+```
+Utilisez toujours 4 espaces pour l'indentation. Configurez votre éditeur pour remplacer les tabulations par 4 espaces.
+</Callout>
+
+**Confondre = et ==**
+
+```python
+if x = 5:  # Erreur : SyntaxError (affectation dans une condition)
+    print("x vaut 5")
+```
+
+`=` est l'affectation, `==` est la comparaison d'égalité.
+
+<Callout type="warn">
+```python
+if x == 5:  # Correct : comparaison
+    print("x vaut 5")
+```
+Souvenez-vous : `=` pour assigner, `==` pour comparer.
+</Callout>
+
+**Oublier les guillemets dans les chaînes**
+
+```python
+print(Bonjour)  # Erreur : NameError
+```
+
+Les chaînes de caractères doivent être entre guillemets simples `'` ou doubles `"`.
+
+<Callout type="warn">
+```python
+print("Bonjour")  # Correct
+```
+Toujours entourer les chaînes de caractères de guillemets simples ou doubles.
+</Callout>
+
+## Exercices
+
+<Exercise n="1.1" title="Installer Python et vérifier la version">
+Installez Python sur votre système (si ce n'est pas déjà fait). Vérifiez l'installation avec la commande `python --version` ou `python3 --version`. Notez la version installée.
+</Exercise>
+
+<Solution>
+```bash
+python --version
+# Affiche : Python 3.x.x
+```
+
+La version actuelle de Python est la 3.12 ou supérieure. Python 2 n'est plus maintenu depuis 2020.
+</Solution>
+
+<Exercise n="1.2" title="Utiliser le REPL">
+Lancez le REPL Python avec la commande `python` ou `python3`. Effectuez les opérations suivantes :
+
+1. Additionnez 15 et 27
+2. Multipliez 8 par 7
+3. Divisez 100 par 4
+4. Affichez votre nom avec print()
+5. Quittez le REPL avec exit()
+</Exercise>
+
+<Solution>
+```python
+>>> 15 + 27
+42
+>>> 8 * 7
+56
+>>> 100 / 4
+25.0
+>>> print("Votre Nom")
+Votre Nom
+>>> exit()
+```
+</Solution>
+
+<Exercise n="1.3" title="Créer et exécuter un script">
+Créez un fichier `bonjour.py` avec le contenu suivant :
+
+```python
+print("Bonjour, monde !")
+print("Ceci est mon premier script Python.")
+```
+
+Exécutez le script depuis le terminal.
+</Exercise>
+
+<Solution>
+```bash
+python bonjour.py
+# Affiche :
+# Bonjour, monde !
+# Ceci est mon premier script Python.
+```
+</Solution>
+
+<Exercise n="1.4" title="Utiliser des variables">
+Créez un script qui :
+
+1. Déclare une variable `nom` avec votre nom
+2. Déclare une variable `age` avec votre âge
+3. Affiche un message personnalisé avec f-string
+
+Le message doit être : "Je m'appelle [nom] et j'ai [age] ans."
+</Exercise>
+
+<Solution>
+```python
+nom = "Jean"
+age = 30
+print(f"Je m'appelle {nom} et j'ai {age} ans.")
+```
+</Solution>
+
+<Exercise n="1.5" title="Interagir avec l'utilisateur">
+Créez un script qui :
+
+1. Demande à l'utilisateur son nom avec input()
+2. Demande à l'utilisateur sa ville avec input()
+3. Affiche un message : "Bonjour [nom] de [ville] !"
+</Exercise>
+
+<Solution>
+```python
+nom = input("Votre nom : ")
+ville = input("Votre ville : ")
+print(f"Bonjour {nom} de {ville} !")
+```
+</Solution>
+
+<Exercise n="1.6" title="Calculer une aire">
+Créez un script qui calcule l'aire d'un rectangle :
+
+1. Demande la largeur à l'utilisateur
+2. Demande la hauteur à l'utilisateur
+3. Convertit les entrées en nombres (float)
+4. Calcule et affiche l'aire
+
+Indice : aire = largeur × hauteur
+</Exercise>
+
+<Solution>
+```python
+largeur = input("Largeur : ")
+hauteur = input("Hauteur : ")
+
+largeur = float(largeur)
+hauteur = float(hauteur)
+
+aire = largeur * hauteur
+print(f"L'aire du rectangle est : {aire}")
+```
+</Solution>
+
+<Exercise n="1.7" title="Utiliser des commentaires">
+Ajoutez des commentaires à un script pour expliquer chaque étape. Le script doit :
+
+1. Afficher un message de bienvenue
+2. Demander le nom de l'utilisateur
+3. Afficher un message personnalisé
+
+Commentez chaque ligne pour expliquer ce qu'elle fait.
+</Exercise>
+
+<Solution>
+```python
+# Affiche un message de bienvenue
+print("Bienvenue !")
+
+# Demande le nom de l'utilisateur
+nom = input("Votre nom : ")
+
+# Affiche un message personnalisé
+print(f"Bonjour, {nom} !")
+```
+</Solution>
+
+<Exercise n="1.8" title="Défi : Script de calcul simple">
+Créez un script de calcul simple qui :
+
+1. Demande à l'utilisateur deux nombres
+2. Demande l'opération souhaitée (+, -, *, /)
+3. Effectue le calcul
+4. Affiche le résultat
+
+Gérez le cas où l'utilisateur entre une opération invalide.
+</Exercise>
+
+<Solution>
+```python
+nombre1 = input("Premier nombre : ")
+nombre2 = input("Deuxième nombre : ")
+operation = input("Opération (+, -, *, /) : ")
+
+nombre1 = float(nombre1)
+nombre2 = float(nombre2)
+
+if operation == "+":
+    resultat = nombre1 + nombre2
+elif operation == "-":
+    resultat = nombre1 - nombre2
+elif operation == "*":
+    resultat = nombre1 * nombre2
+elif operation == "/":
+    if nombre2 != 0:
+        resultat = nombre1 / nombre2
+    else:
+        resultat = "Erreur : division par zéro"
+else:
+    resultat = "Opération invalide"
+
+print(f"Résultat : {resultat}")
+```
+</Solution>
+
+## Livrable
+
+Créez un script de calcul simple en Python. Le script doit inclure :
+
+**Fonctionnalités obligatoires**
+- Demander deux nombres à l'utilisateur
+- Demander l'opération souhaitée (+, -, *, /)
+- Effectuer le calcul
+- Afficher le résultat
+- Gérer les erreurs (division par zéro, opération invalide)
+
+**Code obligatoire**
+- Variables descriptives
+- Commentaires explicatifs
+- f-strings pour l'affichage
+- Conversion explicite des types
+
+**Critères d'évaluation**
+- [ ] Script Python fonctionnel
+- [ ] Conversion des entrées utilisateur
+- [ ] Gestion des cas d'erreur
+- [ ] Code commenté
+- [ ] Variables descriptives
+- [ ] Utilisation de f-strings
+
+**Pistes d'extension**
+- Ajoutez d'autres opérations (puissance, modulo)
+- Implémentez une boucle pour plusieurs calculs
+- Sauvegardez l'historique des calculs
+- Ajoutez une fonction d'aide
+
+## Pour aller plus loin
+
+- [Python Documentation](https://docs.python.org/3/) : Documentation officielle de Python.
+- [Real Python](https://realpython.com/) : Tutoriels et guides Python pour tous niveaux.
+- [Python.org Tutorial](https://docs.python.org/3/tutorial/) : Tutoriel officiel de Python.
+- [PEP 8 Style Guide](https://peps.python.org/pep-0008/) : Guide de style officiel pour Python.
+- [Automate the Boring Stuff with Python](https://automatetheboringstuff.com/) : Livre gratuit sur Python pour débutants.

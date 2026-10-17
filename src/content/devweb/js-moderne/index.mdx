@@ -1,0 +1,969 @@
+# JavaScript — Moderne
+
+Ce module explore les fonctionnalités modernes de JavaScript (ES6+) qui améliorent la maintenabilité, la performance et l'expérience de développement. Il explique les modules ES pour organiser le code en fichiers séparés, localStorage pour la persistance locale des données, les meilleures pratiques de gestion d'erreurs, les techniques de débogage efficaces, et les bonnes pratiques générales du développement JavaScript moderne. Ces concepts permettent de créer des applications modulaires, robustes et maintenables. À l'issue de ce module, vous serez capable de créer une todo-list persistante et modulaire qui utilise les modules ES et localStorage.
+
+## Objectifs
+
+- Comprendre les modules ES (import/export) pour organiser le code.
+- Utiliser localStorage et sessionStorage pour la persistance locale.
+- Gérer les erreurs de manière structurée (try/catch, erreurs personnalisées).
+- Utiliser les outils de débogage du navigateur (breakpoints, console).
+- Appliquer les bonnes pratiques (naming, DRY, SOLID principes).
+- Créer une application modulaire avec séparation des responsabilités.
+- Optimiser les performances (éviter les recalculs inutiles, utiliser le cache).
+
+## Prérequis
+
+- JavaScript — Bases (variables, fonctions, portée)
+- JavaScript — Structures de données (tableaux, objets)
+- JavaScript — DOM (sélection, manipulation)
+- JavaScript — Asynchrone et API (promesses, async/await)
+
+## Cours
+
+### Modules ES
+
+Les modules ES (ES2015) permettent d'organiser le code JavaScript en fichiers séparés, avec un système d'import/export explicite. Cela améliore la maintenabilité, évite les conflits de noms globaux, et permet d'utiliser des outils de build modernes.
+
+**Export** : dans un module, vous pouvez exporter des fonctions, des variables, des classes ou des objets.
+
+```javascript
+// utils.js
+export const PI = 3.14159;
+
+export function addition(a, b) {
+  return a + b;
+}
+
+export class Calculatrice {
+  multiplier(a, b) {
+    return a * b;
+  }
+}
+```
+
+Export par défaut (un seul par module) :
+
+```javascript
+// calculatrice.js
+export default class Calculatrice {
+  additionner(a, b) {
+    return a + b;
+  }
+}
+```
+
+**Import** : dans un autre module, vous pouvez importer ce qui a été exporté.
+
+```javascript
+// main.js
+import { PI, addition } from "./utils.js";
+import Calculatrice from "./calculatrice.js";
+
+console.log(PI);
+console.log(addition(2, 3));
+
+const calc = new Calculatrice();
+console.log(calc.additionner(2, 3));
+```
+
+Import avec alias :
+
+```javascript
+import { addition as add } from "./utils.js";
+```
+
+Import de tout (déconseillé, pollution de l'espace de noms) :
+
+```javascript
+import * as utils from "./utils.js";
+console.log(utils.PI);
+```
+
+<Callout type="info">
+Les modules ES utilisent le mode strict automatiquement. Le this au niveau supérieur d'un module est undefined (pas window). Les modules sont chargés de manière asynchrone par défaut.
+</Callout>
+
+### localStorage et sessionStorage
+
+Le Web Storage API permet de stocker des données localement dans le navigateur. Deux mécanismes sont disponibles : localStorage (persistant) et sessionStorage (session).
+
+**localStorage** : stocke des données sans expiration. Les données persistent même après la fermeture du navigateur.
+
+```javascript
+// Stocker une valeur
+localStorage.setItem("cle", "valeur");
+
+// Récupérer une valeur
+const valeur = localStorage.getItem("cle");
+
+// Supprimer une valeur
+localStorage.removeItem("cle");
+
+// Supprimer toutes les valeurs
+localStorage.clear();
+```
+
+**sessionStorage** : stocke des données pour la durée de la session. Les données sont supprimées à la fermeture de l'onglet ou du navigateur.
+
+```javascript
+sessionStorage.setItem("cle", "valeur");
+const valeur = sessionStorage.getItem("cle");
+```
+
+Les données sont stockées sous forme de strings. Pour stocker des objets, utilisez JSON.
+
+```javascript
+const objet = { nom: "Jean", age: 30 };
+
+// Stocker
+localStorage.setItem("personne", JSON.stringify(objet));
+
+// Récupérer
+const personne = JSON.parse(localStorage.getItem("personne"));
+```
+
+<Callout type="warn">
+localStorage a une limite d'environ 5-10 Mo par domaine. Dépasser cette limite renvoie une erreur QuotaExceededError. Évitez de stocker des données volumineuses (images, vidéos) dans localStorage.
+</Callout>
+
+### Gestion des erreurs
+
+Une gestion d'erreurs robuste est essentielle pour créer des applications fiables. JavaScript propose plusieurs mécanismes.
+
+**try/catch/finally** : capture les erreurs synchrones et asynchrones (dans une fonction async).
+
+```javascript
+try {
+  const resultat = operationRisquee();
+  console.log(resultat);
+} catch (erreur) {
+  console.error("Erreur capturée :", erreur);
+} finally {
+  console.log("Exécuté dans tous les cas");
+}
+```
+
+**throw** : lance une erreur manuellement.
+
+```javascript
+function diviser(a, b) {
+  if (b === 0) {
+    throw new Error("Division par zéro");
+  }
+  return a / b;
+}
+```
+
+**Erreurs personnalisées** : créez vos propres types d'erreurs pour une gestion plus précise.
+
+```javascript
+class ValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}
+
+function validerEmail(email) {
+  if (!email.includes("@")) {
+    throw new ValidationError("Email invalide");
+  }
+}
+```
+
+**Gestion d'erreurs globales** : capturez les erreurs non gérées au niveau global.
+
+```javascript
+window.addEventListener("error", (event) => {
+  console.error("Erreur globale :", event.error);
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  console.error("Promesse rejetée non gérée :", event.reason);
+});
+```
+
+### Débogage
+
+Le débogage est une compétence essentielle pour résoudre les bugs. Les DevTools du navigateur offrent de nombreux outils.
+
+**console.log** : affiche des messages dans la console.
+
+```javascript
+console.log("Message");
+console.log("Valeur :", variable);
+console.table([objet1, objet2]); // Affiche un tableau
+console.group("Groupe");
+console.log("Message 1");
+console.log("Message 2");
+console.groupEnd();
+```
+
+**Breakpoints** : arrête l'exécution du code à un point précis. Dans les DevTools, cliquez sur le numéro de ligne pour définir un breakpoint.
+
+```javascript
+function calculer(a, b) {
+  const resultat = a + b; // Breakpoint ici
+  return resultat;
+}
+```
+
+**debugger** : instruction qui arrête l'exécution si les DevTools sont ouverts.
+
+```javascript
+function calculer(a, b) {
+  debugger; // Arrête l'exécution ici
+  return a + b;
+}
+```
+
+**Performance** : mesurez le temps d'exécution.
+
+```javascript
+console.time("operation");
+// Code à mesurer
+console.timeEnd("operation"); // Affiche le temps écoulé
+```
+
+<Callout type="tip">
+Utilisez `console.error` pour les erreurs, `console.warn` pour les avertissements, et `console.log` pour les informations normales. Ces messages sont stylisés différemment dans la console et peuvent être filtrés.
+</Callout>
+
+### Bonnes pratiques
+
+Les bonnes pratiques en JavaScript améliorent la qualité, la maintenabilité et la performance du code.
+
+**DRY (Don't Repeat Yourself)** : évitez la duplication de code. Extrayez la logique réutilisée dans des fonctions.
+
+```javascript
+// Mauvais
+function calculerPerimetreCarre(cote) {
+  return 4 * cote;
+}
+
+function calculerPerimetreRectangle(longueur, largeur) {
+  return 2 * (longueur + largeur);
+}
+
+// Bon
+function calculerPerimetre(...cotes) {
+  return cotes.reduce((acc, cote) => acc + cote, 0) * 2;
+}
+```
+
+**Naming descriptif** : utilisez des noms de variables et de fonctions qui décrivent clairement leur rôle.
+
+```javascript
+// Mauvais
+const d = new Date();
+const n = d.getTime();
+
+// Bon
+const dateActuelle = new Date();
+const timestamp = dateActuelle.getTime();
+```
+
+**Fonctions pures** : préférez les fonctions pures (sans effets de bord) pour la prévisibilité.
+
+```javascript
+// Impure (modifie l'état externe)
+let compteur = 0;
+function incrementer() {
+  compteur++;
+  return compteur;
+}
+
+// Pure (ne modifie pas l'état externe)
+function incrementer(valeur) {
+  return valeur + 1;
+}
+```
+
+**Immutabilité** : évitez de modifier les objets et tableaux directement. Créez de nouvelles versions.
+
+```javascript
+// Mutable
+const personne = { nom: "Jean" };
+personne.age = 30;
+
+// Immutable
+const personne = { nom: "Jean" };
+const personneModifiee = { ...personne, age: 30 };
+```
+
+**Commentaires** : commentez le "pourquoi", pas le "quoi". Le code devrait être auto-documenté.
+
+```javascript
+// Mauvais : commentaire paraphrasant le code
+// Incrémente le compteur de 1
+compteur++;
+
+// Bon : commentaire expliquant la logique
+// Incrémente le compteur de 1 car l'utilisateur a cliqué sur le bouton "J'aime"
+compteur++;
+```
+
+### Performance
+
+L'optimisation des performances améliore l'expérience utilisateur et réduit la consommation de ressources.
+
+**Éviter les recalculs inutiles** : mémorisez les résultats de calculs coûteux.
+
+```javascript
+const cache = new Map();
+
+function factorielle(n) {
+  if (cache.has(n)) {
+    return cache.get(n);
+  }
+  const resultat = n <= 1 ? 1 : n * factorielle(n - 1);
+  cache.set(n, resultat);
+  return resultat;
+}
+```
+
+**Éviter les manipulations DOM excessives** : regroupez les modifications du DOM.
+
+```javascript
+// Mauvais : manipulation DOM dans une boucle
+for (let i = 0; i < 1000; i++) {
+  document.body.appendChild(createElement(i));
+}
+
+// Bon : regroupement
+const fragment = document.createDocumentFragment();
+for (let i = 0; i < 1000; i++) {
+  fragment.appendChild(createElement(i));
+}
+document.body.appendChild(fragment);
+```
+
+**Lazy loading** : chargez les ressources uniquement quand nécessaire.
+
+```javascript
+// Charger un module uniquement quand nécessaire
+const bouton = document.querySelector("#bouton");
+bouton.addEventListener("click", async () => {
+  const module = await import("./module-lourd.js");
+  module.fonction();
+});
+```
+
+<Callout type="info">
+Performance n'est pas seulement une question de rapidité, mais aussi d'efficacité des ressources. Un code performant consomme moins de batterie sur mobile et moins de bande passante sur les connexions limitées.
+</Callout>
+
+## Erreurs fréquentes
+
+**Utiliser var au lieu de let/const**
+
+```javascript
+var x = 10;
+```
+
+`var` est function-scoped, peut être redéclaré, et son hoisting peut créer des bugs difficiles à détecter.
+
+<Callout type="warn">
+```javascript
+const x = 10;
+let y = 20;
+```
+Utilisez `const` par défaut, et `let` uniquement si vous avez besoin de réassigner la variable.
+</Callout>
+
+**Oublier JSON.stringify/parse avec localStorage**
+
+```javascript
+localStorage.setItem("personne", { nom: "Jean" });
+const personne = localStorage.getItem("personne");
+console.log(personne.nom); // undefined
+```
+
+localStorage stocke uniquement des strings. Les objets sont convertis en string "[object Object]".
+
+<Callout type="warn">
+```javascript
+localStorage.setItem("personne", JSON.stringify({ nom: "Jean" }));
+const personne = JSON.parse(localStorage.getItem("personne"));
+console.log(personne.nom); // "Jean"
+```
+Toujours utiliser `JSON.stringify` pour stocker et `JSON.parse` pour récupérer des objets dans localStorage.
+</Callout>
+
+**Catch sans spécifier le type d'erreur**
+
+```javascript
+try {
+  operationRisquee();
+} catch (erreur) {
+  console.log("Erreur"); // Trop vague
+}
+```
+
+Le message d'erreur ne contient pas d'information utile pour le débogage.
+
+<Callout type="warn">
+```javascript
+try {
+  operationRisquee();
+} catch (erreur) {
+  console.error("Erreur :", erreur.message, erreur.stack);
+}
+```
+Loguez toujours le message et le stack trace de l'erreur pour faciliter le débogage.
+</Callout>
+
+**Modifier directement les props ou l'état**
+
+```javascript
+const personne = { nom: "Jean", age: 30 };
+personne.age = 31;
+```
+
+La modification directe des objets peut créer des bugs difficiles à tracer, surtout dans les frameworks modernes (React, Vue).
+
+<Callout type="warn">
+```javascript
+const personne = { nom: "Jean", age: 30 };
+const personneModifiee = { ...personne, age: 31 };
+```
+Préférez l'immutabilité : créez de nouvelles versions des objets au lieu de les modifier directement.
+</Callout>
+
+## Exercices
+
+<Exercise n="10.1" title='Créer et importer un module ES'>
+Créez deux fichiers :
+
+1. `maths.js` : exporte une fonction `somme(a, b)` et une constante `PI`
+2. `main.js` : importe la fonction et la constante, et les utilise
+
+Testez dans un environnement qui supporte les modules ES (navigateur moderne avec type="module").
+</Exercise>
+
+<Solution>
+```javascript
+// maths.js
+export const PI = 3.14159;
+
+export function somme(a, b) {
+  return a + b;
+}
+```
+
+```javascript
+// main.js
+import { PI, somme } from "./maths.js";
+
+console.log("PI :", PI);
+console.log("Somme de 2 et 3 :", somme(2, 3));
+```
+
+HTML correspondant :
+```html
+<script type="module" src="main.js"></script>
+```
+</Solution>
+
+<Exercise n="10.2" title='Stocker et récupérer des objets dans localStorage'>
+Créez une fonction `sauvegarderPreference(key, objet)` et une fonction `chargerPreference(key)` qui :
+
+1. Sauvegarde un objet dans localStorage (JSON.stringify)
+2. Récupère un objet depuis localStorage (JSON.parse)
+3. Gère le cas où la clé n'existe pas (renvoie null)
+
+Testez avec un objet utilisateur { nom, email, preferences }.
+</Exercise>
+
+<Solution>
+```javascript
+function sauvegarderPreference(key, objet) {
+  try {
+    localStorage.setItem(key, JSON.stringify(objet));
+  } catch (erreur) {
+    console.error("Erreur lors de la sauvegarde :", erreur);
+  }
+}
+
+function chargerPreference(key) {
+  try {
+    const valeur = localStorage.getItem(key);
+    return valeur ? JSON.parse(valeur) : null;
+  } catch (erreur) {
+    console.error("Erreur lors du chargement :", erreur);
+    return null;
+  }
+}
+
+// Test
+const utilisateur = {
+  nom: "Jean",
+  email: "jean@example.com",
+  preferences: { theme: "dark", langue: "fr" },
+};
+
+sauvegarderPreference("utilisateur", utilisateur);
+const charge = chargerPreference("utilisateur");
+console.log(charge);
+```
+</Solution>
+
+<Exercise n="10.3" title='Créer une erreur personnalisée'>
+Créez une classe `ValidationError` qui étend `Error`. Créez une fonction `validerAge(age)` qui lance cette erreur si l'âge est négatif ou supérieur à 150.
+
+Testez la fonction avec différents âges et capturez l'erreur avec try/catch.
+</Exercise>
+
+<Solution>
+```javascript
+class ValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}
+
+function validerAge(age) {
+  if (age < 0) {
+    throw new ValidationError("L'âge ne peut pas être négatif");
+  }
+  if (age > 150) {
+    throw new ValidationError("L'âge ne peut pas dépasser 150");
+  }
+  return true;
+}
+
+// Tests
+try {
+  console.log(validerAge(25)); // true
+  console.log(validerAge(-5)); // Lance ValidationError
+} catch (erreur) {
+  if (erreur instanceof ValidationError) {
+    console.error("Erreur de validation :", erreur.message);
+  } else {
+    console.error("Erreur inattendue :", erreur);
+  }
+}
+```
+</Solution>
+
+<Exercise n="10.4" title='Utiliser les outils de débogage'>
+Créez une fonction `factorielle(n)` récursive. Utilisez `console.log` pour tracer chaque appel, `console.time` pour mesurer le temps d'exécution, et `debugger` pour arrêter l'exécution à un point précis.
+
+Testez avec différentes valeurs de n et observez le comportement dans les DevTools.
+</Exercise>
+
+<Solution>
+```javascript
+function factorielle(n) {
+  console.log(`Calcul de factorielle(${n})`);
+  
+  if (n <= 1) {
+    debugger; // Arrête l'exécution ici
+    return 1;
+  }
+  
+  const resultat = n * factorielle(n - 1);
+  console.log(`factorielle(${n}) = ${resultat}`);
+  return resultat;
+}
+
+console.time("factorielle");
+const resultat = factorielle(5);
+console.timeEnd("factorielle");
+console.log("Résultat final :", resultat);
+```
+</Solution>
+
+<Exercise n="10.5" title='Optimiser une boucle DOM'>
+Créez une fonction qui ajoute 1000 éléments div au body. Comparez deux approches :
+
+1. Ajout direct dans la boucle (mauvaise performance)
+2. Utilisation de DocumentFragment (bonne performance)
+
+Mesurez le temps d'exécution avec console.time.
+</Exercise>
+
+<Solution>
+```javascript
+// Approche naïve (mauvaise performance)
+function ajouterElementsNaif() {
+  console.time("naif");
+  for (let i = 0; i < 1000; i++) {
+    const div = document.createElement("div");
+    div.textContent = `Élément ${i}`;
+    document.body.appendChild(div);
+  }
+  console.timeEnd("naif");
+}
+
+// Approche optimisée (bonne performance)
+function ajouterElementsOptimise() {
+  console.time("optimise");
+  const fragment = document.createDocumentFragment();
+  for (let i = 0; i < 1000; i++) {
+    const div = document.createElement("div");
+    div.textContent = `Élément ${i}`;
+    fragment.appendChild(div);
+  }
+  document.body.appendChild(fragment);
+  console.timeEnd("optimise");
+}
+
+// Tests
+// Nettoyer le body avant chaque test
+document.body.innerHTML = "";
+ajouterElementsNaif();
+
+document.body.innerHTML = "";
+ajouterElementsOptimise();
+```
+</Solution>
+
+<Exercise n="10.6" title='Créer une fonction pure'>
+Créez une fonction pure qui calcule la moyenne d'un tableau de nombres. Comparez avec une version impure qui utilise une variable globale.
+
+Expliquez pourquoi la version pure est préférable.
+</Exercise>
+
+<Solution>
+```javascript
+// Version impure (utilise une variable globale)
+let sommeGlobale = 0;
+
+function moyenneImpure(nombres) {
+  sommeGlobale = nombres.reduce((acc, n) => acc + n, 0);
+  return sommeGlobale / nombres.length;
+}
+
+// Version pure (pas d'effets de bord)
+function moyennePure(nombres) {
+  const somme = nombres.reduce((acc, n) => acc + n, 0);
+  return somme / nombres.length;
+}
+
+// Tests
+console.log(moyenneImpure([1, 2, 3, 4, 5])); // 3
+console.log(sommeGlobale); // 15 (effet de bord indésirable)
+
+console.log(moyennePure([1, 2, 3, 4, 5])); // 3
+// Pas de variable globale modifiée
+```
+
+La version pure est préférable car :
+- Elle n'a pas d'effets de bord (ne modifie pas l'état externe)
+- Elle est prévisible (même entrée = même sortie)
+- Elle est plus facile à tester et à déboguer
+- Elle est thread-safe (pas de concurrence sur les variables globales)
+</Solution>
+
+<Exercise n="10.7" title='Lazy loading d&apos;un module'>
+Créez un bouton qui charge un module lourd uniquement lors du clic. Utilisez `import()` dynamique.
+
+Le module peut être simulé avec un simple fichier qui exporte une fonction.
+</Exercise>
+
+<Solution>
+```javascript
+// module-lourd.js
+export function fonctionLourde() {
+  console.log("Module chargé et fonction exécutée");
+  return "Résultat de la fonction lourde";
+}
+
+// main.js
+const bouton = document.querySelector("#charger-module");
+
+bouton.addEventListener("click", async () => {
+  try {
+    console.log("Chargement du module...");
+    const module = await import("./module-lourd.js");
+    const resultat = module.fonctionLourde();
+    console.log("Résultat :", resultat);
+  } catch (erreur) {
+    console.error("Erreur lors du chargement du module :", erreur);
+  }
+});
+```
+
+HTML correspondant :
+```html
+<button id="charger-module">Charger le module</button>
+```
+</Solution>
+
+<Exercise n="10.8" title='Défi : Todo-list modulaire et persistante'>
+Créez une todo-list modulaire avec les fonctionnalités suivantes :
+
+1. Séparation en modules : storage.js (localStorage), todo.js (logique), ui.js (DOM)
+2. Persistance des tâches dans localStorage
+3. Gestion d'erreurs robuste (try/catch, erreurs personnalisées)
+4. Lazy loading des modules si possible
+5. Code documenté avec des commentaires explicatifs
+
+Chaque module doit exporter uniquement ce qui est nécessaire. L'application doit être testée dans un navigateur moderne.
+</Exercise>
+
+<Solution>
+```javascript
+// storage.js
+export class StorageManager {
+  constructor(key) {
+    this.key = key;
+  }
+
+  sauvegarder(donnees) {
+    try {
+      localStorage.setItem(this.key, JSON.stringify(donnees));
+    } catch (erreur) {
+      if (erreur.name === "QuotaExceededError") {
+        throw new Error("Espace localStorage insuffisant");
+      }
+      throw new Error("Erreur lors de la sauvegarde");
+    }
+  }
+
+  charger() {
+    try {
+      const valeur = localStorage.getItem(this.key);
+      return valeur ? JSON.parse(valeur) : [];
+    } catch (erreur) {
+      console.error("Erreur lors du chargement :", erreur);
+      return [];
+    }
+  }
+}
+```
+
+```javascript
+// todo.js
+export class TodoManager {
+  constructor(storage) {
+    this.storage = storage;
+    this.taches = this.storage.charger();
+  }
+
+  ajouter(texte) {
+    if (!texte || texte.trim() === "") {
+      throw new Error("Le texte de la tâche ne peut pas être vide");
+    }
+
+    const tache = {
+      id: Date.now(),
+      texte: texte.trim(),
+      completed: false,
+      date: new Date().toISOString(),
+    };
+
+    this.taches.push(tache);
+    this.sauvegarder();
+    return tache;
+  }
+
+  toggle(id) {
+    const tache = this.taches.find((t) => t.id === id);
+    if (!tache) {
+      throw new Error("Tâche non trouvée");
+    }
+
+    tache.completed = !tache.completed;
+    this.sauvegarder();
+    return tache;
+  }
+
+  supprimer(id) {
+    const index = this.taches.findIndex((t) => t.id === id);
+    if (index === -1) {
+      throw new Error("Tâche non trouvée");
+    }
+
+    const supprimee = this.taches.splice(index, 1)[0];
+    this.sauvegarder();
+    return supprimee;
+  }
+
+  toutes() {
+    return [...this.taches];
+  }
+
+  sauvegarder() {
+    this.storage.sauvegarder(this.taches);
+  }
+}
+```
+
+```javascript
+// ui.js
+export class UIManager {
+  constructor(todoManager) {
+    this.todoManager = todoManager;
+    this.liste = document.querySelector("#liste");
+    this.input = document.querySelector("#input");
+    this.bouton = document.querySelector("#ajouter");
+    this.initialiser();
+  }
+
+  initialiser() {
+    this.bouton.addEventListener("click", () => this.ajouter());
+    this.input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") this.ajouter();
+    });
+    this.liste.addEventListener("click", (e) => this.gererClic(e));
+    this.afficher();
+  }
+
+  ajouter() {
+    try {
+      const texte = this.input.value;
+      this.todoManager.ajouter(texte);
+      this.input.value = "";
+      this.afficher();
+    } catch (erreur) {
+      this.afficherErreur(erreur.message);
+    }
+  }
+
+  gererClic(event) {
+    const bouton = event.target.closest(".supprimer");
+    const texte = event.target.closest(".tache-texte");
+
+    if (bouton) {
+      const id = parseInt(bouton.dataset.id);
+      try {
+        this.todoManager.supprimer(id);
+        this.afficher();
+      } catch (erreur) {
+        this.afficherErreur(erreur.message);
+      }
+    }
+
+    if (texte) {
+      const id = parseInt(texte.dataset.id);
+      try {
+        this.todoManager.toggle(id);
+        this.afficher();
+      } catch (erreur) {
+        this.afficherErreur(erreur.message);
+      }
+    }
+  }
+
+  afficher() {
+    const taches = this.todoManager.toutes();
+    this.liste.innerHTML = taches.map((t) => this.creerHTML(tache)).join("");
+  }
+
+  creerHTML(tache) {
+    return `
+      <li class="tache ${tache.completed ? "terminee" : ""}" data-id="${tache.id}">
+        <span class="tache-texte" data-id="${tache.id}">${tache.texte}</span>
+        <button class="supprimer" data-id="${tache.id}">Supprimer</button>
+      </li>
+    `;
+  }
+
+  afficherErreur(message) {
+    console.error(message);
+    alert(message);
+  }
+}
+```
+
+```javascript
+// main.js
+import { StorageManager } from "./storage.js";
+import { TodoManager } from "./todo.js";
+import { UIManager } from "./ui.js";
+
+const storage = new StorageManager("taches");
+const todoManager = new TodoManager(storage);
+const ui = new UIManager(todoManager);
+```
+
+HTML correspondant :
+```html
+<input type="text" id="input" placeholder="Nouvelle tâche">
+<button id="ajouter">Ajouter</button>
+<ul id="liste"></ul>
+
+<style>
+.tache {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tache.terminee {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.tache-texte {
+  cursor: pointer;
+}
+
+.supprimer {
+  padding: 4px 8px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+</style>
+
+<script type="module" src="main.js"></script>
+```
+</Solution>
+
+## Livrable
+
+Créez une todo-list modulaire et persistante. L'application doit inclure :
+
+**Architecture modulaire obligatoire**
+- Séparation en modules : storage.js, todo.js, ui.js, main.js
+- Chaque module exporte uniquement ce qui est nécessaire
+- Import/export explicites avec ES modules
+- Aucune variable globale
+
+**Fonctionnalités obligatoires**
+- Ajouter une tâche
+- Marquer une tâche comme terminée
+- Supprimer une tâche
+- Persistance dans localStorage
+- Gestion d'erreurs robuste
+
+**Gestion d'erreurs obligatoire**
+- try/catch dans toutes les opérations asynchrones ou risquées
+- Erreurs personnalisées pour les cas spécifiques
+- Messages d'erreur clairs pour l'utilisateur
+- Gestion des erreurs localStorage (QuotaExceededError)
+
+**Critères d'évaluation**
+- [ ] Architecture modulaire avec ES modules
+- [ ] Séparation des responsabilités (storage, logique, UI)
+- [ ] Persistance localStorage fonctionnelle
+- [ ] Gestion d'erreurs complète
+- [ ] Code documenté avec commentaires
+- [ ] Utilisation de const/let (pas de var)
+- [ ] Fonctions pures là où possible
+
+**Pistes d'extension**
+- Ajoutez le lazy loading des modules
+- Implémentez le filtrage des tâches
+- Ajoutez des tests unitaires
+- Créez une build avec Vite pour le bundling
+- Ajoutez TypeScript pour le typage statique
+
+## Pour aller plus loin
+
+- [MDN - ES Modules](https://developer.mozilla.org/fr/docs/Web/JavaScript/Guide/Modules) : Guide complet sur les modules ES.
+- [MDN - Web Storage API](https://developer.mozilla.org/fr/docs/Web/API/Web_Storage_API) : Documentation sur localStorage et sessionStorage.
+- [MDN - Error handling](https://developer.mozilla.org/fr/docs/Web/JavaScript/Guide/Control_flow_and_error_handling) : Guide sur la gestion des erreurs en JavaScript.
+- [JavaScript.info - Modules](https://javascript.info/modules) : Guide détaillé sur les modules ES avec exemples.
+- [Clean Code JavaScript](https://github.com/ryanmcdermott/clean-code-javascript) : Guide sur les bonnes pratiques en JavaScript.

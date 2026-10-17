@@ -1,0 +1,586 @@
+# Variables et types
+
+Ce module explore les types de données fondamentaux en Python et comment les utiliser à travers des variables. Python est un langage dynamiquement typé, ce qui signifie que le type d'une variable est déterminé à l'exécution. Ce module explique les types primitifs (int, float, str, bool), les opérations sur ces types, les conversions de type, et les bonnes pratiques de nommage des variables. À l'issue de ce module, vous serez capable de manipuler différents types de données, d'effectuer des conversions appropriées, et de créer un convertisseur d'unités fonctionnel.
+
+## Objectifs
+
+- Comprendre les types primitifs Python (int, float, str, bool)
+- Utiliser les opérateurs arithmétiques et de comparaison
+- Effectuer des conversions de type (casting)
+- Comprendre la dynamique des variables et le garbage collection
+- Suivre les conventions de nommage PEP 8
+- Utiliser les chaînes de caractères (concaténation, méthodes)
+- Comprendre les opérations booléennes
+
+## Prérequis
+
+- Introduction à Python (installation, scripts, REPL)
+
+## Cours
+
+### Types primitifs
+
+Python propose plusieurs types primitifs de base.
+
+**int (entier)** : nombres entiers, positifs ou négatifs, sans limite de taille (limité par la mémoire).
+
+```python
+x = 42
+y = -10
+z = 1_000_000  # Les underscores améliorent la lisibilité
+```
+
+**float (décimal)** : nombres à virgule flottante, pour les nombres décimaux.
+
+```python
+pi = 3.14159
+temperature = -5.5
+notation_scientifique = 1.23e-4  # 0.000123
+```
+
+<Callout type="warn">
+Les floats ont une précision limitée. Pour des calculs financiers précis, utilisez le module `decimal` au lieu de float.
+</Callout>
+
+**str (chaîne de caractères)** : séquence de caractères, délimitée par des guillemets simples `'` ou doubles `"`.
+
+```python
+message1 = "Bonjour"
+message2 = 'Monde'
+message3 = """Ceci est une chaîne
+sur plusieurs lignes"""
+```
+
+**bool (booléen)** : ne peut prendre que deux valeurs, `True` ou `False` (capitalisation obligatoire).
+
+```python
+est_actif = True
+est_vide = False
+```
+
+**None** : représente l'absence de valeur.
+
+```python
+resultat = None
+```
+
+### Opérateurs arithmétiques
+
+Python supporte les opérateurs arithmétiques standards.
+
+```python
+a = 10
+b = 3
+
+addition = a + b       # 13
+soustraction = a - b    # 7
+multiplication = a * b  # 30
+division = a / b        # 3.333... (toujours float)
+division_entiere = a // b  # 3 (int)
+reste = a % b           # 1
+puissance = a ** b      # 1000
+```
+
+**Priorité des opérateurs** :
+
+```python
+resultat = 2 + 3 * 4    # 14 (multiplication avant addition)
+resultat = (2 + 3) * 4  # 20 (parenthèses d'abord)
+```
+
+### Opérateurs de comparaison
+
+Les opérateurs de comparaison renvoient un booléen.
+
+```python
+x = 10
+y = 5
+
+egal = x == y       # False
+different = x != y   # True
+superieur = x > y    # True
+inferieur = x < y    # False
+superieur_egal = x >= y  # True
+inferieur_egal = x <= y  # False
+```
+
+**Comparaison de chaînes** :
+
+```python
+"abc" < "abd"  # True (comparaison lexicographique)
+"A" < "a"      # True (majuscules avant minuscules en ASCII)
+```
+
+### Opérateurs logiques
+
+Les opérateurs logiques combinent des expressions booléennes.
+
+```python
+a = True
+b = False
+
+et = a and b      # False
+ou = a or b       # True
+non = not a       # False
+```
+
+**Court-circuit** :
+
+```python
+# Si a est False, b n'est pas évalué
+resultat = a and b
+
+# Si a est True, b n'est pas évalué
+resultat = a or b
+```
+
+<Callout type="tip">
+Le court-circuit est utile pour éviter les erreurs. Exemple : `if x != 0 and 10 / x > 2` évite la division par zéro.
+</Callout>
+
+### Conversions de type
+
+Les conversions explicites (casting) transforment une valeur d'un type à un autre.
+
+```python
+# Vers int
+x = int("42")      # 42
+y = int(3.9)       # 3 (troncature)
+z = int(True)      # 1
+
+# Vers float
+a = float("3.14")  # 3.14
+b = float(42)       # 42.0
+
+# Vers str
+c = str(42)        # "42"
+d = str(3.14)      # "3.14"
+
+# Vers bool
+e = bool(1)        # True
+f = bool(0)        # False
+g = bool("")       # False
+h = bool("texte")  # True
+```
+
+**Erreurs de conversion** :
+
+```python
+int("abc")  # ValueError: invalid literal for int()
+```
+
+### Variables et affectation
+
+Python est dynamiquement typé : le type d'une variable peut changer.
+
+```python
+x = 10        # int
+x = "texte"   # str (le type change)
+```
+
+**Affectation multiple** :
+
+```python
+a, b, c = 1, 2, 3
+
+# Échange de variables
+x, y = 10, 20
+x, y = y, x  # x=20, y=10
+```
+
+**Affectation augmentée** :
+
+```python
+x = 10
+x += 5   # x = x + 5 = 15
+x -= 3   # x = x - 3 = 12
+x *= 2   # x = x * 2 = 24
+x /= 4   # x = x / 4 = 6.0
+```
+
+### Chaînes de caractères
+
+**Concaténation** :
+
+```python
+prenom = "Jean"
+nom = "Dupont"
+nom_complet = prenom + " " + nom  # "Jean Dupont"
+```
+
+**Répétition** :
+
+```python
+ligne = "-" * 20  # "--------------------"
+```
+
+**Accès aux caractères** :
+
+```python
+texte = "Bonjour"
+premier = texte[0]    # "B"
+dernier = texte[-1]   # "r"
+```
+
+**Méthodes de chaînes** :
+
+```python
+texte = "Bonjour le monde"
+
+majuscules = texte.upper()          # "BONJOUR LE MONDE"
+minuscules = texte.lower()          # "bonjour le monde
+titre = texte.title()              # "Bonjour Le Monde"
+longueur = len(texte)              # 19
+contient = "monde" in texte        # True
+remplace = texte.replace("monde", "tout")  # "Bonjour le tout"
+```
+
+<Callout type="info">
+Les chaînes de caractères sont immuables en Python. Les méthodes comme `upper()` et `replace()` renvoient une nouvelle chaîne, elles ne modifient pas l'originale.
+</Callout>
+
+### Conventions de nommage
+
+PEP 8 recommande des conventions spécifiques pour le nommage des variables.
+
+**Variables et fonctions** : snake_case (minuscules avec underscores).
+
+```python
+nom_utilisateur = "Alice"
+prix_total = 99.99
+def calculer_moyenne():
+    pass
+```
+
+**Constantes** : UPPER_CASE (toutes majuscules avec underscores).
+
+```python
+PI = 3.14159
+MAX_TENTATIVES = 3
+```
+
+**Classes** : CamelCase (chaque mot commence par une majuscule).
+
+```python
+class Utilisateur:
+    pass
+```
+
+<Callout type="tip">
+Utilisez des noms descriptifs qui expliquent ce que la variable contient. `x` et `y` sont acceptables pour des coordonnées, mais `age` et `nom` sont préférables pour des données utilisateur.
+</Callout>
+
+## Erreurs fréquentes
+
+**Division par zéro**
+
+```python
+resultat = 10 / 0
+```
+
+Python lève une `ZeroDivisionError`.
+
+<Callout type="warn">
+```python
+if denominateur != 0:
+    resultat = 10 / denominateur
+else:
+    resultat = "Erreur : division par zéro"
+```
+Toujours vérifier que le dénominateur n'est pas zéro avant de diviser.
+</Callout>
+
+**Conversion de type invalide**
+
+```python
+nombre = int("abc")
+```
+
+La chaîne ne peut pas être convertie en entier.
+
+<Callout type="warn">
+```python
+try:
+    nombre = int(input("Entrez un nombre : "))
+except ValueError:
+    print("Ce n'est pas un nombre valide")
+```
+Utilisez try/except pour gérer les erreurs de conversion.
+</Callout>
+
+**Confondre == et =**
+
+```python
+if x = 5:  # Erreur : SyntaxError
+    print("x vaut 5")
+```
+
+`=` est l'affectation, `==` est la comparaison.
+
+<Callout type="warn">
+```python
+if x == 5:  # Correct
+    print("x vaut 5")
+```
+Souvenez-vous : `=` pour assigner, `==` pour comparer.
+</Callout>
+
+**Modification de chaîne immuable**
+
+```python
+texte = "Bonjour"
+texte[0] = "b"  # Erreur : TypeError
+```
+
+Les chaînes sont immuables, elles ne peuvent pas être modifiées in-place.
+
+<Callout type="warn">
+```python
+texte = "Bonjour"
+texte = "b" + texte[1:]  # Crée une nouvelle chaîne
+```
+Pour "modifier" une chaîne, créez-en une nouvelle avec les modifications souhaitées.
+</Callout>
+
+## Exercices
+
+<Exercise n="2.1" title="Créer des variables de différents types">
+Créez un script qui déclare des variables de chaque type primitif :
+
+1. Un entier (int)
+2. Un décimal (float)
+3. Une chaîne (str)
+4. Un booléen (bool)
+5. Une valeur None
+
+Affichez chaque variable avec son type en utilisant `type()`.
+</Exercise>
+
+<Solution>
+```python
+entier = 42
+decimal = 3.14
+chaine = "Bonjour"
+booleen = True
+rien = None
+
+print(f"entier : {entier}, type : {type(entier)}")
+print(f"decimal : {decimal}, type : {type(decimal)}")
+print(f"chaine : {chaine}, type : {type(chaine)}")
+print(f"booleen : {booleen}, type : {type(booleen)}")
+print(f"rien : {rien}, type : {type(rien)}")
+```
+</Solution>
+
+<Exercise n="2.2" title="Effectuer des opérations arithmétiques">
+Créez un script qui demande deux nombres à l'utilisateur et effectue toutes les opérations arithmétiques (+, -, *, /, //, %, **). Affichez les résultats.
+</Exercise>
+
+<Solution>
+```python
+a = float(input("Premier nombre : "))
+b = float(input("Deuxième nombre : "))
+
+print(f"Addition : {a + b}")
+print(f"Soustraction : {a - b}")
+print(f"Multiplication : {a * b}")
+print(f"Division : {a / b}")
+print(f"Division entière : {a // b}")
+print(f"Reste : {a % b}")
+print(f"Puissance : {a ** b}")
+```
+</Solution>
+
+<Exercise n="2.3" title="Comparer des valeurs">
+Créez un script qui demande deux nombres et affiche :
+
+1. S'ils sont égaux
+2. Si le premier est supérieur au second
+3. Si le premier est inférieur au second
+
+Utilisez des conditions if/elif/else.
+</Exercise>
+
+<Solution>
+```python
+a = float(input("Premier nombre : "))
+b = float(input("Deuxième nombre : "))
+
+if a == b:
+    print("Les nombres sont égaux")
+elif a > b:
+    print(f"{a} est supérieur à {b}")
+else:
+    print(f"{a} est inférieur à {b}")
+```
+</Solution>
+
+<Exercise n="2.4" title="Convertir des types">
+Créez un script qui :
+
+1. Demande une chaîne représentant un nombre
+2. Convertit la chaîne en int
+3. Convertit l'int en float
+4. Convertit le float en str
+5. Affiche chaque conversion avec son type
+</Exercise>
+
+<Solution>
+```python
+chaine = input("Entrez un nombre : ")
+
+entier = int(chaine)
+decimal = float(entier)
+chaine_nouvelle = str(decimal)
+
+print(f"Chaine originale : {chaine}, type : {type(chaine)}")
+print(f"Entier : {entier}, type : {type(entier)}")
+print(f"Decimal : {decimal}, type : {type(decimal)}")
+print(f"Chaine nouvelle : {chaine_nouvelle}, type : {type(chaine_nouvelle)}")
+```
+</Solution>
+
+<Exercise n="2.5" title="Manipuler des chaînes">
+Créez un script qui demande le nom et le prénom de l'utilisateur, puis affiche :
+
+1. Le nom complet en majuscules
+2. Le nom complet en minuscules
+3. Le nom complet avec chaque mot en majuscule (title)
+4. La longueur du nom complet
+</Exercise>
+
+<Solution>
+```python
+prenom = input("Prénom : ")
+nom = input("Nom : ")
+
+nom_complet = f"{prenom} {nom}"
+
+print(f"Majuscules : {nom_complet.upper()}")
+print(f"Minuscules : {nom_complet.lower()}")
+print(f"Title : {nom_complet.title()}")
+print(f"Longueur : {len(nom_complet)}")
+```
+</Solution>
+
+<Exercise n="2.6" title="Calculer une moyenne pondérée">
+Créez un script qui calcule la moyenne pondérée de trois notes. Le script doit :
+
+1. Demander trois notes
+2. Demander les coefficients correspondants
+3. Calculer la moyenne pondérée
+4. Afficher le résultat
+
+Formule : (note1 × coef1 + note2 × coef2 + note3 × coef3) / (coef1 + coef2 + coef3)
+</Exercise>
+
+<Solution>
+```python
+note1 = float(input("Note 1 : "))
+coef1 = float(input("Coefficient 1 : "))
+note2 = float(input("Note 2 : "))
+coef2 = float(input("Coefficient 2 : "))
+note3 = float(input("Note 3 : "))
+coef3 = float(input("Coefficient 3 : "))
+
+moyenne = (note1 * coef1 + note2 * coef2 + note3 * coef3) / (coef1 + coef2 + coef3)
+
+print(f"Moyenne pondérée : {moyenne:.2f}")
+```
+</Solution>
+
+<Exercise n="2.7" title="Vérifier un palindrome">
+Créez un script qui demande un mot à l'utilisateur et vérifie s'il s'agit d'un palindrome (se lit de la même façon dans les deux sens).
+
+Indice : comparez le mot avec son inverse (`mot[::-1]`).
+</Exercise>
+
+<Solution>
+```python
+mot = input("Entrez un mot : ")
+
+inverse = mot[::-1]
+
+if mot.lower() == inverse.lower():
+    print(f"{mot} est un palindrome")
+else:
+    print(f"{mot} n'est pas un palindrome")
+```
+</Solution>
+
+<Exercise n="2.8" title="Défi : Convertisseur d'unités">
+Créez un convertisseur d'unités qui permet de convertir :
+
+1. Kilomètres en miles (1 km = 0.621371 miles)
+2. Celsius en Fahrenheit (F = C × 9/5 + 32)
+3. Kilogrammes en livres (1 kg = 2.20462 livres)
+
+Le script doit demander :
+- Le type de conversion
+- La valeur à convertir
+
+Affichez le résultat avec 2 décimales.
+</Exercise>
+
+<Solution>
+```python
+print("Convertisseur d'unités")
+print("1. Kilomètres → Miles")
+print("2. Celsius → Fahrenheit")
+print("3. Kilogrammes → Livres")
+
+choix = input("Choisissez une conversion (1-3) : ")
+valeur = float(input("Entrez la valeur : "))
+
+if choix == "1":
+    resultat = valeur * 0.621371
+    print(f"{valeur} km = {resultat:.2f} miles")
+elif choix == "2":
+    resultat = valeur * 9/5 + 32
+    print(f"{valeur}°C = {resultat:.2f}°F")
+elif choix == "3":
+    resultat = valeur * 2.20462
+    print(f"{valeur} kg = {resultat:.2f} livres")
+else:
+    print("Choix invalide")
+```
+</Solution>
+
+## Livrable
+
+Créez un convertisseur d'unités en Python. Le convertisseur doit inclure :
+
+**Fonctionnalités obligatoires**
+- Conversion kilomètres → miles
+- Conversion Celsius → Fahrenheit
+- Conversion kilogrammes → livres
+- Interface utilisateur simple
+- Affichage avec 2 décimales
+
+**Code obligatoire**
+- Variables descriptives (conventions PEP 8)
+- Conversions de type explicites
+- Gestion des erreurs (choix invalide)
+- Commentaires explicatifs
+
+**Critères d'évaluation**
+- [ ] Convertisseur fonctionnel
+- [ ] Trois conversions implémentées
+- [ ] Interface utilisateur claire
+- [ ] Gestion des erreurs
+- [ ] Code documenté
+- [ ] Conventions de nommage respectées
+
+**Pistes d'extension**
+- Ajoutez d'autres conversions (mètres → pieds, litres → gallons)
+- Implémentez la conversion inverse
+- Sauvegardez l'historique des conversions
+- Créez une interface en boucle (plusieurs conversions sans relancer)
+
+## Pour aller plus loin
+
+- [Python Data Types](https://docs.python.org/3/library/stdtypes.html) : Documentation des types intégrés Python.
+- [PEP 8 Style Guide](https://peps.python.org/pep-0008/) : Guide de style officiel pour Python.
+- [Real Python - Numbers](https://realpython.com/python-numbers/) : Guide détaillé sur les nombres en Python.
+- [Real Python - Strings](https://realpython.com/python-strings/) : Guide complet sur les chaînes de caractères.
+- [Python Cheatsheet](https://www.pythoncheatsheet.org/) : Référence rapide des concepts Python.

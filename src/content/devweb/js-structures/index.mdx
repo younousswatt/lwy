@@ -1,0 +1,855 @@
+# JavaScript — Structures de données
+
+Ce module explore les structures de données fondamentales en JavaScript : les tableaux (arrays) et les objets (objects). Il explique comment créer, manipuler et parcourir ces structures, les méthodes de tableau essentielles (map, filter, reduce), la destructuration pour extraire des valeurs, l'opérateur spread pour cloner et fusionner, et le format JSON pour l'échange de données. Ces structures sont omniprésentes dans le développement web moderne et sont indispensables pour manipuler des données dynamiques. À l'issue de ce module, vous serez capable de créer un gestionnaire de notes fonctionnel qui utilise ces structures de données.
+
+## Objectifs
+
+- Créer et manipuler des tableaux (création, accès, modification, suppression).
+- Utiliser les méthodes de tableau essentielles (push, pop, shift, unshift, slice, splice).
+- Appliquer les méthodes fonctionnelles (map, filter, reduce, find, some, every).
+- Créer et manipuler des objets (propriétés, méthodes, this).
+- Utiliser la destructuration pour extraire des valeurs de tableaux et d'objets.
+- Utiliser l'opérateur spread pour cloner et fusionner des structures.
+- Convertir entre objets JavaScript et JSON (JSON.stringify, JSON.parse).
+
+## Prérequis
+
+- JavaScript — Bases (types, variables, fonctions, boucles)
+
+## Cours
+
+### Tableaux (Arrays)
+
+Les tableaux sont des collections ordonnées de valeurs. En JavaScript, un tableau peut contenir des valeurs de différents types.
+
+**Création de tableau** :
+
+```javascript
+// Création littérale
+const fruits = ["pomme", "banane", "orange"];
+
+// Création avec constructeur (déconseillé)
+const nombres = new Array(1, 2, 3);
+
+// Tableau vide
+const vide = [];
+```
+
+**Accès aux éléments** : les tableaux sont indexés à partir de 0.
+
+```javascript
+const fruits = ["pomme", "banane", "orange"];
+console.log(fruits[0]); // "pomme"
+console.log(fruits[1]); // "banane"
+console.log(fruits[2]); // "orange"
+console.log(fruits[3]); // undefined (index hors limites)
+```
+
+**Propriété length** : nombre d'éléments dans le tableau.
+
+```javascript
+const fruits = ["pomme", "banane", "orange"];
+console.log(fruits.length); // 3
+```
+
+**Modification d'éléments** :
+
+```javascript
+const fruits = ["pomme", "banane", "orange"];
+fruits[0] = "poire"; // Modification
+console.log(fruits); // ["poire", "banane", "orange"]
+```
+
+**Ajout d'éléments** :
+
+```javascript
+const fruits = ["pomme", "banane"];
+fruits.push("orange"); // Ajoute à la fin
+console.log(fruits); // ["pomme", "banane", "orange"]
+
+fruits.unshift("fraise"); // Ajoute au début
+console.log(fruits); // ["fraise", "pomme", "banane", "orange"]
+```
+
+**Suppression d'éléments** :
+
+```javascript
+const fruits = ["pomme", "banane", "orange"];
+const dernier = fruits.pop(); // Supprime et renvoie le dernier
+console.log(dernier); // "orange"
+console.log(fruits); // ["pomme", "banane"]
+
+const premier = fruits.shift(); // Supprime et renvoie le premier
+console.log(premier); // "pomme"
+console.log(fruits); // ["banane"]
+```
+
+<Callout type="tip">
+`push` et `pop` opèrent sur la fin du tableau (stack). `shift` et `unshift` opèrent sur le début (queue). Ces opérations ont une complexité de O(1) pour push/pop, mais O(n) pour shift/unshift car tous les éléments doivent être décalés.
+</Callout>
+
+### Méthodes de tableau
+
+JavaScript propose de nombreuses méthodes pour manipuler les tableaux.
+
+**slice** : extrait une portion du tableau sans modifier l'original.
+
+```javascript
+const fruits = ["pomme", "banane", "orange", "fraise"];
+const premiers = fruits.slice(0, 2); // Index 0 inclus, 2 exclus
+console.log(premiers); // ["pomme", "banane"]
+console.log(fruits); // Non modifié
+```
+
+**splice** : modifie le tableau en ajoutant/supprimant des éléments.
+
+```javascript
+const fruits = ["pomme", "banane", "orange", "fraise"];
+fruits.splice(1, 2, "kiwi", "mangue"); // À partir de l'index 1, supprime 2 éléments, ajoute "kiwi" et "mangue"
+console.log(fruits); // ["pomme", "kiwi", "mangue", "fraise"]
+```
+
+**indexOf** : renvoie l'index d'un élément, ou -1 s'il n'existe pas.
+
+```javascript
+const fruits = ["pomme", "banane", "orange"];
+console.log(fruits.indexOf("banane")); // 1
+console.log(fruits.indexOf("poire")); // -1
+```
+
+**includes** : renvoie true si l'élément existe, false sinon (ES2016).
+
+```javascript
+const fruits = ["pomme", "banane", "orange"];
+console.log(fruits.includes("banane")); // true
+console.log(fruits.includes("poire")); // false
+```
+
+**join** : convertit le tableau en string, avec un séparateur.
+
+```javascript
+const fruits = ["pomme", "banane", "orange"];
+console.log(fruits.join(", ")); // "pomme, banane, orange"
+console.log(fruits.join(" - ")); // "pomme - banane - orange"
+```
+
+**reverse** : inverse l'ordre des éléments (modifie le tableau original).
+
+```javascript
+const fruits = ["pomme", "banane", "orange"];
+fruits.reverse();
+console.log(fruits); // ["orange", "banane", "pomme"]
+```
+
+**sort** : trie les éléments (modifie le tableau original).
+
+```javascript
+const nombres = [3, 1, 4, 1, 5];
+nombres.sort();
+console.log(nombres); // [1, 1, 3, 4, 5]
+
+const fruits = ["orange", "pomme", "banane"];
+fruits.sort();
+console.log(fruits); // ["banane", "orange", "pomme"] (ordre alphabétique)
+```
+
+<Callout type="warn">
+`sort()` convertit les éléments en string pour la comparaison par défaut. Pour trier des nombres correctement, utilisez une fonction de comparaison : `nombres.sort((a, b) => a - b)`.
+</Callout>
+
+### Méthodes fonctionnelles de tableau
+
+Les méthodes fonctionnelles permettent de transformer et filtrer les tableaux de manière déclarative.
+
+**map** : transforme chaque élément du tableau et renvoie un nouveau tableau.
+
+```javascript
+const nombres = [1, 2, 3, 4, 5];
+const doubles = nombres.map((n) => n * 2);
+console.log(doubles); // [2, 4, 6, 8, 10]
+```
+
+**filter** : filtre les éléments selon une condition et renvoie un nouveau tableau.
+
+```javascript
+const nombres = [1, 2, 3, 4, 5];
+const pairs = nombres.filter((n) => n % 2 === 0);
+console.log(pairs); // [2, 4]
+```
+
+**reduce** : réduit le tableau à une seule valeur en appliquant une fonction accumulative.
+
+```javascript
+const nombres = [1, 2, 3, 4, 5];
+const somme = nombres.reduce((acc, n) => acc + n, 0);
+console.log(somme); // 15
+```
+
+**find** : renvoie le premier élément qui satisfait une condition.
+
+```javascript
+const nombres = [1, 2, 3, 4, 5];
+const premierPair = nombres.find((n) => n % 2 === 0);
+console.log(premierPair); // 2
+```
+
+**findIndex** : renvoie l'index du premier élément qui satisfait une condition.
+
+```javascript
+const nombres = [1, 2, 3, 4, 5];
+const indexPair = nombres.findIndex((n) => n % 2 === 0);
+console.log(indexPair); // 1
+```
+
+**some** : renvoie true si au moins un élément satisfait une condition.
+
+```javascript
+const nombres = [1, 2, 3, 4, 5];
+const aUnPair = nombres.some((n) => n % 2 === 0);
+console.log(aUnPair); // true
+```
+
+**every** : renvoie true si tous les éléments satisfont une condition.
+
+```javascript
+const nombres = [2, 4, 6, 8, 10];
+const tousPairs = nombres.every((n) => n % 2 === 0);
+console.log(tousPairs); // true
+```
+
+<Callout type="info">
+Les méthodes fonctionnelles ne modifient pas le tableau original (sauf `sort` et `reverse`). Elles renvoient toujours un nouveau tableau (ou une valeur pour `reduce`). Cela favorise l'immutabilité, un principe important en programmation fonctionnelle.
+</Callout>
+
+### Objets (Objects)
+
+Les objets sont des collections de propriétés clé-valeur. Chaque propriété a une clé (string ou symbol) et une valeur (n'importe quel type).
+
+**Création d'objet** :
+
+```javascript
+// Création littérale
+const personne = {
+  nom: "Jean",
+  age: 30,
+  ville: "Paris",
+};
+
+// Création avec constructeur (déconseillé)
+const personne2 = new Object();
+personne2.nom = "Marie";
+```
+
+**Accès aux propriétés** :
+
+```javascript
+const personne = { nom: "Jean", age: 30 };
+console.log(personne.nom); // "Jean" (notation point)
+console.log(personne["age"]); // 30 (notation crochet)
+```
+
+La notation crochet est utile lorsque la clé contient des caractères spéciaux ou est une variable.
+
+```javascript
+const personne = { "nom complet": "Jean Dupont" };
+console.log(personne["nom complet"]); // "Jean Dupont"
+
+const cle = "age";
+console.log(personne[cle]); // 30
+```
+
+**Modification de propriétés** :
+
+```javascript
+const personne = { nom: "Jean", age: 30 };
+personne.age = 31; // Modification
+personne.ville = "Paris"; // Ajout
+delete personne.ville; // Suppression
+```
+
+**Méthodes d'objet** : les propriétés dont la valeur est une fonction.
+
+```javascript
+const personne = {
+  nom: "Jean",
+  age: 30,
+  saluer() {
+    return `Bonjour, je suis ${this.nom}`;
+  },
+};
+
+console.log(personne.saluer()); // "Bonjour, je suis Jean"
+```
+
+<Callout type="tip">
+Dans les méthodes d'objet, `this` fait référence à l'objet lui-même. Attention : les fonctions fléchées n'ont pas leur propre `this`, elles héritent du `this` du contexte englobant.
+</Callout>
+
+### Destructuration
+
+La destructuration permet d'extraire des valeurs de tableaux ou d'objets dans des variables distinctes.
+
+**Destructuration de tableau** :
+
+```javascript
+const fruits = ["pomme", "banane", "orange"];
+const [premier, deuxieme, troisieme] = fruits;
+console.log(premier); // "pomme"
+console.log(deuxieme); // "banane"
+console.log(troisieme); // "orange"
+```
+
+Ignorer des valeurs avec des virgules :
+
+```javascript
+const fruits = ["pomme", "banane", "orange"];
+const [premier, , troisieme] = fruits;
+console.log(premier); // "pomme"
+console.log(troisieme); // "orange"
+```
+
+Valeur par défaut :
+
+```javascript
+const fruits = ["pomme"];
+const [premier, deuxieme = "banane"] = fruits;
+console.log(premier); // "pomme"
+console.log(deuxieme); // "banane" (valeur par défaut)
+```
+
+**Destructuration d'objet** :
+
+```javascript
+const personne = { nom: "Jean", age: 30, ville: "Paris" };
+const { nom, age } = personne;
+console.log(nom); // "Jean"
+console.log(age); // 30
+```
+
+Renommage :
+
+```javascript
+const personne = { nom: "Jean", age: 30 };
+const { nom: nomPersonne, age: agePersonne } = personne;
+console.log(nomPersonne); // "Jean"
+```
+
+Valeur par défaut :
+
+```javascript
+const personne = { nom: "Jean" };
+const { nom, age = 30 } = personne;
+console.log(nom); // "Jean"
+console.log(age); // 30 (valeur par défaut)
+```
+
+### Opérateur spread
+
+L'opérateur spread (`...`) permet d'étendre un tableau ou un objet.
+
+**Spread dans un tableau** :
+
+```javascript
+const fruits1 = ["pomme", "banane"];
+const fruits2 = ["orange", "fraise"];
+const tousFruits = [...fruits1, ...fruits2];
+console.log(tousFruits); // ["pomme", "banane", "orange", "fraise"]
+```
+
+**Spread dans un objet** :
+
+```javascript
+const personne1 = { nom: "Jean", age: 30 };
+const personne2 = { ville: "Paris", pays: "France" };
+const personneComplete = { ...personne1, ...personne2 };
+console.log(personneComplete); // { nom: "Jean", age: 30, ville: "Paris", pays: "France" }
+```
+
+Clonage d'un objet :
+
+```javascript
+const original = { nom: "Jean", age: 30 };
+const clone = { ...original };
+clone.age = 31;
+console.log(original.age); // 30 (non modifié)
+console.log(clone.age); // 31
+```
+
+<Callout type="warn">
+Le spread effectue un clone superficiel (shallow copy). Pour les objets imbriqués, les objets enfants sont partagés entre l'original et le clone. Pour un clone profond (deep copy), utilisez `JSON.parse(JSON.stringify(obj))` ou une bibliothèque comme lodash.
+</Callout>
+
+### JSON
+
+JSON (JavaScript Object Notation) est un format d'échange de données léger et lisible par les humains. JavaScript fournit deux méthodes pour convertir entre objets JavaScript et JSON.
+
+**JSON.stringify** : convertit un objet JavaScript en string JSON.
+
+```javascript
+const personne = { nom: "Jean", age: 30 };
+const json = JSON.stringify(personne);
+console.log(json); // '{"nom":"Jean","age":30}'
+```
+
+**JSON.parse** : convertit une string JSON en objet JavaScript.
+
+```javascript
+const json = '{"nom":"Jean","age":30}';
+const personne = JSON.parse(json);
+console.log(personne); // { nom: "Jean", age: 30 }
+```
+
+<Callout type="info">
+JSON ne supporte que certains types : objets, tableaux, strings, nombres, booleans, null. Les fonctions, undefined, et les objets spéciaux (Date, RegExp, Map, Set) ne sont pas supportés et seront ignorés ou convertis en null.
+</Callout>
+
+## Erreurs fréquentes
+
+**Accéder à un index hors limites**
+
+```javascript
+const fruits = ["pomme", "banane"];
+console.log(fruits[2]); // undefined
+```
+
+Accéder à un index qui n'existe pas renvoie `undefined`, pas une erreur. Cela peut masquer des bugs si vous ne vérifiez pas explicitement.
+
+<Callout type="warn">
+```javascript
+const fruits = ["pomme", "banane"];
+if (fruits.length > 2) {
+  console.log(fruits[2]);
+}
+```
+Vérifiez toujours que l'index existe avant d'y accéder, ou utilisez `optional chaining` (`fruits[2]?.nom`) si disponible.
+</Callout>
+
+**Confondre indexOf et includes**
+
+```javascript
+const fruits = ["pomme", "banane"];
+if (fruits.indexOf("poire")) {
+  console.log("Existe");
+}
+```
+
+`indexOf` renvoie l'index (0 ou positif) si l'élément existe, et -1 s'il n'existe pas. 0 est falsy, donc la condition échoue pour le premier élément.
+
+<Callout type="warn">
+```javascript
+const fruits = ["pomme", "banane"];
+if (fruits.includes("poire")) {
+  console.log("Existe");
+}
+```
+Utilisez `includes` pour vérifier l'existence (renvoie true/false). Si vous avez besoin de l'index, utilisez `indexOf` et vérifiez que le résultat est différent de -1.
+</Callout>
+
+**Modifier le tableau original avec map/filter**
+
+```javascript
+const nombres = [1, 2, 3, 4, 5];
+nombres.map((n) => n * 2);
+console.log(nombres); // [1, 2, 3, 4, 5] (non modifié)
+```
+
+C'est correct, mais parfois on s'attend à ce que le tableau soit modifié.
+
+<Callout type="warn">
+```javascript
+const nombres = [1, 2, 3, 4, 5];
+const doubles = nombres.map((n) => n * 2);
+nombres = doubles; // Réassignation explicite
+```
+Les méthodes fonctionnelles (map, filter, reduce) ne modifient pas le tableau original. Assignez le résultat à une nouvelle variable si vous avez besoin de la version modifiée.
+</Callout>
+
+**Oublier le return dans map/filter/reduce**
+
+```javascript
+const nombres = [1, 2, 3, 4, 5];
+const doubles = nombres.map((n) => {
+  n * 2;
+});
+console.log(doubles); // [undefined, undefined, undefined, undefined, undefined]
+```
+
+Si la fonction de callback n'a pas de return explicite, elle renvoie `undefined`.
+
+<Callout type="warn">
+```javascript
+const nombres = [1, 2, 3, 4, 5];
+const doubles = nombres.map((n) => n * 2);
+console.log(doubles); // [2, 4, 6, 8, 10]
+```
+Toujours utiliser `return` dans les fonctions de callback de map/filter/reduce, ou utilisez la syntaxe fléchée implicite `n => n * 2`.
+</Callout>
+
+**Confondre spread et rest**
+
+```javascript
+function somme(...nombres) {
+  // nombres est un tableau
+}
+
+const tableau = [1, 2, 3];
+const nouveau = [...tableau]; // Clone du tableau
+```
+
+Dans les paramètres de fonction, `...` est rest (regroupe en tableau). Dans une expression, `...` est spread (étend). La syntaxe est identique mais le sens est opposé.
+
+<Callout type="warn">
+```javascript
+// Rest : regroupe en tableau
+function somme(...nombres) { }
+
+// Spread : étend
+const tableau = [1, 2, 3];
+const nouveau = [...tableau];
+```
+Souvenez-vous : rest dans les paramètres de fonction (regroupe), spread dans les expressions (étend).
+</Callout>
+
+## Exercices
+
+<Exercise n="7.1" title='Manipuler un tableau de courses'>
+Créez un tableau avec une liste de courses : ["pomme", "banane", "orange", "pain", "lait"]. Effectuez les opérations suivantes :
+
+1. Ajoutez "fromage" à la fin
+2. Ajoutez "beurre" au début
+3. Supprimez le premier élément
+4. Supprimez le dernier élément
+5. Extraie les éléments 2 à 4 (indices inclus) avec slice
+6. Trouvez l'index de "pain"
+</Exercise>
+
+<Solution>
+```javascript
+const courses = ["pomme", "banane", "orange", "pain", "lait"];
+
+courses.push("fromage");
+console.log(courses); // ["pomme", "banane", "orange", "pain", "lait", "fromage"]
+
+courses.unshift("beurre");
+console.log(courses); // ["beurre", "pomme", "banane", "orange", "pain", "lait", "fromage"]
+
+courses.shift();
+console.log(courses); // ["pomme", "banane", "orange", "pain", "lait", "fromage"]
+
+courses.pop();
+console.log(courses); // ["pomme", "banane", "orange", "pain", "lait"]
+
+const sousListe = courses.slice(1, 4);
+console.log(sousListe); // ["banane", "orange", "pain"]
+
+const indexPain = courses.indexOf("pain");
+console.log(indexPain); // 3
+```
+</Solution>
+
+<Exercise n="7.2" title='Utiliser map, filter, reduce'>
+À partir du tableau `[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]`, créez :
+
+1. Un tableau des carrés (map)
+2. Un tableau des nombres pairs (filter)
+3. La somme de tous les nombres (reduce)
+4. La somme des carrés (map + reduce)
+5. Le produit de tous les nombres (reduce)
+</Exercise>
+
+<Solution>
+```javascript
+const nombres = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+const carres = nombres.map((n) => n * n);
+console.log(carres); // [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+
+const pairs = nombres.filter((n) => n % 2 === 0);
+console.log(pairs); // [2, 4, 6, 8, 10]
+
+const somme = nombres.reduce((acc, n) => acc + n, 0);
+console.log(somme); // 55
+
+const sommeCarres = nombres.map((n) => n * n).reduce((acc, n) => acc + n, 0);
+console.log(sommeCarres); // 385
+
+const produit = nombres.reduce((acc, n) => acc * n, 1);
+console.log(produit); // 3628800
+```
+</Solution>
+
+<Exercise n="7.3" title="Créer et manipuler un objet">
+Créez un objet `livre` avec les propriétés : titre, auteur, annee, pages. Effectuez les opérations suivantes :
+
+1. Modifiez l'année
+2. Ajoutez une propriété "genre"
+3. Supprimez la propriété "pages"
+4. Destructure l'objet pour extraire titre et auteur
+5. Créez un clone de l'objet avec spread
+</Exercise>
+
+<Solution>
+```javascript
+const livre = {
+  titre: "Le Petit Prince",
+  auteur: "Antoine de Saint-Exupéry",
+  annee: 1943,
+  pages: 96,
+};
+
+livre.annee = 1946;
+console.log(livre.annee); // 1946
+
+livre.genre = "Conte";
+console.log(livre.genre); // "Conte"
+
+delete livre.pages;
+console.log(livre.pages); // undefined
+
+const { titre, auteur } = livre;
+console.log(titre); // "Le Petit Prince"
+console.log(auteur); // "Antoine de Saint-Exupéry"
+
+const clone = { ...livre };
+clone.titre = "Nouveau titre";
+console.log(livre.titre); // "Le Petit Prince" (non modifié)
+console.log(clone.titre); // "Nouveau titre"
+```
+</Solution>
+
+<Exercise n="7.4" title='Destructuration imbriquée'>
+Créez un objet imbriqué :
+
+```javascript
+const personne = {
+  nom: "Jean",
+  adresse: {
+    ville: "Paris",
+    pays: "France",
+  },
+};
+```
+
+Destructure pour extraire le nom et la ville en une seule instruction.
+</Exercise>
+
+<Solution>
+```javascript
+const personne = {
+  nom: "Jean",
+  adresse: {
+    ville: "Paris",
+    pays: "France",
+  },
+};
+
+const { nom, adresse: { ville } } = personne;
+console.log(nom); // "Jean"
+console.log(ville); // "Paris"
+```
+
+La destructuration imbriquée extrait d'abord `nom` et `adresse`, puis extrait `ville` de `adresse`.
+</Solution>
+
+<Exercise n="7.5" title="Fusionner des tableaux et des objets">
+Créez deux tableaux `fruits1` et `fruits2`, et deux objets `personne1` et `personne2`. Fusionnez-les avec l'opérateur spread pour créer :
+
+1. Un tableau contenant tous les fruits
+2. Un objet contenant toutes les propriétés (attention aux conflits de clés)
+</Exercise>
+
+<Solution>
+```javascript
+const fruits1 = ["pomme", "banane"];
+const fruits2 = ["orange", "fraise"];
+const tousFruits = [...fruits1, ...fruits2];
+console.log(tousFruits); // ["pomme", "banane", "orange", "fraise"]
+
+const personne1 = { nom: "Jean", age: 30 };
+const personne2 = { ville: "Paris", age: 31 };
+const personneComplete = { ...personne1, ...personne2 };
+console.log(personneComplete); // { nom: "Jean", age: 31, ville: "Paris" }
+```
+
+Notez que `age` est 31 (valeur de `personne2` écrase celle de `personne1`) car les propriétés de droite écrasent celles de gauche lors du spread.
+</Solution>
+
+<Exercise n="7.6" title='Convertir entre JSON et objet'>
+Créez un objet `produit` avec les propriétés : nom, prix, stock. Convertissez-le en JSON, puis reconvertissez le JSON en objet. Modifiez l'objet original et vérifiez que la version JSON n'est pas affectée.
+</Exercise>
+
+<Solution>
+```javascript
+const produit = {
+  nom: "iPhone",
+  prix: 999,
+  stock: 10,
+};
+
+const json = JSON.stringify(produit);
+console.log(json); // '{"nom":"iPhone","prix":999,"stock":10}'
+
+const produitFromJson = JSON.parse(json);
+console.log(produitFromJson); // { nom: "iPhone", prix: 999, stock: 10 }
+
+produit.prix = 899;
+console.log(produit.prix); // 899 (modifié)
+console.log(produitFromJson.prix); // 999 (non modifié)
+```
+
+JSON est une string indépendante. Modifier l'objet original n'affecte pas la version JSON, et vice versa.
+</Solution>
+
+<Exercise n="7.7" title="Traiter un tableau d'objets">
+Créez un tableau d'objets représentant des étudiants :
+
+```javascript
+const etudiants = [
+  { nom: "Jean", note: 15 },
+  { nom: "Marie", note: 18 },
+  { nom: "Pierre", note: 12 },
+  { nom: "Sophie", note: 19 },
+];
+```
+
+Utilisez `filter` pour récupérer les étudiants avec une note >= 15, puis `map` pour récupérer uniquement leurs noms.
+</Exercise>
+
+<Solution>
+```javascript
+const etudiants = [
+  { nom: "Jean", note: 15 },
+  { nom: "Marie", note: 18 },
+  { nom: "Pierre", note: 12 },
+  { nom: "Sophie", note: 19 },
+];
+
+const reussis = etudiants.filter((e) => e.note >= 15);
+console.log(reussis); // [{ nom: "Jean", note: 15 }, { nom: "Marie", note: 18 }, { nom: "Sophie", note: 19 }]
+
+const nomsReussis = reussis.map((e) => e.nom);
+console.log(nomsReussis); // ["Jean", "Marie", "Sophie"]
+
+// En une seule chaîne :
+const nomsReussisDirect = etudiants
+  .filter((e) => e.note >= 15)
+  .map((e) => e.nom);
+console.log(nomsReussisDirect); // ["Jean", "Marie", "Sophie"]
+```
+</Solution>
+
+<Exercise n="7.8" title="Défi : Gestionnaire de notes">
+Créez un gestionnaire de notes avec les fonctionnalités suivantes :
+
+1. Ajouter une note (titre, contenu, date)
+2. Lister toutes les notes
+3. Rechercher des notes par titre
+4. Supprimer une note par titre
+5. Convertir les notes en JSON pour la sauvegarde
+
+Utilisez un tableau d'objets pour stocker les notes. Implémentez chaque fonctionnalité avec une fonction séparée.
+</Exercise>
+
+<Solution>
+```javascript
+// État initial
+let notes = [];
+
+// Ajouter une note
+function ajouterNote(titre, contenu) {
+  const note = {
+    id: Date.now(), // ID unique basé sur le timestamp
+    titre,
+    contenu,
+    date: new Date().toISOString(),
+  };
+  notes.push(note);
+  return note;
+}
+
+// Lister toutes les notes
+function listerNotes() {
+  return notes;
+}
+
+// Rechercher des notes par titre
+function rechercherNotes(titre) {
+  return notes.filter((note) =>
+    note.titre.toLowerCase().includes(titre.toLowerCase())
+  );
+}
+
+// Supprimer une note par titre (la première trouvée)
+function supprimerNote(titre) {
+  const index = notes.findIndex((note) => note.titre === titre);
+  if (index !== -1) {
+    const supprimee = notes.splice(index, 1)[0];
+    return supprimee;
+  }
+  return null;
+}
+
+// Convertir en JSON
+function notesEnJSON() {
+  return JSON.stringify(notes, null, 2);
+}
+
+// Charger depuis JSON
+function notesDepuisJSON(json) {
+  notes = JSON.parse(json);
+  return notes;
+}
+
+// Tests
+ajouterNote("Course", "Acheter des fruits");
+ajouterNote("Travail", "Terminer le projet");
+ajouterNote("Sport", "Courir 5km");
+
+console.log(listerNotes());
+console.log(rechercherNotes("course"));
+console.log(supprimerNote("Sport"));
+console.log(listerNotes());
+console.log(notesEnJSON());
+```
+</Solution>
+
+## Livrable
+
+Créez un gestionnaire de notes fonctionnel. Le gestionnaire doit inclure :
+
+**Fonctions obligatoires**
+- `ajouterNote(titre, contenu)` : ajoute une note au tableau
+- `listerNotes()` : renvoie toutes les notes
+- `rechercherNotes(titre)` : filtre les notes par titre
+- `supprimerNote(id)` : supprime une note par ID
+- `notesEnJSON()` : convertit les notes en JSON
+- `notesDepuisJSON(json)` : charge les notes depuis JSON
+
+**Structure de données obligatoire**
+- Tableau d'objets pour stocker les notes
+- Chaque note doit avoir : id (unique), titre, contenu, date
+- Utilisation de méthodes de tableau (push, filter, findIndex, splice)
+
+**Critères d'évaluation**
+- [ ] Utilisation de `const` pour le tableau principal
+- [ ] Méthodes fonctionnelles (filter, map) pour les recherches
+- [ ] Destructuration utilisée où approprié
+- [ ] Spread utilisé pour le clonage si nécessaire
+- [ ] Conversion JSON fonctionnelle
+- [ ] Code testé dans la console
+- [ ] Comments explicatifs
+
+**Pistes d'extension**
+- Ajoutez la modification de notes
+- Implémentez le tri par date
+- Ajoutez des tags/catégories aux notes
+- Sauvegardez les notes dans localStorage (module JS-Moderne)
+- Créez une interface HTML avec formulaire (module JS-DOM)
+
+## Pour aller plus loin
+
+- [MDN - Array](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/Array) : Documentation complète de l'objet Array avec toutes les méthodes.
+- [MDN - Object](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/Object) : Documentation complète de l'objet Object.
+- [MDN - JSON](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/JSON) : Documentation sur JSON et ses méthodes.
+- [JavaScript.info - Arrays](https://javascript.info/array-methods/) : Guide détaillé sur les méthodes de tableau avec exemples.
+- [JavaScript.info - Objects](https://javascript.info/object/) : Guide complet sur les objets, this, et les prototypes.

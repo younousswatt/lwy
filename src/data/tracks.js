@@ -1,0 +1,60 @@
+export const TRACKS = [
+  {
+    slug: 'devweb',
+    order: 1,
+    title: 'Développement web',
+    description: 'Parcours complet des fondamentaux du web moderne, de HTML à JavaScript et au déploiement.',
+    status: 'available',
+    level: 'Débutant à intermédiaire',
+  },
+  {
+    slug: 'python',
+    order: 2,
+    title: 'Python',
+    description: 'Fondamentaux de Python, structures de données, et programmation orientée objet.',
+    status: 'available',
+    level: 'Débutant',
+  },
+  {
+    slug: 'angular',
+    order: 3,
+    title: 'Angular',
+    description: 'Architecture d\'applications avec Angular, TypeScript et RxJS.',
+    status: 'soon',
+    level: 'Intermédiaire',
+  },
+  {
+    slug: 'php',
+    order: 4,
+    title: 'PHP',
+    description: 'Développement backend avec PHP, bases de données et frameworks modernes.',
+    status: 'soon',
+    level: 'Débutant à intermédiaire',
+  },
+  {
+    slug: 'c',
+    order: 5,
+    title: 'C',
+    description: 'Programmation système, gestion de la mémoire et algorithmes fondamentaux.',
+    status: 'soon',
+    level: 'Intermédiaire',
+  },
+  {
+    slug: 'cpp',
+    order: 6,
+    title: 'C++',
+    description: 'Programmation orientée objet moderne, STL et programmation générique.',
+    status: 'soon',
+    level: 'Intermédiaire à avancé',
+  },
+  {
+    slug: 'java',
+    order: 7,
+    title: 'Java',
+    description: 'Programmation orientée objet, Spring et développement d\'applications d\'entreprise.',
+    status: 'soon',
+    level: 'Intermédiaire',
+  },
+];
+
+export const getTrackBySlug = (slug) => TRACKS.find((track) => track.slug === slug);

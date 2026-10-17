@@ -1,0 +1,1219 @@
+# CSS — Avancé
+
+Ce module explore les fonctionnalités avancées de CSS qui permettent de créer des interfaces dynamiques, maintenables et adaptables. Il explique les variables CSS (custom properties) pour la réutilisabilité et les thèmes, les pseudo-classes et pseudo-éléments pour des interactions riches, les transitions et animations pour le mouvement, et les méthodologies d'organisation comme BEM pour la maintenabilité du code. À l'issue de ce module, vous serez capable de créer un mini design system cohérent avec un thème clair/sombre et des animations subtiles.
+
+## Objectifs
+
+- Définir et utiliser des variables CSS (custom properties) pour la réutilisabilité.
+- Comprendre les pseudo-classes (`:hover`, `:focus`, `:nth-child`) et pseudo-éléments (`::before`, `::after`).
+- Créer des transitions CSS pour des changements d'état fluides.
+- Créer des animations CSS avec keyframes.
+- Organiser le CSS avec une méthodologie (BEM).
+- Implémenter un thème clair/sombre avec les préférences utilisateur.
+- Créer un mini design system cohérent (variables, composants, documentation).
+
+## Prérequis
+
+- CSS — Bases (sélecteurs, cascade, modèle de boîte)
+- CSS — Mise en page (Flexbox, Grid, media queries)
+
+## Cours
+
+### Variables CSS
+
+Les variables CSS (custom properties) permettent de stocker des valeurs réutilisables dans le CSS. Elles sont définies avec le préfixe `--` et utilisées avec la fonction `var()`. Contrairement aux préprocesseurs (Sass, Less), les variables CSS sont natives, dynamiques, et peuvent être modifiées en JavaScript.
+
+**Déclaration** : les variables sont généralement déclarées dans `:root` pour être globales, ou dans un sélecteur spécifique pour être locales.
+
+```css
+:root {
+  --color-primary: #6366f1;
+  --color-text: #333;
+  --spacing-unit: 8px;
+  --font-size-base: 16px;
+}
+
+.button {
+  background-color: var(--color-primary);
+  color: white;
+  padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 3);
+}
+```
+
+**Utilisation** : la fonction `var()` accepte une valeur de fallback si la variable n'est pas définie.
+
+```css
+.button {
+  background-color: var(--color-primary, blue);
+}
+```
+
+**Héritage** : les variables CSS sont héritées par les descendants, comme les propriétés CSS ordinaires.
+
+```css
+:root {
+  --color-text: #333;
+}
+
+body {
+  color: var(--color-text);
+}
+
+p {
+  /* Hérite de --color-text depuis :root via body */
+}
+```
+
+**Modification en JavaScript** : les variables CSS peuvent être modifiées dynamiquement via JavaScript, ce qui permet d'implémenter des thèmes dynamiques.
+
+```javascript
+document.documentElement.style.setProperty('--color-primary', '#ff0000');
+```
+
+<Callout type="tip">
+Utilisez des variables CSS pour les valeurs qui sont susceptibles de changer (couleurs, espacements, typographie). Cela facilite la maintenance et permet d'implémenter des thèmes sans dupliquer le CSS.
+</Callout>
+
+### Pseudo-classes
+
+Les pseudo-classes sélectionnent des éléments dans un état particulier, qui n'est pas représenté dans l'arbre du DOM. Elles commencent par deux-points (`:`).
+
+**` :hover`** : élément survolé par le curseur.
+
+```css
+.button:hover {
+  background-color: #5558e3;
+}
+```
+
+**` :focus`** : élément qui a le focus (clavier ou souris).
+
+```css
+input:focus {
+  outline: 2px solid var(--color-primary);
+}
+```
+
+**` :active`** : élément en cours d'activation (bouton enfoncé).
+
+```css
+.button:active {
+  transform: scale(0.98);
+}
+```
+
+**` :visited`** : lien déjà visité par l'utilisateur.
+
+```css
+a:visited {
+  color: purple;
+}
+```
+
+**` :first-child`** : premier enfant de son parent.
+
+```css
+ul li:first-child {
+  font-weight: bold;
+}
+```
+
+**` :last-child`** : dernier enfant de son parent.
+
+```css
+ul li:last-child {
+  margin-bottom: 0;
+}
+```
+
+**` :nth-child(n)`** : nième enfant de son parent. `n` peut être un nombre, une formule (`2n` pour pairs, `2n+1` pour impairs), ou des mots-clés (`odd`, `even`).
+
+```css
+/* Lignes paires d'un tableau */
+tr:nth-child(even) {
+  background-color: #f5f5f5;
+}
+
+/* Troisième élément */
+li:nth-child(3) {
+  color: red;
+}
+
+/* Tous les 3 éléments */
+li:nth-child(3n) {
+  font-weight: bold;
+}
+```
+
+**` :not(selector)`** : éléments qui ne correspondent pas au sélecteur.
+
+```css
+:not(.button) {
+  cursor: default;
+}
+```
+
+<Callout type="info">
+Les pseudo-classes peuvent être chaînées : `a:hover:not(.disabled)` sélectionne les liens survolés qui n'ont pas la classe disabled.
+</Callout>
+
+### Pseudo-éléments
+
+Les pseudo-éléments sélectionnent une partie d'un élément qui n'existe pas dans l'arbre du DOM. Ils commencent par deux points doubles (`::`).
+
+**` ::before`** : pseudo-élément avant le contenu de l'élément.
+
+```css
+.button::before {
+  content: "→ ";
+}
+```
+
+**` ::after`** : pseudo-élément après le contenu de l'élément.
+
+```css
+a.external::after {
+  content: " ↗";
+}
+```
+
+**` ::first-letter`** : première lettre du texte.
+
+```css
+p::first-letter {
+  font-size: 2rem;
+  font-weight: bold;
+}
+```
+
+**` ::first-line`** : première ligne du texte.
+
+```css
+p::first-line {
+  font-weight: bold;
+}
+```
+
+**` ::placeholder`** : texte placeholder d'un champ de formulaire.
+
+```css
+input::placeholder {
+  color: #999;
+}
+```
+
+<Callout type="tip">
+Les pseudo-éléments doivent avoir la propriété `content` (même vide `content: ""`) pour être rendus. Ils peuvent être stylisés comme des éléments ordinaires (padding, margin, background, etc.).
+</Callout>
+
+### Transitions
+
+Les transitions CSS permettent de modifier progressivement une propriété d'un état à un autre, créant des animations fluides lors des changements d'état (hover, focus, etc.).
+
+**Syntaxe de base** : la propriété `transition` est un raccourci pour `transition-property`, `transition-duration`, `transition-timing-function`, et `transition-delay`.
+
+```css
+.button {
+  background-color: var(--color-primary);
+  transition: background-color 150ms ease;
+}
+
+.button:hover {
+  background-color: #5558e3;
+}
+```
+
+**Propriétés individuelles** :
+
+```css
+.button {
+  transition-property: background-color, transform;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+  transition-delay: 0ms;
+}
+```
+
+**Fonctions de timing** : définissent la courbe d'accélération de la transition.
+
+- `linear` : vitesse constante.
+- `ease` : départ lent, accélération, fin lente (par défaut).
+- `ease-in` : départ lent, fin rapide.
+- `ease-out` : départ rapide, fin lente.
+- `ease-in-out` : départ lent, accélération, fin lente (plus marqué que ease).
+- `cubic-bezier(x1, y1, x2, y2)` : courbe personnalisée.
+
+```css
+.button {
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+```
+
+**Transitions multiples** : séparez les transitions par des virgules.
+
+```css
+.button {
+  transition:
+    background-color 150ms ease,
+    transform 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 150ms ease;
+}
+```
+
+<Callout type="warn">
+Les transitions ne fonctionnent que sur les propriétés animables (color, background-color, transform, opacity, etc.). Elles ne fonctionnent pas sur les propriétés discrètes (display, visibility, z-index).
+</Callout>
+
+### Animations
+
+Les animations CSS permettent de créer des animations plus complexes que les transitions, avec des keyframes qui définissent des étapes intermédiaires. Contrairement aux transitions, les animations peuvent boucler et être contrôlées (pause, play, reverse).
+
+**Déclaration d'animation** : la propriété `animation` est un raccourci pour `animation-name`, `animation-duration`, `animation-timing-function`, `animation-delay`, `animation-iteration-count`, `animation-direction`, `animation-fill-mode`, et `animation-play-state`.
+
+```css
+.button {
+  animation: pulse 2s ease-in-out infinite;
+}
+```
+
+**Keyframes** : définissent les étapes de l'animation.
+
+```css
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+```
+
+**Propriétés individuelles** :
+
+```css
+.button {
+  animation-name: pulse;
+  animation-duration: 2s;
+  animation-timing-function: ease-in-out;
+  animation-delay: 0s;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-fill-mode: none;
+  animation-play-state: running;
+}
+```
+
+**Nombre d'itérations** : `animation-iteration-count` peut être un nombre ou `infinite`.
+
+```css
+/* Animation une seule fois */
+.button {
+  animation: slide-in 300ms ease 1;
+}
+
+/* Animation en boucle */
+.loading {
+  animation: spin 1s linear infinite;
+}
+```
+
+**Direction** : `animation-direction` définit le sens de l'animation.
+
+- `normal` : de début à fin, puis recommence.
+- `reverse` : de fin à début, puis recommence.
+- `alternate` : alterne entre normal et reverse.
+- `alternate-reverse` : alterne entre reverse et normal.
+
+```css
+.pulse {
+  animation: pulse 2s ease-in-out infinite alternate;
+}
+```
+
+<Callout type="tip">
+Pour des performances optimales, animez uniquement les propriétés `transform` et `opacity`. Ces propriétés ne déclenchent pas de recalcul de layout (reflow), seulement de composition (repaint), ce qui est beaucoup plus performant.
+</Callout>
+
+### Organisation du CSS (BEM)
+
+BEM (Block Element Modifier) est une méthodologie de nommage des classes CSS qui favorise la réutilisabilité et la maintenabilité. Elle repose sur trois concepts :
+
+**Block** : composant autonome et réutilisable (ex: `card`, `button`, `nav`).
+
+```css
+.card { }
+.button { }
+```
+
+**Element** : partie d'un block, dépendante du block (notée avec deux underscores `__`).
+
+```css
+.card__title { }
+.card__content { }
+.button__icon { }
+```
+
+**Modifier** : variante d'un block ou d'un element (notée avec deux tirets `--`).
+
+```css
+.button--primary { }
+.button--secondary { }
+.card--featured { }
+.card__title--large { }
+```
+
+Exemple complet :
+
+```html
+<div class="card card--featured">
+  <h2 class="card__title card__title--large">Titre</h2>
+  <p class="card__content">Contenu</p>
+  <button class="card__button card__button--primary">Action</button>
+</div>
+```
+
+```css
+.card {
+  padding: 24px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.card--featured {
+  border-color: var(--color-primary);
+}
+
+.card__title {
+  margin: 0 0 16px;
+}
+
+.card__title--large {
+  font-size: 1.5rem;
+}
+
+.card__content {
+  color: var(--color-text-muted);
+}
+
+.card__button {
+  margin-top: 16px;
+}
+
+.card__button--primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+```
+
+<Callout type="info">
+BEM évite la spécificité excessive : les sélecteurs restent simples (`.card__title` au lieu de `.card .title`), ce qui facilite la surcharge des styles et la maintenance.
+</Callout>
+
+### Architecture de fichiers
+
+Pour les projets de taille moyenne à grande, organisez le CSS en plusieurs fichiers selon l'approche component-based ou ITCSS (Inverted Triangle CSS).
+
+**Approche component-based** :
+
+```
+styles/
+├── tokens.css          /* Variables globales */
+├── reset.css           /* Reset CSS */
+├── base.css            /* Styles de base (body, typographie) */
+├── components/
+│   ├── button.css
+│   ├── card.css
+│   └── form.css
+├── layout/
+│   ├── header.css
+│   ├── footer.css
+│   └── grid.css
+└── utilities.css       /* Classes utilitaires */
+```
+
+**ITCSS** : organise le CSS par ordre de spécificité croissante (du plus général au plus spécifique).
+
+1. Settings (variables)
+2. Tools (mixins, fonctions)
+3. Generic (reset, normalize)
+4. Base (éléments HTML de base)
+5. Objects (classes sans style, ex: `.container`)
+6. Components (composants UI)
+7. Utilities (classes utilitaires)
+8. Trumps (overrides, ex: `!important`)
+
+### Thème clair/sombre
+
+Les variables CSS facilitent l'implémentation de thèmes. Pour un thème clair/sombre, définissez les variables de couleur dans `:root` et overridez-les dans une media query pour `prefers-color-scheme: dark`.
+
+```css
+:root {
+  --color-background: #ffffff;
+  --color-text: #333;
+  --color-primary: #6366f1;
+  --color-border: #e0e0e0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #1a1a1a;
+    --color-text: #ededf0;
+    --color-primary: #818cf8;
+    --color-border: #333;
+  }
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+```
+
+Pour un basculement manuel (bouton toggle), utilisez une classe sur `html` ou `body`.
+
+```css
+:root {
+  --color-background: #ffffff;
+  --color-text: #333;
+}
+
+body.dark {
+  --color-background: #1a1a1a;
+  --color-text: #ededf0;
+}
+```
+
+```javascript
+// JavaScript pour basculer le thème
+document.body.classList.toggle('dark');
+```
+
+<Callout type="tip">
+Testez toujours vos thèmes pour l'accessibilité. Le contraste entre le texte et l'arrière-plan doit être suffisant (ratio de contraste AA minimum 4.5:1 pour le texte normal, 3:1 pour le texte large).
+</Callout>
+
+## Erreurs fréquentes
+
+**Oublier le content sur les pseudo-éléments**
+
+```css
+.button::before {
+  color: red;
+}
+```
+
+Le pseudo-élément n'est pas rendu car la propriété `content` est manquante.
+
+<Callout type="warn">
+```css
+.button::before {
+  content: "";
+  color: red;
+}
+```
+Toujours inclure `content` (même vide) sur les pseudo-éléments `::before` et `::after`.
+</Callout>
+
+**Animer des propriétés non animables**
+
+```css
+.button {
+  transition: display 150ms ease;
+}
+
+.button:hover {
+  display: none;
+}
+```
+
+La transition ne fonctionne pas car `display` n'est pas une propriété animable.
+
+<Callout type="warn">
+```css
+.button {
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.button:hover {
+  opacity: 0;
+  transform: scale(0.95);
+}
+```
+Animez uniquement les propriétés animables : opacity, transform, color, background-color, etc. Pour masquer un élément avec animation, utilisez opacity + visibility, pas display.
+</Callout>
+
+**Noms de classes non BEM**
+
+```css
+.card .title { }
+.card .button.primary { }
+```
+
+Les sélecteurs sont spécifiques et dépendent de la structure HTML. Difficile à maintenir et à surcharger.
+
+<Callout type="warn">
+```css
+.card__title { }
+.card__button--primary { }
+```
+Utilisez BEM pour des sélecteurs simples et réutilisables. Block__Element--Modifier assure une spécificité constante et une relation claire.
+</Callout>
+
+**Variables non héritées comme attendu**
+
+```css
+:root {
+  --spacing: 16px;
+}
+
+.card {
+  margin: var(--spacing);
+}
+
+.card__title {
+  /* Expected: margin: var(--spacing) does not work */
+}
+```
+
+Les variables ne sont pas automatiquement héritées par les propriétés qui n'héritent pas normalement (margin, padding, etc.).
+
+<Callout type="warn">
+```css
+:root {
+  --spacing: 16px;
+}
+
+.card {
+  margin: var(--spacing);
+}
+
+.card__title {
+  margin: var(--spacing); /* Utilise la variable explicitement */
+}
+```
+Les variables sont héritées comme des valeurs, mais chaque propriété doit utiliser `var()` explicitement. Les variables ne remplacent pas le mécanisme d'héritage des propriétés.
+</Callout>
+
+**Animation qui ne boucle pas comme prévu**
+
+```css
+.loading {
+  animation: spin 1s linear;
+}
+```
+
+L'animation ne boucle pas car `animation-iteration-count` n'est pas spécifié (par défaut 1).
+
+<Callout type="warn">
+```css
+.loading {
+  animation: spin 1s linear infinite;
+}
+```
+Spécifiez `infinite` pour une animation en boucle, ou un nombre précis pour un nombre d'itérations déterminé.
+</Callout>
+
+## Exercices
+
+<Exercise n="5.1" title='Créer des variables CSS pour un composant bouton'>
+Définissez des variables CSS pour un composant bouton avec les valeurs suivantes :
+
+- Couleur de fond (primary)
+- Couleur de texte
+- Espacement horizontal
+- Espacement vertical
+- Rayon de bordure
+
+Créez trois variantes du bouton (primary, secondary, danger) en overrideant uniquement les variables nécessaires.
+</Exercise>
+
+<Solution>
+```css
+:root {
+  --button-bg-primary: #6366f1;
+  --button-bg-secondary: #e0e0e0;
+  --button-bg-danger: #ef4444;
+  --button-text: white;
+  --button-padding-x: 16px;
+  --button-padding-y: 8px;
+  --button-radius: 4px;
+}
+
+.button {
+  background-color: var(--button-bg-primary);
+  color: var(--button-text);
+  padding: var(--button-padding-y) var(--button-padding-x);
+  border-radius: var(--button-radius);
+  border: none;
+  cursor: pointer;
+}
+
+.button--secondary {
+  --button-bg-primary: var(--button-bg-secondary);
+  --button-text: #333;
+}
+
+.button--danger {
+  --button-bg-primary: var(--button-bg-danger);
+}
+```
+</Solution>
+
+<Exercise n="5.2" title="Utiliser des pseudo-classes pour une liste stylisée">
+Créez une liste non ordonnée où :
+
+- Le premier élément est en gras
+- Le dernier élément n'a pas de margin-bottom
+- Les éléments pairs ont un fond gris clair
+- Les liens changent de couleur au survol
+
+Utilisez `:first-child`, `:last-child`, `:nth-child(even)`, et `:hover`.
+</Exercise>
+
+<Solution>
+```css
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+li:first-child {
+  font-weight: bold;
+}
+
+li:last-child {
+  margin-bottom: 0;
+}
+
+li:nth-child(even) {
+  background-color: #f5f5f5;
+}
+
+li a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+li a:hover {
+  color: #5558e3;
+}
+```
+</Solution>
+
+<Exercise n="5.3" title="Créer une transition sur plusieurs propriétés">
+Créez une carte avec une transition qui affecte :
+
+- La couleur de fond (durée 150ms)
+- La transform (durée 200ms)
+- La box-shadow (durée 150ms)
+
+La transition doit se déclencher au hover. Utilisez la syntaxe raccourcie.
+</Exercise>
+
+<Solution>
+```css
+.card {
+  padding: 24px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  transition:
+    background-color 150ms ease,
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 150ms ease;
+}
+
+.card:hover {
+  background-color: #f5f5f5;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+```
+</Solution>
+
+<Exercise n="5.4" title="Créer une animation de chargement">
+Créez une animation de chargement (spinner) qui tourne continuellement. L'animation doit :
+
+- Durer 1 seconde
+- Avoir une fonction de timing linéaire
+- Boucler infiniment
+- Tourner de 360 degrés
+
+Utilisez `@keyframes` et `animation`.
+</Exercise>
+
+<Solution>
+```css
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e0e0e0;
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+```
+</Solution>
+
+<Exercise n="5.5" title="Organiser un composant avec BEM">
+Refactorisez le CSS suivant pour utiliser la méthodologie BEM :
+
+```css
+.card { padding: 24px; border: 1px solid #e0e0e0; }
+.card .title { margin: 0 0 16px; }
+.card .title.large { font-size: 1.5rem; }
+.card .content { color: #666; }
+.card .button { margin-top: 16px; }
+.card .button.primary { background-color: #6366f1; color: white; }
+```
+</Exercise>
+
+<Solution>
+```css
+.card {
+  padding: 24px;
+  border: 1px solid #e0e0e0;
+}
+
+.card__title {
+  margin: 0 0 16px;
+}
+
+.card__title--large {
+  font-size: 1.5rem;
+}
+
+.card__content {
+  color: #666;
+}
+
+.card__button {
+  margin-top: 16px;
+}
+
+.card__button--primary {
+  background-color: #6366f1;
+  color: white;
+}
+```
+
+HTML correspondant :
+```html
+<div class="card">
+  <h2 class="card__title card__title--large">Titre</h2>
+  <p class="card__content">Contenu</p>
+  <button class="card__button card__button--primary">Action</button>
+</div>
+```
+</Solution>
+
+<Exercise n="5.6" title="Implémenter un thème sombre manuel">
+Créez un bouton qui bascule entre le thème clair et le thème sombre. Le bouton doit :
+
+- Ajouter/supprimer la classe `dark` sur `body`
+- Les variables CSS doivent être overrideées dans `.dark`
+- Utilisez JavaScript pour le basculement
+
+Testez que le changement de thème fonctionne instantanément.
+</Exercise>
+
+<Solution>
+```css
+:root {
+  --color-background: #ffffff;
+  --color-text: #333;
+  --color-primary: #6366f1;
+}
+
+body.dark {
+  --color-background: #1a1a1a;
+  --color-text: #ededf0;
+  --color-primary: #818cf8;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+.theme-toggle {
+  padding: 8px 16px;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+```
+
+```html
+<button class="theme-toggle" id="themeToggle">Basculer le thème</button>
+```
+
+```javascript
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+});
+```
+</Solution>
+
+<Exercise n="5.7" title="Créer un effet de hover avec pseudo-élément">
+Créez un bouton avec un soulignement qui s'anime de gauche à droite au survol. Utilisez `::after` et une transition sur `width` ou `transform`.
+
+Le soulignement doit être initialement de largeur 0 et s'étendre à 100% au hover.
+</Exercise>
+
+<Solution>
+```css
+.button {
+  position: relative;
+  padding: 12px 24px;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.button::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: white;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 200ms ease;
+}
+
+.button:hover::after {
+  transform: scaleX(1);
+}
+```
+</Solution>
+
+<Exercise n="5.8" title='Défi : Mini design system'>
+Créez un mini design system avec :
+
+1. Variables CSS pour :
+   - Couleurs (primary, secondary, success, warning, danger, neutral)
+   - Espacements (4, 8, 16, 24, 32, 48, 64px)
+   - Typographie (font-sizes, line-heights, font-weights)
+   - Bordures (radius, width)
+   - Ombres (small, medium, large)
+
+2. Composants BEM :
+   - Button (variants: primary, secondary, danger, ghost)
+   - Card (variant: featured)
+   - Input (states: focus, error)
+   - Badge (variants: primary, secondary)
+
+3. Thème clair/sombre avec media query
+
+4. Documentation simple (commentaires CSS expliquant l'utilisation)
+
+Les composants doivent utiliser les variables CSS et être réutilisables.
+</Exercise>
+
+<Solution>
+```css
+/* ==================== TOKENS ==================== */
+:root {
+  /* Couleurs */
+  --color-primary: #6366f1;
+  --color-primary-hover: #5558e3;
+  --color-secondary: #64748b;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+  
+  /* Espacements */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+  
+  /* Typographie */
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --line-height-tight: 1.25;
+  --line-height-base: 1.5;
+  --line-height-relaxed: 1.75;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Bordures */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+  --border-width: 1px;
+  
+  /* Ombres */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-neutral-50: #111827;
+    --color-neutral-100: #1f2937;
+    --color-neutral-200: #374151;
+    --color-neutral-300: #4b5563;
+    --color-neutral-400: #6b7280;
+    --color-neutral-500: #9ca3af;
+    --color-neutral-600: #d1d5db;
+    --color-neutral-700: #e5e7eb;
+    --color-neutral-800: #f3f4f6;
+    --color-neutral-900: #f9fafb;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ==================== BUTTON ==================== */
+.button {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-base);
+  padding: var(--space-8) var(--space-16);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+/* Primary variant */
+.button--primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.button--primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+/* Secondary variant */
+.button--secondary {
+  background-color: var(--color-neutral-200);
+  color: var(--color-neutral-700);
+}
+
+.button--secondary:hover {
+  background-color: var(--color-neutral-300);
+}
+
+/* Danger variant */
+.button--danger {
+  background-color: var(--color-danger);
+  color: white;
+}
+
+.button--danger:hover {
+  background-color: #dc2626;
+}
+
+/* Ghost variant */
+.button--ghost {
+  background-color: transparent;
+  border-color: var(--color-neutral-300);
+  color: var(--color-neutral-700);
+}
+
+.button--ghost:hover {
+  background-color: var(--color-neutral-100);
+}
+
+/* ==================== CARD ==================== */
+.card {
+  background-color: var(--color-neutral-50);
+  border: var(--border-width) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-24);
+  box-shadow: var(--shadow-sm);
+}
+
+.card--featured {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.card__title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  margin: 0 0 var(--space-12);
+}
+
+.card__content {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-neutral-600);
+  margin: 0 0 var(--space-16);
+}
+
+.card__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-8);
+  margin-top: var(--space-16);
+  padding-top: var(--space-16);
+  border-top: var(--border-width) solid var(--color-neutral-200);
+}
+
+/* ==================== INPUT ==================== */
+.input {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  width: 100%;
+  padding: var(--space-8) var(--space-12);
+  border: var(--border-width) solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-700);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.input--error {
+  border-color: var(--color-danger);
+}
+
+.input--error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* ==================== BADGE ==================== */
+.badge {
+  display: inline-block;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-base);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-full);
+}
+
+.badge--primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.badge--secondary {
+  background-color: var(--color-neutral-200);
+  color: var(--color-neutral-700);
+}
+```
+</Solution>
+
+## Livrable
+
+Créez un mini design system cohérent. Le design system doit inclure :
+
+**Variables CSS obligatoires**
+- Couleurs (primary, secondary, neutral palette)
+- Espacements (échelle de 4px à 64px)
+- Typographie (font-sizes, line-heights, font-weights)
+- Bordures (radius, width)
+- Ombres (small, medium, large)
+- Transitions (fast, base, slow)
+
+**Composants BEM obligatoires**
+- Button (au moins 3 variants)
+- Card (au moins 1 variant)
+- Input (avec states focus et error)
+- Badge (au moins 2 variants)
+
+**Thème obligatoire**
+- Thème clair par défaut
+- Thème sombre avec media query `prefers-color-scheme: dark`
+- Transitions fluides entre les thèmes
+
+**Critères d'évaluation**
+- [ ] Variables CSS bien organisées et documentées
+- [ ] Composants nommés selon BEM
+- [ ] Utilisation des variables CSS dans tous les composants
+- [ ] Thème sombre fonctionnel
+- [ ] Transitions sur les interactions (hover, focus)
+- [ ] Documentation en commentaires
+- [ ] Design cohérent et professionnel
+
+**Pistes d'extension**
+- Ajoutez plus de composants (Modal, Alert, Tabs)
+- Créez des utilitaires CSS (text-center, flex, grid)
+- Implémentez un basculement manuel du thème
+- Ajoutez des animations aux composants
+- Créez une page de documentation HTML du design system
+
+## Pour aller plus loin
+
+- [MDN - CSS Custom Properties](https://developer.mozilla.org/fr/docs/Web/CSS/Using_CSS_custom_properties) : Documentation complète sur les variables CSS.
+- [BEM Documentation](http://getbem.com/) : Site officiel de la méthodologie BEM avec exemples.
+- [CSS Tricks - A Complete Guide to CSS Animations](https://css-tricks.com/snippets/css/a-guide-to-css-animations/) : Guide complet sur les animations CSS.
+- [MDN - Pseudo-classes](https://developer.mozilla.org/fr/docs/Web/CSS/Pseudo-classes) : Référence de toutes les pseudo-classes CSS.
+- [Every Layout](https://every-layout.dev/) : Collection de layouts CSS modernes et maintenable.

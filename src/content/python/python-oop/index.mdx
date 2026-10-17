@@ -1,0 +1,658 @@
+# Programmation orientée objet
+
+Ce module explore la programmation orientée objet (POO) en Python. Il explique les concepts fondamentaux de la POO : classes, objets, héritage, polymorphisme, et encapsulation. La POO permet d'organiser le code en modèles réutilisables qui reflètent des entités du monde réel. Ce module explique comment créer des classes, définir des attributs et des méthodes, utiliser l'héritage pour créer des relations entre classes, et implémenter le polymorphisme. À l'issue de ce module, vous serez capable de créer des classes Python complètes et de comprendre les principes de la POO.
+
+## Objectifs
+
+- Comprendre les concepts de classe et objet
+- Créer des classes avec attributs et méthodes
+- Comprendre le constructeur `__init__` et `self`
+- Utiliser l'héritage pour créer des sous-classes
+- Comprendre le polymorphisme et la surcharge de méthodes
+- Comprendre l'encapsulation (public, protected, private)
+- Utiliser les méthodes spéciales (__str__, __repr__, etc.)
+
+## Prérequis
+
+- Introduction à Python (scripts, REPL)
+- Variables et types (types primitifs)
+- Structures de contrôle (conditions, boucles)
+- Fonctions (définition, paramètres)
+- Structures de données (listes, dictionnaires)
+
+## Cours
+
+### Classes et objets
+
+Une classe est un modèle qui définit la structure et le comportement d'un objet. Un objet est une instance d'une classe.
+
+**Définition de classe** :
+
+```python
+class Personne:
+    pass
+
+alice = Personne()  # Création d'un objet (instance)
+bob = Personne()      # Autre instance
+```
+
+**Attributs et méthodes** :
+
+```python
+class Personne:
+    def __init__(self, nom, age):
+        self.nom = nom
+        self.age = age
+
+    def se_presenter(self):
+        print(f"Je m'appelle {self.nom} et j'ai {self.age} ans")
+
+alice = Personne("Alice", 25)
+alice.se_presenter()  # Je m'appelle Alice et j'ai 25 ans
+```
+
+<Callout type="info">
+`__init__` est le constructeur, appelé automatiquement lors de la création d'un objet. `self` représente l'instance actuelle de la classe.
+</Callout>
+
+### Attributs de classe et d'instance
+
+**Attributs d'instance** : spécifiques à chaque objet.
+
+```python
+class Personne:
+    def __init__(self, nom):
+        self.nom = nom  # Attribut d'instance
+
+alice = Personne("Alice")
+bob = Personne("Bob")
+print(alice.nom)  # "Alice"
+print(bob.nom)    # "Bob"
+```
+
+**Attributs de classe** : partagés par toutes les instances.
+
+```python
+class Personne:
+    espece = "Homo sapiens"  # Attribut de classe
+
+    def __init__(self, nom):
+        self.nom = nom
+
+alice = Personne("Alice")
+bob = Personne("Bob")
+print(alice.espece)  # "Homo sapiens"
+print(bob.espece)    # "Homo sapiens"
+```
+
+### Méthodes
+
+**Méthodes d'instance** : opèrent sur l'instance (self).
+
+```python
+class Rectangle:
+    def __init__(self, largeur, hauteur):
+        self.largeur = largeur
+        self.hauteur = hauteur
+
+    def aire(self):
+        return self.largeur * self.hauteur
+
+rect = Rectangle(5, 3)
+print(rect.aire())  # 15
+```
+
+**Méthodes de classe** : opèrent sur la classe (cls).
+
+```python
+class Compteur:
+    compteur = 0
+
+    @classmethod
+    def incrementer(cls):
+        cls.compteur += 1
+
+Compteur.incrementer()
+print(Compteur.compteur)  # 1
+```
+
+**Méthodes statiques** : indépendantes de l'instance et de la classe.
+
+```python
+class MathUtil:
+    @staticmethod
+    def additionner(a, b):
+        return a + b
+
+resultat = MathUtil.additionner(5, 3)  # 8
+```
+
+### Héritage
+
+L'héritage permet à une classe d'hériter des attributs et méthodes d'une autre classe.
+
+**Classe parent et classe enfant** :
+
+```python
+class Animal:
+    def __init__(self, nom):
+        self.nom = nom
+
+    def parler(self):
+        print(f"{self.nom} fait un son")
+
+class Chien(Animal):
+    def aboyer(self):
+        print(f"{self.nom} aboie")
+
+chien = Chien("Rex")
+chien.parler()  # Rex fait un dragon (hérité)
+chien.aboyer()  # Rex aboie (propre)
+```
+
+**Redéfinition de méthodes (overriding)** :
+
+```python
+class Chien(Animal):
+    def parler(self):
+        print(f"{self.nom} aboie")  # Redéfinit la méthode parente
+
+chien = Chien("Rex")
+chien.parler()  # Rex aboie
+```
+
+**super()** : appeler une méthode de la classe parent.
+
+```python
+class Chien(Animal):
+    def __init__(self, nom, race):
+        super().__init__(nom)  # Appelle __init__ du parent
+        self.race = race
+
+chien = Chien("Rex", "Labrador")
+print(chien.nom)   # Rex
+print(chien.race)   # Labrador
+```
+
+### Polymorphisme
+
+Le polymorphisme permet à différentes classes d'implémenter la même méthode de manière différente.
+
+```python
+class Animal:
+    def parler(self):
+        pass
+
+class Chien(Animal):
+    def parler(self):
+        print("Ouaf ouaf")
+
+class Chat(Animal):
+    def parler(self):
+        print("Miaou miaou")
+
+def faire_parler(animal):
+    animal.parler()
+
+chien = Chien()
+chat = Chat()
+
+faire_parler(chien)  # Ouaf ouaf
+faire_parler(chat)   # Miaou miaou
+```
+
+### Encapsulation
+
+Python n'a pas de modificateurs d'accès stricts (private/public) comme Java, mais utilise des conventions.
+
+**Public** : accessible partout (par défaut).
+
+```python
+class Personne:
+    def __init__(self, nom):
+        self.nom = nom  # Public
+```
+
+**Protected** : conventionnellement protégé (un seul underscore `_`).
+
+```python
+class Personne:
+    def __init__(self, nom):
+        self._age = 25  # Protected (convention)
+```
+
+**Private** : conventionnellement privé (double underscore `__`).
+
+```python
+class Personne:
+    def __init__(self, nom):
+        self.__nom_secret = "secret"  # Private (name mangling)
+```
+
+<Callout type="info">
+Le name mangling transforme `__nom` en `_Classe__nom`. Ce n'est pas une véritable protection, mais une convention pour indiquer que l'attribut ne devrait pas être utilisé directement.
+</Callout>
+
+### Getters et Setters
+
+Les getters et setters contrôlent l'accès aux attributs.
+
+```python
+class Personne:
+    def __init__(self, nom):
+        self._nom = nom
+
+    @property
+    def nom(self):
+        return self._nom
+
+    @nom.setter
+    def nom(self, valeur):
+        if isinstance(valeur, str) and len(valeur) > 0:
+            self._nom = valeur
+        else:
+            raise ValueError("Le nom doit être une chaîne non vide")
+
+personne = Personne("Alice")
+print(personne.nom)      # Alice
+personne.nom = "Bob"     # Bob
+```
+
+### Méthodes spéciales
+
+Python utilise des méthodes spéciales (magic methods) pour définir le comportement des objets.
+
+**__str__ et __repr__** :
+
+```python
+class Personne:
+    def __init__(self, nom):
+        self.nom = nom
+
+    def __str__(self):
+        return f"Personne : {self.nom}"  # Pour print()
+
+    def __repr__(self):
+        return f"Personne('{self.nom}')"  # Pour le REPL
+
+alice = Personne("Alice")
+print(alice)      # Personne : Alice
+print(repr(alice))  # Personne('Alice')
+```
+
+**__eq__** : égalité.
+
+```python
+class Personne:
+    def __init__(self, nom):
+        self.nom = nom
+
+    def __eq__(self, other):
+        return self.nom == other.nom
+
+alice1 = Personne("Alice")
+alice2 = Personne("Alice")
+print(alice1 == alice2)  # True
+```
+
+**__len__** : longueur.
+
+```python
+class Liste:
+    def __init__(self):
+        self.elements = []
+
+    def ajouter(self, element):
+        self.elements.append(element)
+
+    def __len__(self):
+        return len(self.elements)
+
+liste = Liste()
+liste.ajouter(1)
+liste.ajouter(2)
+print(len(liste))  # 2
+```
+
+## Erreurs fréquentes
+
+**Oublier self dans les méthodes**
+
+```python
+class Personne:
+    def __init__(nom):  # Oublie self
+        self.nom = nom
+
+    def se_presenter():
+        print(f"Je m'appelle {nom}")  # Erreur : NameError
+```
+
+`self` est obligatoire pour accéder aux attributs d'instance.
+
+<Callout type="warn">
+```python
+class Personne:
+    def __init__(self, nom):
+        self.nom = nom
+
+    def se_presenter(self):
+        print(f"Je m'appelle {self.nom}")  # Correct
+```
+Toujours inclure `self` comme premier paramètre des méthodes d'instance.
+</Callout>
+
+**Confondre attributs de classe et d'instance**
+
+```python
+class Personne:
+    espece = "Homo sapiens"
+
+    def __init__(self, nom):
+        self.nom = nom
+
+alice = Personne("Alice")
+alice.espece = "Alien"  # Crée un attribut d'instance, ne modifie pas la classe
+```
+
+La modification affecte l'instance, pas la classe.
+
+<Callout type="warn">
+```python
+class Personne:
+    espece = "Homo sapiens"
+
+    def __init__(self, nom):
+        self.nom = nom
+
+Personne.espece = "Alien"  # Modifie l'attribut de classe
+```
+Pour modifier un attribut de classe, utilisez `NomClasse.attribut`.
+</Callout>
+
+**Redéfinir sans appeler super()**
+
+```python
+class Chien(Animal):
+    def __init__(self, nom):
+        self.nom = nom  # Oublie d'appeler super().__init__()
+```
+
+L'initialisation du parent n'est pas effectuée.
+
+<Callout type="warn">
+```python
+class Chien(Animal):
+    def __init__(self, nom):
+        super().__init__(nom)  # Appelle l'initialisation du parent
+```
+Utilisez `super().__init__()` pour garantir que l'initialisation du parent est effectuée.
+</Callout>
+
+## Exercices
+
+<Exercise n="7.1" title="Créer une classe simple">
+Créez une classe `Voiture` avec les attributs `marque`, `modele`, `annee`. Ajoutez une méthode `afficher_infos()` qui affiche les informations de la voiture.
+</Exercise>
+
+<Solution>
+```python
+class Voiture:
+    def __init__(self, marque, modele, annee):
+        self.marque = marque
+        self.modele = modele
+        self.annee = annee
+
+    def afficher_infos(self):
+        print(f"{self.marque} {self.modele} ({self.annee})")
+
+voiture = Voiture("Toyota", "Corolla", 2020)
+voiture.afficher_infos()  # Toyota Corolla (2020)
+```
+</Solution>
+
+<Exercise n="7.2" title="Créer une classe avec méthodes">
+Créez une classe `Rectangle` avec les attributs `largeur` et `hauteur`. Ajoutez des méthodes `aire()` et `perimetre()` qui calculent et renvoient l'aire et le périmètre.
+</Exercise>
+
+<Solution>
+```python
+class Rectangle:
+    def __init__(self, largeur, hauteur):
+        self.largeur = largeur
+        self.hauteur = hauteur
+
+    def aire(self):
+        return self.largeur * self.hauteur
+
+    def perimetre(self):
+        return 2 * (self.largeur + self.hauteur)
+
+rect = Rectangle(5, 3)
+print(rect.aire())      # 15
+print(rect.perimetre())  # 16
+```
+</Solution>
+
+<Exercise n="7.3" title="Héritage simple">
+Créez une classe parent `Animal` avec une méthode `parler()`. Créez une classe enfant `Chat` qui hérite de `Animal` et redéfinit `parler()` pour afficher "Miaou".
+</Exercise>
+
+<Solution>
+```python
+class Animal:
+    def parler(self):
+        print("L'animal fait un son")
+
+class Chat(Animal):
+    def parler(self):
+        print("Miaou")
+
+chat = Chat()
+chat.parler()  # Miaou
+```
+</Solution>
+
+<Exercise n="7.4" title="Utiliser super()">
+Créez une classe parent `Vehicule` avec `__init__(nom)`. Créez une classe enfant `Voiture` qui appelle `super().__init__()` et ajoute un attribut `marque`.
+</Exercise>
+
+<Solution>
+```python
+class Vehicule:
+    def __init__(self, nom):
+        self.nom = nom
+
+class Voiture(Vehicule):
+    def __init__(self, nom, marque):
+        super().__init__(nom)
+        self.marque = marque
+
+voiture = Voiture("Ma voiture", "Toyota")
+print(voiture.nom)    # Ma voiture
+print(voiture.marque)  # Toyota
+```
+</Solution>
+
+<Exercise n="7.5" title="Polymorphisme">
+Créez deux classes `Cercle` et `Carre` avec une méthode `aire()`. Créez une fonction `afficher_aire(forme)` qui accepte n'importe quel objet avec une méthode `aire()`.
+</Exercise>
+
+<Solution>
+```python
+class Cercle:
+    def __init__(self, rayon):
+        self.rayon = rayon
+
+    def aire(self):
+        return 3.14159 * self.rayon ** 2
+
+class Carre:
+    def __init__(self, cote):
+        self.cote = cote
+
+    def aire(self):
+        return self.cote ** 2
+
+def afficher_aire(forme):
+    print(f"Aire : {forme.aire():.2f}")
+
+cercle = Cercle(5)
+carre = Carre(4)
+
+afficher_aire(cercle)  # Aire : 78.54
+afficher_aire(carre)   # Aire : 16.00
+```
+</Solution>
+
+<Exercise n="7.6" title="Getters et Setters">
+Créez une classe `CompteBancaire` avec un attribut prive `_solde`. Utilisez `@property` et un setter pour valider que le solde ne peut pas être négatif.
+</Exercise>
+
+<Solution>
+```python
+class CompteBancaire:
+    def __init__(self, solde_initial):
+        self._solde = solde_initial
+
+    @property
+    def solde(self):
+        return self._solde
+
+    @solde.setter
+    def solde(self, valeur):
+        if valeur >= 0:
+            self._solde = valeur
+        else:
+            raise ValueError("Le solde ne peut pas être négatif")
+
+compte = CompteBancaire(1000)
+print(compte.solde)  # 1000
+compte.solde = 500
+print(compte.solde)  # 500
+```
+</Solution>
+
+<Exercise n="7.7" title="Méthodes spéciales">
+Créez une classe `Vecteur` avec les attributs `x` et `y`. Implémentez `__str__`, `__repr__`, et `__eq__` pour afficher le vecteur et comparer deux vecteurs.
+</Exercise>
+
+<Solution>
+```python
+class Vecteur:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return f"Vecteur({self.x}, {self.y})"
+
+    def __repr__(self):
+        return f"Vecteur({self.x}, {self.y})"
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+v1 = Vecteur(1, 2)
+v2 = Vecteur(1, 2)
+
+print(v1)           # Vecteur(1, 2)
+print(repr(v1))      # Vecteur(1, 2)
+print(v1 == v2)     # True
+```
+</Solution>
+
+<Exercise n="7.8" title="Défi : Système de gestion simple">
+Créez un système de gestion simple avec les classes `Utilisateur`, `Produit`, et `Commande`. Le système doit :
+
+1. `Utilisateur` : nom, email
+2. `Produit` : nom, prix
+3. `Commande` : utilisateur, liste de produits, date
+4. Méthode pour calculer le total de la commande
+
+Utilisez l'héritage si approprié.
+</Exercise>
+
+<Solution>
+```python
+class Utilisateur:
+    def __init__(self, nom, email):
+        self.nom = nom
+        self.email = email
+
+    def __str__(self):
+        return f"Utilisateur : {self.nom} ({self.email})"
+
+class Produit:
+    def __init__(self, nom, prix):
+        self.nom = nom
+        self.prix = prix
+
+    def __str__(self):
+        return f"Produit : {self.nom} ({self.prix}€)"
+
+class Commande:
+    def __init__(self, utilisateur, produits, date):
+        self.utilisateur = utilisateur
+        self.produits = produits
+        self.date = date
+
+    def total(self):
+        return sum(produit.prix for produit in self.produits)
+
+    def __str__(self):
+        return f"Commande de {self.utilisateur.nom} le {self.date} - Total : {self.total()}€"
+
+# Tests
+alice = Utilisateur("Alice", "alice@email.com")
+pomme = Produit("Pomme", 1.5)
+banane = Produit("Banane", 2.0)
+
+commande = Commande(alice, [pomme, banane], "2025-01-01")
+print(commande)  # Commande de Alice le 2025-01-01 - Total : 3.5€
+```
+</Solution>
+
+## Livrable
+
+Créez un système de gestion simple en Python. Le système doit inclure :
+
+**Classes obligatoires**
+- `Utilisateur` (nom, email)
+- `Produit` (nom, prix)
+- `Commande` (utilisateur, produits, date, total)
+
+**Fonctionnalités obligatoires**
+- Création d'utilisateurs et produits
+- Création de commandes
+- Calcul du total de commande
+- Affichage des informations
+
+**Code obligatoire**
+- Classes bien définies
+- Méthodes appropriées
+- Héritage si applicable
+- Méthodes spéciales (__str__)
+- Code documenté
+
+**Critères d'évaluation**
+- [ ] Classes implémentées
+- [ ] Relations entre classes
+- [] Calcul du total fonctionnel
+- [ ] Code documenté
+- [ ] Conventions PEP 8 respectées
+- [ ] Méthodes spéciales utilisées
+
+**Pistes d'extension**
+- Ajoutez une classe `Facture`
+- Implémentez la gestion du stock
+- Ajoutez des remises sur les commandes
+- Créez une base de données simple
+- Ajoutez une interface utilisateur
+
+## Pour aller plus loin
+
+- [Python Classes](https://docs.python.org/3/tutorial/classes.html) : Documentation officielle sur les classes.
+- [Real Python - OOP](https://realpython.com/python3-object-oriented-programming/) : Guide complet sur la POO en Python.
+- [PEP 8 - Class Names](https://peps.python.org/pep-0008/#class-names) : Conventions de nommage pour les classes.
+- [Python Special Methods](https://docs.python.org/3/reference/datamodel.html#special-method-names) : Documentation sur les méthodes spéciales.
+- [Python Inheritance](https://www.w3schools.com/python/python_inheritance.asp) : Tutoriel sur l'héritage.

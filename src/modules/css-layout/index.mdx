@@ -1,0 +1,102 @@
+# CSS — Mise en page
+
+Flexbox, Grid et les requêtes média permettent de transformer une suite d’éléments en mise en page lisible sur toutes les tailles d’écran.
+
+## Objectifs
+
+- Centrer et aligner des éléments avec Flexbox.
+- Construire une grille de colonnes avec CSS Grid.
+- Utiliser des espacements cohérents plutôt que des marges arbitraires.
+- Adapter une mise en page aux écrans étroits avec une requête média.
+- Vérifier la lisibilité et l’absence de débordement sur mobile.
+
+## Cours
+
+### Aligner une rangée avec Flexbox
+
+Flexbox gère l’alignement dans une dimension. `justify-content` organise l’espace sur l’axe principal ; `align-items` contrôle l’axe transversal. `gap` exprime l’écart entre les éléments sans ajouter de marges aux extrémités.
+
+```css
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+```
+
+### Construire une grille avec CSS Grid
+
+Grid organise des éléments sur deux dimensions. `minmax()` définit une largeur minimale et maximale ; `auto-fit` répartit automatiquement les colonnes disponibles selon l’espace du conteneur.
+
+```css
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+```
+
+### Adapter la page aux écrans étroits
+
+Une requête média permet de modifier la structure lorsque le viewport devient étroit. Il est préférable de commencer avec une largeur fluide, puis de n’ajouter des seuils que lorsque le contenu en a besoin.
+
+```css
+.content {
+  width: min(100% - 2rem, 1100px);
+  margin-inline: auto;
+}
+
+@media (max-width: 640px) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+```
+
+## Exercices
+
+<Exercise n="3.1" title="Aligner une barre de navigation">
+Transformez une liste de liens en navigation horizontale. Alignez les éléments au centre verticalement et utilisez `gap` pour l’espacement.
+
+<Solution>
+
+```css
+.navigation {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="3.2" title="Créer une grille de projets">
+Présentez quatre projets dans une grille dont les colonnes peuvent se réduire jusqu’à 220 pixels sans dépasser le conteneur.
+
+<Solution>
+
+```css
+.projects {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="3.3" title="Vérifier la version mobile">
+Ajoutez un point de rupture à 600 pixels. La navigation doit s’empiler et les cartes occuper toute la largeur. Vérifiez le résultat dans l’émulation mobile du navigateur.
+</Exercise>
+
+## Livrable
+
+Créez une landing page responsive présentant un service ou un projet fictif. Elle doit contenir une navigation, un message d’introduction, une grille de trois offres et une section de contact.
+
+<Callout type="tip">
+Testez la page à plusieurs largeurs, pas seulement aux dimensions exactes d’un téléphone. Une mise en page fluide doit rester robuste entre les points de rupture.
+</Callout>

@@ -1,0 +1,538 @@
+# Structures de contrôle
+
+Ce module explore les structures de contrôle en Python qui permettent d'exécuter du code conditionnellement ou de manière répétée. Il explique les conditions (if/elif/else), les boucles (for, while), les instructions de contrôle de boucle (break, continue), et les comprehensions qui offrent une syntaxe concise pour créer des listes et d'autres structures. Ces structures sont fondamentales pour créer des programmes dynamiques et réactifs. À l'issue de ce module, vous serez capable de créer des programmes avec des conditions et des boucles, et de maîtriser les comprehensions Python.
+
+## Objectifs
+
+- Comprendre et utiliser les conditions if/elif/else
+- Maîtriser les boucles for et while
+- Utiliser break et continue pour contrôler les boucles
+- Comprendre la boucle for avec range() et iterables
+- Utiliser les list comprehensions et dict comprehensions
+- Créer des programmes avec logique conditionnelle
+- Éviter les boucles infinies
+
+## Prérequis
+
+- Introduction à Python (installation, scripts)
+- Variables et types (types primitifs, opérateurs)
+
+## Cours
+
+### Conditions if/elif/else
+
+Les conditions permettent d'exécuter du code uniquement si une condition est vraie.
+
+**if simple** :
+
+```python
+age = 18
+
+if age >= 18:
+    print("Vous êtes majeur")
+```
+
+**if/else** :
+
+```python
+age = 15
+
+if age >= 18:
+    print("Vous êtes majeur")
+else:
+    print("Vous êtes mineur")
+```
+
+**if/elif/else** :
+
+```python
+note = 85
+
+if note >= 90:
+    print("Excellent")
+elif note >= 80:
+    print("Très bien")
+elif note >= 70:
+    print("Bien")
+elif note >= 60:
+    print("Assez bien")
+else:
+    print("Insuffisant")
+```
+
+<Callout type="tip">
+Utilisez `elif` pour tester plusieurs conditions exclusives. Si la première condition est vraie, les suivantes ne sont pas évaluées (court-circuit).
+</Callout>
+
+**Conditions composées** :
+
+```python
+age = 25
+revenu = 50000
+
+if age >= 18 and revenu > 30000:
+    print("Éligible au crédit")
+
+if age < 18 or revenu < 10000:
+    print("Non éligible")
+
+if not (age < 18):
+    print("Majeur")
+```
+
+### Boucle for
+
+La boucle `for` itère sur une séquence (liste, chaîne, range, etc.).
+
+**Itération sur une liste** :
+
+```python
+fruits = ["pomme", "banane", "orange"]
+
+for fruit in fruits:
+    print(f"J'aime les {fruit}s")
+```
+
+**Itération sur une chaîne** :
+
+```python
+for lettre in "Python":
+    print(lettre)
+```
+
+**Boucle for avec range()** :
+
+`range()` génère une séquence de nombres.
+
+```python
+# range(stop) : de 0 à stop-1
+for i in range(5):
+    print(i)  # 0, 1, 2, 3, 4
+
+# range(start, stop) : de start à stop-1
+for i in range(2, 6):
+    print(i)  # 2, 3, 4, 5
+
+# range(start, stop, step) : avec un pas
+for i in range(0, 10, 2):
+    print(i)  # 0, 2, 4, 6, 8
+```
+
+**Accès à l'index avec enumerate()** :
+
+```python
+fruits = ["pomme", "banane", "orange"]
+
+for index, fruit in enumerate(fruits):
+    print(f"Index {index} : {fruit}")
+```
+
+### Boucle while
+
+La boucle `while` s'exécute tant qu'une condition est vraie.
+
+```python
+compteur = 0
+
+while compteur < 5:
+    print(compteur)
+    compteur += 1
+```
+
+<Callout type="warn">
+Assurez-vous que la condition devient fausse à un moment donné, sinon vous créez une boucle infinie qui bloque le programme.
+</Callout>
+
+**Boucle while avec condition d'arrêt utilisateur** :
+
+```python
+reponse = ""
+
+while reponse.lower() != "oui":
+    reponse = input("Voulez-vous continuer ? (oui/non) : ")
+```
+
+### break et continue
+
+**break** : interrompt immédiatement la boucle.
+
+```python
+for i in range(10):
+    if i == 5:
+        break
+    print(i)  # Affiche : 0, 1, 2, 3, 4
+```
+
+**continue** : passe à l'itération suivante de la boucle.
+
+```python
+for i in range(5):
+    if i == 2:
+        continue
+    print(i)  # Affiche : 0, 1, 3, 4
+```
+
+**break dans une boucle while** :
+
+```python
+while True:
+    reponse = input("Entrez 'quit' pour sortir : ")
+    if reponse == "quit":
+        break
+```
+
+### else dans les boucles
+
+Le bloc `else` d'une boucle s'exécute si la boucle se termine normalement (sans break).
+
+```python
+for i in range(5):
+    if i == 3:
+        break
+    print(i)
+else:
+    print("Boucle terminée normalement")  # Ne s'exécute pas
+
+for i in range(5):
+    print(i)
+else:
+    print("Boucle terminée normalement")  # S'exécute
+```
+
+### List comprehensions
+
+Les list comprehensions offrent une syntaxe concise pour créer des listes.
+
+**Syntaxe de base** :
+
+```python
+# Sans comprehension
+carres = []
+for i in range(5):
+    carres.append(i ** 2)
+
+# Avec comprehension
+carres = [i ** 2 for i in range(5)]  # [0, 1, 4, 9, 16]
+```
+
+**Avec condition** :
+
+```python
+pairs = [i for i in range(10) if i % 2 == 0]  # [0, 2, 4, 6, 8]
+```
+
+**Avec transformation et condition** :
+
+```python
+pairs_carres = [i ** 2 for i in range(10) if i % 2 == 0]  # [0, 4, 16, 36, 64]
+```
+
+<Callout type="info">
+Les list comprehensions sont généralement plus rapides et plus lisibles que les boucles for équivalentes pour créer des listes.
+</Callout>
+
+### Dict comprehensions
+
+Similaires aux list comprehensions mais pour créer des dictionnaires.
+
+```python
+# Sans comprehension
+carres_dict = {}
+for i in range(5):
+    carres_dict[i] = i ** 2
+
+# Avec comprehension
+carres_dict = {i: i ** 2 for i in range(5)}  # {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}
+```
+
+**Avec condition** :
+
+```python
+pairs_dict = {i: i ** 2 for i in range(10) if i % 2 == 0}
+# {0: 0, 2: 4, 4: 16, 6: 36, 8: 64}
+```
+
+### Nested loops (boucles imbriquées)
+
+Les boucles peuvent être imbriquées pour traiter des structures multidimensionnelles.
+
+```python
+for i in range(3):
+    for j in range(3):
+        print(f"({i}, {j})")
+```
+
+<Callout type="warn">
+Les boucles imbriquées peuvent être lentes. Évitez d'imbriquer plus de 3 niveaux.
+</Callout>
+
+### Pass
+
+L'instruction `pass` ne fait rien. Elle est utilisée comme placeholder.
+
+```python
+if age >= 18:
+    pass  # À implémenter plus tard
+else:
+    print("Mineur")
+```
+
+## Erreurs fréquentes
+
+**Oublier les deux-points (:)**
+
+```python
+if age >= 18
+    print("Majeur")  # Erreur : SyntaxError
+```
+
+Les blocs Python (if, for, while, def, class) doivent se terminer par deux-points.
+
+<Callout type="warn">
+```python
+if age >= 18:
+    print("Majeur")  # Correct
+```
+Toujours ajouter `:` après les instructions de bloc.
+</Callout>
+
+**Indentation incorrecte**
+
+```python
+if age >= 18:
+print("Majeur")  # Erreur : IndentationError
+```
+
+L'indentation est obligatoire et doit être cohérente.
+
+<Callout type="warn">
+```python
+if age >= 18:
+    print("Majeur")  # Correct (4 espaces)
+```
+Utilisez toujours 4 espaces pour l'indentation.
+</Callout>
+
+**Boucle infinie**
+
+```python
+while True:
+    print("Infini")  # Jamais arrêté
+```
+
+La condition ne devient jamais fausse.
+
+<Callout type="warn">
+```python
+compteur = 0
+while compteur < 5:
+    print(compteur)
+    compteur += 1  # Assurez-vous de modifier la condition
+```
+Toujours inclure un mécanisme pour sortir de la boucle (condition, break).
+</Callout>
+
+**Modifier une liste pendant l'itération**
+
+```python
+nombres = [1, 2, 3, 4, 5]
+for nombre in nombres:
+    if nombre % 2 == 0:
+        nombres.remove(nombre)  # Comportement imprévisible
+```
+
+Modifier une liste pendant l'itération peut sauter des éléments.
+
+<Callout type="warn">
+```python
+nombres = [1, 2, 3, 4, 5]
+nombres = [n for n in nombres if n % 2 != 0]  # Crée une nouvelle liste
+```
+Créez une nouvelle liste au lieu de modifier l'originale pendant l'itération.
+</Callout>
+
+## Exercices
+
+<Exercise n="3.1" title="Vérifier la parité">
+Créez un script qui demande un nombre à l'utilisateur et affiche s'il est pair ou impair.
+
+Indice : un nombre est pair si `nombre % 2 == 0`.
+</Exercise>
+
+<Solution>
+```python
+nombre = int(input("Entrez un nombre : "))
+
+if nombre % 2 == 0:
+    print(f"{nombre} est pair")
+else:
+    print(f"{nombre} est impair")
+```
+</Solution>
+
+<Exercise n="3.2" title="Calculer la somme avec une boucle">
+Créez un script qui calcule la somme des nombres de 1 à 100 avec une boucle for. Affichez le résultat.
+</Exercise>
+
+<Solution>
+```python
+somme = 0
+
+for i in range(1, 101):
+    somme += i
+
+print(f"La somme de 1 à 100 est : {somme}")
+```
+</Solution>
+
+<Exercise n="3.3" title="Table de multiplication">
+Créez un script qui demande un nombre et affiche sa table de multiplication de 1 à 10.
+</Exercise>
+
+<Solution>
+```python
+nombre = int(input("Entrez un nombre : "))
+
+for i in range(1, 11):
+    print(f"{nombre} × {i} = {nombre * i}")
+```
+</Solution>
+
+<Exercise n="3.4" title="Compter les voyelles">
+Créez un script qui demande un mot à l'utilisateur et compte le nombre de voyelles (a, e, i, o, u, y).
+</Exercise>
+
+<Solution>
+```python
+mot = input("Entrez un mot : ")
+voyelles = "aeiouy"
+compteur = 0
+
+for lettre in mot.lower():
+    if lettre in voyelles:
+        compteur += 1
+
+print(f"Le mot '{mot}' contient {compteur} voyelle(s)")
+```
+</Solution>
+
+<Exercise n="3.5" title="Boucle while avec compteur">
+Créez un script qui utilise une boucle while pour afficher les nombres de 10 à 1 (décroissant).
+</Exercise>
+
+<Solution>
+```python
+compteur = 10
+
+while compteur >= 1:
+    print(compteur)
+    compteur -= 1
+```
+</Solution>
+
+<Exercise n="3.6" title="List comprehension">
+Créez une list comprehension qui génère les carrés des nombres pairs de 0 à 20.
+</Exercise>
+
+<Solution>
+```python
+carres_pairs = [i ** 2 for i in range(21) if i % 2 == 0]
+print(carres_pairs)  # [0, 4, 16, 36, 64, 100, 144, 196, 256, 324, 400]
+```
+</Solution>
+
+<Exercise n="3.7" title="Trouver le maximum">
+Créez un script qui demande une liste de nombres à l'utilisateur (séparés par des espaces) et affiche le maximum sans utiliser la fonction `max()`.
+</Exercise>
+
+<Solution>
+```python
+entree = input("Entrez des nombres séparés par des espaces : ")
+nombres = [float(n) for n in entree.split()]
+
+if nombres:
+    maximum = nombres[0]
+    for nombre in nombres:
+        if nombre > maximum:
+            maximum = nombre
+    print(f"Le maximum est : {maximum}")
+else:
+    print("Aucun nombre entré")
+```
+</Solution>
+
+<Exercise n="3.8" title="Défi : Jeu de devinettes">
+Créez un jeu de devinettes où :
+
+1. L'ordinateur choisit un nombre aléatoire entre 1 et 100
+2. L'utilisateur devine le nombre
+3. L'ordinateur indique "plus grand" ou "plus petit"
+4. Le jeu continue jusqu'à ce que l'utilisateur trouve le nombre
+5. Affichez le nombre de tentatives
+
+Indice : utilisez `random.randint(1, 100)` pour le nombre aléatoire.
+</Exercise>
+
+<Solution>
+```python
+import random
+
+nombre_secret = random.randint(1, 100)
+tentatives = 0
+
+print("Devinez le nombre entre 1 et 100")
+
+while True:
+    devinette = int(input("Votre devinette : "))
+    tentatives += 1
+
+    if devinette < nombre_secret:
+        print("Plus grand")
+    elif devinette > nombre_secret:
+        print("Plus petit")
+    else:
+        print(f"Bravo ! Vous avez trouvé en {tentatives} tentative(s)")
+        break
+```
+</Solution>
+
+## Livrable
+
+Créez un jeu de devinettes en Python. Le jeu doit inclure :
+
+**Fonctionnalités obligatoires**
+- Nombre aléatoire entre 1 et 100
+- Entrée utilisateur pour deviner
+- Indications "plus grand" ou "plus petit"
+- Compteur de tentatives
+- Message de victoire avec le nombre de tentatives
+
+**Code obligatoire**
+- Boucle while pour le jeu
+- Condition if/elif/else pour les comparaisons
+- Utilisation du module random
+- Gestion de l'entrée utilisateur
+- Affichage clair
+
+**Critères d'évaluation**
+- [ ] Jeu fonctionnel
+- [ ] Nombre aléatoire généré
+- [] Indications correctes
+- [] Compteur de tentatives
+- [ ] Boucle avec break conditionnel
+- [ ] Code documenté
+
+**Pistes d'extension**
+- Ajoutez un mode de difficulté (plage de nombres)
+- Limitez le nombre de tentatives
+- Ajoutez un système de score
+- Permettez de rejouer sans relancer
+- Sauvegardez les meilleurs scores
+
+## Pour aller plus loin
+
+- [Python Control Flow](https://docs.python.org/3/tutorial/controlflow.html) : Documentation officielle sur les structures de contrôle.
+- [Real Python - Loops](https://realpython.com/python-for-loop/) : Guide détaillé sur les boucles en Python.
+- [Real Python - List Comprehensions](https://realpython.com/list-comprehension-python/) : Guide complet sur les comprehensions.
+- [Python for Loop](https://www.w3schools.com/python/python_for_loops.asp) : Tutoriel interactif sur les boucles.
+- [PEP 202 - List Comprehensions](https://peps.python.org/pep-0202/) : PEP original sur les list comprehensions.

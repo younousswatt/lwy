@@ -1,0 +1,677 @@
+# Git et GitHub
+
+Ce module explore Git, le système de contrôle de version distribué le plus utilisé, et GitHub, la plateforme de collaboration basée sur Git. Il explique les concepts fondamentaux de Git (commits, branches, merge), les commandes essentielles pour le workflow quotidien, l'utilisation de GitHub pour le collaboration et l'hébergement, la publication de sites avec GitHub Pages, et le workflow de publication complet. Ces outils sont indispensables pour tout développeur professionnel pour gérer l'historique du code, collaborer en équipe, et déployer des applications. À l'issue de ce module, vous serez capable de publier votre portfolio sur GitHub Pages avec un workflow Git complet.
+
+## Objectifs
+
+- Comprendre les concepts fondamentaux de Git (repository, commit, branch, merge).
+- Initialiser un repository Git et configurer les paramètres de base.
+- Effectuer des commits avec des messages clairs et descriptifs.
+- Créer et gérer des branches pour le développement de fonctionnalités.
+- Fusionner des branches avec merge et résoudre les conflits.
+- Utiliser GitHub pour l'hébergement et la collaboration (clone, push, pull).
+- Publier un site statique sur GitHub Pages.
+- Mettre en place un workflow de publication complet (local → GitHub → Pages).
+
+## Prérequis
+
+- Fondamentaux du web (structure de fichiers, terminal basique)
+- HTML — Structure (document HTML complet)
+- CSS — Mise en page (site responsive)
+- Un compte GitHub (gratuit)
+
+## Cours
+
+### Introduction à Git
+
+Git est un système de contrôle de version distribué créé par Linus Torvalds en 2005. Contrairement aux systèmes centralisés (SVN), Git permet à chaque développeur d'avoir une copie complète de l'historique du projet sur sa machine. Cela permet de travailler hors ligne et de créer des branches locales sans affecter le repository principal.
+
+**Concepts clés** :
+
+- **Repository (repo)** : ensemble de fichiers et leur historique de modifications.
+- **Commit** : snapshot de l'état du repository à un moment donné.
+- **Branch** : ligne de développement parallèle, permettant de travailler sur des fonctionnalités sans affecter la branche principale.
+- **Merge** : fusion de deux branches, intégrant les modifications de l'une dans l'autre.
+- **Remote** : version du repository hébergée sur un serveur (ex: GitHub).
+
+<Callout type="info">
+Git stocke les modifications sous forme de snapshots, pas de différences. Chaque commit contient l'état complet des fichiers à ce moment, ce qui permet de naviguer rapidement dans l'historique.
+</Callout>
+
+### Installation et configuration
+
+Git est généralement préinstallé sur macOS et Linux. Sur Windows, téléchargez-le depuis git-scm.com.
+
+**Vérifier l'installation** :
+
+```bash
+git --version
+```
+
+**Configuration initiale** : configurez votre identité, indispensable pour les commits.
+
+```bash
+git config --global user.name "Votre Nom"
+git config --global user.email "votre@email.com"
+```
+
+**Configuration des fins de ligne** : importante pour éviter les problèmes de compatibilité entre Windows et Unix.
+
+```bash
+git config --global core.autocrlf true  # Windows
+git config --global core.autocrlf input  # macOS/Linux
+```
+
+**Vérifier la configuration** :
+
+```bash
+git config --list
+```
+
+### Initialisation et commits
+
+**Initialiser un repository** : crée un nouveau repository Git dans le répertoire actuel.
+
+```bash
+cd votre-projet
+git init
+```
+
+**Vérifier l'état** : affiche les fichiers modifiés, non suivis, et préparés pour commit.
+
+```bash
+git status
+```
+
+**Ajouter des fichiers** : prépare les fichiers pour le commit (staging area).
+
+```bash
+git add fichier.html           # Ajoute un fichier spécifique
+git add .                     # Ajoute tous les fichiers modifiés
+git add *.html                # Ajoute tous les fichiers .html
+```
+
+**Créer un commit** : enregistre les modifications préparées avec un message descriptif.
+
+```bash
+git commit -m "Message descriptif du commit"
+```
+
+**Voir l'historique** : affiche la liste des commits avec leurs messages, auteurs, et dates.
+
+```bash
+git log
+git log --oneline              # Affichage compact
+git log --graph --oneline      # Affichage avec graphe des branches
+```
+
+<Callout type="tip">
+Écrivez des messages de commit clairs et descriptifs. Une bonne pratique est d'utiliser l'impératif présent ("Ajoute la page d'accueil" au lieu de "Ajouté la page d'accueil"). Le message doit expliquer le "pourquoi", pas le "quoi".
+</Callout>
+
+### Branches
+
+Les branches permettent de travailler sur des fonctionnalités ou corrections de bugs sans affecter la branche principale (généralement `main` ou `master`).
+
+**Créer une branche** :
+
+```bash
+git branch nouvelle-fonctionnalite
+```
+
+**Lister les branches** :
+
+```bash
+git branch                    # Liste les branches locales
+git branch -r                 # Liste les branches distantes
+git branch -a                 # Liste toutes les branches
+```
+
+**Basculer sur une branche** :
+
+```bash
+git checkout nouvelle-fonctionnalite
+# Ou version moderne :
+git switch nouvelle-fonctionnalite
+```
+
+**Créer et basculer en une commande** :
+
+```bash
+git checkout -b nouvelle-fonctionnalite
+# Ou version moderne :
+git switch -c nouvelle-fonctionnalite
+```
+
+**Supprimer une branche** :
+
+```bash
+git branch -d nouvelle-fonctionnalite      # Supprime une branche fusionnée
+git branch -D nouvelle-fonctionnalite      # Supprime même si non fusionnée
+```
+
+### Merge et conflits
+
+Le merge fusionne les modifications d'une branche dans une autre. Si les modifications sont sur des fichiers différents, Git fusionne automatiquement. Si les modifications sont sur les mêmes lignes, Git crée un conflit qui doit être résolu manuellement.
+
+**Fusionner une branche** :
+
+```bash
+git checkout main
+git merge nouvelle-fonctionnalite
+```
+
+**Résoudre un conflit** : lorsque Git détecte un conflit, il marque les fichiers avec des marqueurs de conflit.
+
+```html
+<<<<<<< HEAD
+<p>Version de la branche actuelle</p>
+=======
+<p>Version de la branche à fusionner</p>
+>>>>>>> nouvelle-fonctionnalite
+```
+
+Pour résoudre :
+1. Ouvrez le fichier en conflit
+2. Choisissez la version à conserver (ou éditez manuellement)
+3. Supprimez les marqueurs de conflit (`<<<<<<<`, `=======`, `>>>>>>>`)
+4. Ajoutez et committez le fichier résolu
+
+```bash
+git add fichier-resolu.html
+git commit -m "Résolution du conflit"
+```
+
+**Annuler un merge** :
+
+```bash
+git merge --abort
+```
+
+### GitHub et remotes
+
+GitHub est une plateforme web qui héberge des repositories Git et fournit des outils de collaboration (issues, pull requests, actions).
+
+**Créer un repository sur GitHub** :
+1. Connectez-vous à github.com
+2. Cliquez sur "New repository"
+3. Donnez un nom, choisissez public ou privé
+4. Ne cochez pas "Initialize with README" si vous avez déjà du code local
+
+**Lier le repository local à GitHub** :
+
+```bash
+git remote add origin https://github.com/utilisateur/repo.git
+# Ou avec SSH (recommandé) :
+git remote add origin git@github.com:utilisateur/repo.git
+```
+
+**Vérifier les remotes** :
+
+```bash
+git remote -v
+```
+
+**Envoyer les modifications vers GitHub (push)** :
+
+```bash
+git push -u origin main
+```
+
+Le flag `-u` lie la branche locale à la branche distante, permettant d'utiliser simplement `git push` par la suite.
+
+**Récupérer les modifications depuis GitHub (pull)** :
+
+```bash
+git pull origin main
+```
+
+`git pull` est équivalent à `git fetch` (récupère les modifications) suivi de `git merge` (fusionne les modifications).
+
+**Cloner un repository existant** :
+
+```bash
+git clone https://github.com/utilisateur/repo.git
+```
+
+<Callout type="info">
+HTTPS et SSH sont deux méthodes pour s'authentifier auprès de GitHub. HTTPS demande votre mot de passe/token à chaque push. SSH utilise des clés SSH et n'authentifie qu'une fois (plus pratique).
+</Callout>
+
+### GitHub Pages
+
+GitHub Pages est un service qui héberge gratuitement des sites statiques directement depuis un repository GitHub.
+
+**Activer GitHub Pages** :
+1. Ouvrez votre repository sur GitHub
+2. Allez dans Settings → Pages
+3. Choisissez la source (branch : main, folder : /root ou /docs)
+4. Cliquez sur Save
+
+**Structure de dossier pour Pages** :
+
+- **Branch main, folder /root** : le site est à la racine du repository
+- **Branch main, folder /docs** : le site est dans le dossier docs/
+
+Pour un projet avec un dossier de build (ex: Vite), configurez Pages pour utiliser le dossier de build.
+
+**Action de déploiement automatique** : GitHub crée automatiquement une action qui déploie le site à chaque push sur la branche configurée.
+
+### Workflow de publication
+
+Un workflow typique de publication comporte les étapes suivantes :
+
+1. **Développement local** : travaillez sur votre branche de fonctionnalité
+2. **Commit local** : enregistrez vos modifications
+3. **Push vers GitHub** : envoyez les modifications
+4. **Pull Request** : proposez vos modifications pour fusion dans main
+5. **Review et merge** : révisez et fusionnez dans main
+6. **Déploiement automatique** : GitHub Pages déploie le site
+
+**Workflow détaillé** :
+
+```bash
+# 1. Créer une branche pour la fonctionnalité
+git checkout -b nouvelle-fonctionnalite
+
+# 2. Faire les modifications et les commiter
+git add .
+git commit -m "Ajoute la nouvelle fonctionnalité"
+
+# 3. Pusher vers GitHub
+git push origin nouvelle-fonctionnalite
+
+# 4. Créer une Pull Request sur GitHub
+# (via l'interface web)
+
+# 5. Après review et merge, récupérer main
+git checkout main
+git pull origin main
+
+# 6. Supprimer la branche locale
+git branch -d nouvelle-fonctionnalite
+```
+
+<Callout type="tip">
+Utilisez des branches courtes et fusionnez fréquemment. Évitez de laisser des branches non fusionnées pendant longtemps, car cela complique les merges et augmente le risque de conflits.
+</Callout>
+
+## Erreurs fréquentes
+
+**Oublier git add avant commit**
+
+```bash
+git commit -m "Ajoute la page d'accueil"
+```
+
+Le commit est vide ou ne contient pas les modifications attendues car les fichiers n'ont pas été ajoutés au staging area.
+
+<Callout type="warn">
+```bash
+git add .
+git commit -m "Ajoute la page d'accueil"
+```
+Toujours utiliser `git add` pour préparer les fichiers avant le commit. Utilisez `git status` pour vérifier ce qui sera inclus dans le commit.
+</Callout>
+
+**Messages de commit vagues**
+
+```bash
+git commit -m "Update"
+git commit -m "Fix"
+```
+
+Les messages de commit ne donnent aucune information sur la nature de la modification, rendant l'historique difficile à naviguer.
+
+<Callout type="warn">
+```bash
+git commit -m "Add contact form with validation"
+git commit -m "Fix navigation menu on mobile"
+```
+Utilisez des messages de commit descriptifs qui expliquent la modification. Une bonne convention est : type(scope): description (ex: feat(home): add hero section).
+</Callout>
+
+**Confondre git pull et git fetch**
+
+```bash
+git fetch origin main
+# Attends que les modifications soient fusionnées...
+```
+
+`git fetch` récupère les modifications mais ne les fusionne pas. Les modifications restent dans une branche distante.
+
+<Callout type="warn">
+```bash
+git pull origin main
+```
+Utilisez `git pull` pour récupérer et fusionner les modifications en une commande. Utilisez `git fetch` uniquement si vous voulez examiner les modifications avant de fusionner.
+</Callout>
+
+**Ignorer les fichiers sensibles**
+
+```bash
+git add .
+git commit -m "Commit initial"
+```
+
+Si des fichiers sensibles (mots de passe, clés API) sont commités, ils restent dans l'historique même après suppression.
+
+<Callout type="warn">
+```bash
+# Créez un fichier .gitignore
+echo "node_modules/" > .gitignore
+echo ".env" >> .gitignore
+echo "*.log" >> .gitignore
+```
+Créez toujours un fichier `.gitignore` pour exclure les fichiers générés, les dépendances, et les fichiers sensibles du repository.
+</Callout>
+
+## Exercices
+
+<Exercise n="11.1" title='Initialiser un repository Git'>
+Créez un nouveau dossier, initialisez un repository Git, et créez un fichier `index.html` avec un contenu simple. Effectuez les opérations suivantes :
+
+1. Initialisez le repository
+2. Créez le fichier index.html
+3. Vérifiez l'état avec git status
+4. Ajoutez le fichier au staging
+5. Créez un commit avec un message descriptif
+6. Vérifiez l'historique avec git log
+</Exercise>
+
+<Solution>
+```bash
+mkdir mon-projet
+cd mon-projet
+git init
+
+# Créez index.html avec votre éditeur
+# Contenu : <h1>Bonjour</h1>
+
+git status
+git add index.html
+git commit -m "Add initial HTML file"
+git log --oneline
+```
+</Solution>
+
+<Exercise n="11.2" title='Travailler avec des branches'>
+Dans le repository créé, créez une branche `features`, ajoutez une nouvelle page `about.html`, et fusionnez cette branche dans `main`.
+
+1. Créez et basculez sur la branche features
+2. Créez about.html
+3. Committez les modifications
+4. Basculez sur main
+5. Fusionnez features dans main
+6. Supprimez la branche features
+</Exercise>
+
+<Solution>
+```bash
+git checkout -b features
+
+# Créez about.html avec votre éditeur
+
+git add about.html
+git commit -m "Add about page"
+
+git checkout main
+git merge features
+git branch -d features
+```
+</Solution>
+
+<Exercise n="11.3" title='Lier à GitHub et pusher'>
+Créez un repository sur GitHub, liez votre repository local, et poussez les modifications.
+
+1. Créez un repository sur GitHub (sans README)
+2. Liez le repository local avec git remote add
+3. Pussez les modifications vers GitHub
+4. Vérifiez sur GitHub que les fichiers sont présents
+</Exercise>
+
+<Solution>
+```bash
+# Sur GitHub : créez un nouveau repository "mon-projet"
+
+git remote add origin https://github.com/VOTRE_UTILISATEUR/mon-projet.git
+git push -u origin main
+```
+
+Pour vérifier, allez sur github.com/VOTRE_UTILISATEUR/mon-projet et confirmez que les fichiers sont présents.
+</Solution>
+
+<Exercise n="11.4" title='Créer un fichier .gitignore'>
+Créez un fichier `.gitignore` qui exclut :
+
+- Le dossier node_modules/
+- Les fichiers .env
+- Les fichiers .log
+- Le dossier .DS_Store (macOS)
+- Le dossier Thumbs.db (Windows)
+
+Vérifiez que git status ignore ces fichiers.
+</Exercise>
+
+<Solution>
+```bash
+cat > .gitignore << EOF
+node_modules/
+.env
+*.log
+.DS_Store
+Thumbs.db
+EOF
+
+git status
+```
+
+Les fichiers et dossiers listés dans .gitignore ne devraient plus apparaître dans git status.
+</Solution>
+
+<Exercise n="11.5" title='Modifier le dernier commit'>
+Vous avez fait un commit avec un message d'erreur ou avez oublié d'ajouter un fichier. Modifiez le dernier commit pour :
+
+1. Corriger le message du commit
+2. OU ajouter un fichier oublié
+
+Utilisez `git commit --amend`.
+</Exercise>
+
+<Solution>
+```bash
+# Pour corriger le message du commit
+git commit --amend -m "Nouveau message correct"
+
+# Pour ajouter un fichier oublié
+git add fichier-oublie.html
+git commit --amend --no-edit
+```
+
+<Callout type="warn">
+N'utilisez `--amend` que sur des commits non partagés (pas encore pushés). Modifier un commit déjà pushé peut causer des problèmes pour les autres collaborateurs.
+</Callout>
+</Solution>
+
+<Exercise n="11.6" title='Résoudre un conflit de merge'>
+Simulez un conflit de merge :
+
+1. Créez deux branches : A et B
+2. Dans la branche A, modifiez la ligne 1 de index.html
+3. Dans la branche B, modifiez la même ligne 1 de index.html
+4. Fusionnez B dans A
+5. Résolvez le conflit manuellement
+6. Committez la résolution
+</Exercise>
+
+<Solution>
+```bash
+git checkout -b A
+# Modifiez index.html ligne 1 : <h1>Version A</h1>
+git add index.html
+git commit -m "Modify index.html in branch A"
+
+git checkout -b B
+# Modifiez index.html ligne 1 : <h1>Version B</h1>
+git add index.html
+git commit -m "Modify index.html in branch B"
+
+git checkout A
+git merge B
+# Git indique un conflit
+
+# Éditez index.html, choisissez la version à conserver
+# Supprimez les marqueurs de conflit
+
+git add index.html
+git commit -m "Resolve merge conflict"
+```
+</Solution>
+
+<Exercise n="11.7" title='Activer GitHub Pages'>
+Créez un site simple avec index.html et about.html. Pushez sur GitHub et activez GitHub Pages.
+
+1. Créez un repository sur GitHub
+2. Pussez vos fichiers
+3. Activez GitHub Pages (branch main, folder /root)
+4. Attendez le déploiement et accédez à votre site
+</Exercise>
+
+<Solution>
+```bash
+# Structure du projet :
+# index.html
+# about.html
+
+git init
+git add .
+git commit -m "Add initial portfolio"
+git remote add origin https://github.com/VOTRE_UTILISATEUR/portfolio.git
+git push -u origin main
+```
+
+Sur GitHub :
+1. Allez dans Settings → Pages
+2. Source : Deploy from a branch
+3. Branch : main, Folder : /root
+4. Cliquez sur Save
+
+Attendez quelques minutes, puis accédez à : https://VOTRE_UTILISATEUR.github.io/portfolio/
+</Solution>
+
+<Exercise n="11.8" title='Défi : Publication complète du portfolio'>
+Publiez votre portfolio complet sur GitHub Pages avec le workflow suivant :
+
+1. Structure du portfolio : index.html, about.html, projects.html, contact.html
+2. Styles : dossier css/ avec style.css
+3. Scripts : dossier js/ avec main.js
+4. Créez un .gitignore approprié
+5. Initialisez Git, faites les commits
+6. Créez un repository sur GitHub
+7. Pussez les modifications
+8. Activez GitHub Pages
+9. Vérifiez que le site est accessible
+
+Le portfolio doit être responsive et contenir du contenu réel (CV, projets, contact).
+</Exercise>
+
+<Solution>
+```bash
+# Structure du projet :
+portfolio/
+├── index.html
+├── about.html
+├── projects.html
+├── contact.html
+├── css/
+│   └── style.css
+├── js/
+│   └── main.js
+├── images/
+│   └── photo.jpg
+└── .gitignore
+
+# .gitignore
+node_modules/
+.env
+*.log
+.DS_Store
+Thumbs.db
+
+# Initialisation Git
+cd portfolio
+git init
+git add .
+git commit -m "Add complete portfolio with all pages"
+
+# Lier à GitHub
+git remote add origin https://github.com/VOTRE_UTILISATEUR/portfolio.git
+git push -u origin main
+```
+
+Sur GitHub :
+1. Allez dans Settings → Pages
+2. Source : Deploy from a branch
+3. Branch : main, Folder : /root
+4. Cliquez on Save
+
+Le site sera accessible à : https://VOTRE_UTILISATEUR.github.io/portfolio/
+
+Vérifiez :
+- Toutes les pages sont accessibles
+- Les styles sont chargés
+- Les scripts fonctionnent
+- Les images s'affichent
+- Le site est responsive
+</Solution>
+
+## Livrable
+
+Publiez votre portfolio complet sur GitHub Pages. Le portfolio doit inclure :
+
+**Structure du portfolio obligatoire**
+- index.html (page d'accueil)
+- about.html (à propos)
+- projects.html (projets)
+- contact.html (contact)
+- css/style.css (styles)
+- js/main.js (scripts)
+- images/ (assets)
+
+**Git workflow obligatoire**
+- Repository Git initialisé avec commits clairs
+- Fichier .gitignore approprié
+- Repository GitHub créé et lié
+- Modifications pushées sur GitHub
+- GitHub Pages activé
+
+**Contenu du portfolio obligatoire**
+- Présentation personnelle (CV, compétences)
+- Projets réalisés (au moins 2 projets)
+- Formulaire de contact (avec styling)
+- Navigation entre les pages
+- Design responsive (mobile, tablet, desktop)
+
+**Critères d'évaluation**
+- [ ] Repository Git avec historique de commits
+- [ ] Messages de commit descriptifs
+- [ ] Fichier .gitignore approprié
+- [ ] Repository GitHub public
+- [ ] GitHub Pages activé et fonctionnel
+- [ ] Site accessible via URL GitHub Pages
+- [ ] Portfolio complet et professionnel
+
+**Pistes d'extension**
+- Ajoutez un domaine personnalisé
+- Créez des branches pour chaque fonctionnalité
+- Utilisez des Pull Requests pour les modifications
+- Ajoutez des Actions GitHub pour le CI/CD
+- Implémentez un workflow avec Issues pour le suivi des tâches
+
+## Pour aller plus loin
+
+- [Git Documentation](https://git-scm.com/doc) : Documentation officielle de Git.
+- [GitHub Guides](https://guides.github.com/) : Guides officiels de GitHub sur divers sujets.
+- [Learn Git Branching](https://learngitbranching.js.org/) : Guide interactif pour apprendre Git et les branches.
+- [GitHub Pages Documentation](https://docs.github.com/en/pages) : Documentation officielle de GitHub Pages.
+- [Pro Git Book](https://git-scm.com/book/fr/v2) : Livre complet sur Git, disponible gratuitement en ligne.

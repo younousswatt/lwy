@@ -1,0 +1,110 @@
+# Projet final — Ma bibliothèque de films
+
+Ce projet réunit les acquis du parcours dans une application qui permet de rechercher, consulter et organiser une collection de films.
+
+## Objectifs
+
+- Décomposer une demande fonctionnelle en pages et composants HTML sémantiques.
+- Construire une interface responsive avec une hiérarchie visuelle cohérente.
+- Utiliser JavaScript pour rechercher, filtrer et trier des films.
+- Charger des données depuis une API ou un jeu de données local documenté.
+- Tester les principaux parcours et publier le projet avec des instructions claires.
+
+## Cours
+
+### Définir le modèle de données
+
+Avant de construire l’interface, décrivez les informations utiles pour un film. Un objet homogène facilite l’affichage et permet aux fonctions de recherche et de tri de manipuler une forme prévisible.
+
+```javascript
+const film = {
+  id: 'film-001',
+  title: 'Titre du film',
+  year: 2024,
+  director: 'Nom du réalisateur',
+  rating: 8.1,
+  posterUrl: '',
+};
+```
+
+### Filtrer et trier une collection
+
+`filter` produit une nouvelle collection sans modifier l’originale. La recherche doit normaliser la casse afin qu’une différence de majuscule ne masque pas un résultat.
+
+```javascript
+function searchFilms(films, query) {
+  const normalizedQuery = query.trim().toLocaleLowerCase('fr');
+  return films.filter((film) =>
+    film.title.toLocaleLowerCase('fr').includes(normalizedQuery),
+  );
+}
+```
+
+### Organiser l’interface et les états
+
+Séparez les responsabilités : la recherche collecte une entrée, la liste présente les films, et une fiche détaille un résultat. Prévoyez aussi un état vide, un état de chargement et un message d’erreur si les données viennent d’un service distant.
+
+```html
+<main>
+  <section aria-labelledby="library-title">
+    <h1 id="library-title">Ma bibliothèque</h1>
+    <label for="film-search">Rechercher un film</label>
+    <input id="film-search" type="search">
+    <p id="result-status" aria-live="polite"></p>
+    <ul id="film-list"></ul>
+  </section>
+</main>
+```
+
+## Exercices
+
+<Exercise n="7.1" title="Créer la collection initiale">
+Créez un tableau d’au moins cinq films. Chaque objet contient un identifiant stable, un titre, une année et un réalisateur.
+
+<Solution>
+
+```javascript
+const films = [
+  { id: 'film-1', title: 'Premier film', year: 2021, director: 'Réalisatrice A' },
+  { id: 'film-2', title: 'Deuxième film', year: 2022, director: 'Réalisateur B' },
+  { id: 'film-3', title: 'Troisième film', year: 2023, director: 'Réalisatrice C' },
+  { id: 'film-4', title: 'Quatrième film', year: 2020, director: 'Réalisateur D' },
+  { id: 'film-5', title: 'Cinquième film', year: 2024, director: 'Réalisatrice E' },
+];
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="7.2" title="Rechercher dans les titres">
+Écrivez une fonction qui renvoie les films dont le titre contient le texte recherché, sans tenir compte des majuscules ni des espaces en début et en fin.
+
+<Solution>
+
+```javascript
+function searchFilms(films, query) {
+  const term = query.trim().toLocaleLowerCase('fr');
+  return films.filter((film) =>
+    film.title.toLocaleLowerCase('fr').includes(term),
+  );
+}
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="7.3" title="Ajouter les filtres et le tri">
+Ajoutez un filtre par année et un tri alphabétique. La combinaison des filtres doit laisser le tableau de départ inchangé.
+</Exercise>
+
+<Exercise n="7.4" title="Publier et documenter">
+Publiez le projet sur GitHub Pages. Le dépôt doit contenir des instructions d’installation, les sources de données et les limites connues.
+</Exercise>
+
+## Livrable
+
+Publiez une bibliothèque de films responsive avec recherche, filtre par année, tri, fiche détail et état vide. Ajoutez une courte documentation décrivant les choix techniques, la source des données et les étapes de lancement.
+
+<Callout type="tip">
+Commencez par une version fonctionnelle avec peu de films. Validez le parcours de recherche de bout en bout avant d’ajouter des filtres ou des détails visuels.
+</Callout>

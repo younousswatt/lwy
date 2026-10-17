@@ -1,0 +1,106 @@
+# JavaScript — DOM
+
+Le DOM représente un document HTML sous forme d’objets que JavaScript peut lire et modifier en réponse aux actions de l’utilisateur.
+
+## Objectifs
+
+- Sélectionner des éléments avec les méthodes du DOM.
+- Réagir à une interaction en enregistrant un écouteur d’événement.
+- Créer, modifier et supprimer des éléments de manière contrôlée.
+- Lire une valeur de formulaire et mettre à jour la page sans rechargement.
+- Concevoir une todo-list utilisable au clavier.
+
+## Cours
+
+### Sélectionner et modifier un élément
+
+`querySelector` renvoie le premier élément correspondant à un sélecteur CSS. `textContent` modifie du texte sans l’interpréter comme du HTML. Cette propriété est adaptée aux données saisies par une personne.
+
+```javascript
+const heading = document.querySelector('h1');
+
+if (heading) {
+  heading.textContent = 'Liste de tâches';
+}
+```
+
+### Écouter un événement
+
+Un écouteur associe une fonction à un événement. Dans un formulaire, l’événement `submit` permet de centraliser le traitement et `preventDefault()` évite le rechargement standard de la page.
+
+```javascript
+const form = document.querySelector('#task-form');
+
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  console.log('Formulaire envoyé');
+});
+```
+
+### Créer et retirer des éléments
+
+Créez un nœud avec `createElement`, affectez son contenu, puis insérez-le avec `append`. Évitez de construire du HTML à partir d’une chaîne contenant des données saisies.
+
+```javascript
+const item = document.createElement('li');
+item.textContent = 'Relire les notes';
+document.querySelector('#tasks').append(item);
+```
+
+## Exercices
+
+<Exercise n="5.1" title="Réagir au clic d’un bouton">
+Sélectionnez un bouton et augmentez un compteur affiché dans un élément de texte à chaque clic. L’événement doit être traité avec `addEventListener`.
+
+<Solution>
+
+```javascript
+const button = document.querySelector('#increment');
+const output = document.querySelector('#count');
+let count = 0;
+
+button.addEventListener('click', () => {
+  count += 1;
+  output.textContent = String(count);
+});
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="5.2" title="Ajouter une tâche depuis un formulaire">
+Au moment de la soumission, lisez la valeur d’un champ, empêchez le rechargement, ajoutez la tâche à la liste, puis videz le champ.
+
+<Solution>
+
+```javascript
+const form = document.querySelector('#task-form');
+const input = document.querySelector('#task-input');
+const list = document.querySelector('#tasks');
+
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const title = input.value.trim();
+  if (!title) return;
+
+  const item = document.createElement('li');
+  item.textContent = title;
+  list.append(item);
+  input.value = '';
+});
+```
+
+</Solution>
+</Exercise>
+
+<Exercise n="5.3" title="Ajouter la suppression d’une tâche">
+Ajoutez à chaque tâche un bouton de suppression avec un nom accessible. Une activation retire uniquement la tâche concernée.
+</Exercise>
+
+## Livrable
+
+Développez une todo-list permettant d’ajouter, de marquer comme terminée et de supprimer des tâches. Les commandes doivent être accessibles au clavier et la page doit annoncer clairement les champs et les actions.
+
+<Callout type="tip">
+Pour les éléments répétés, envisagez un écouteur sur leur conteneur parent : la délégation d’événements réduit le nombre d’écouteurs à gérer.
+</Callout>
