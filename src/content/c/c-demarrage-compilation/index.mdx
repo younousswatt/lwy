@@ -1,0 +1,146 @@
+# Démarrer avec C et la compilation
+
+Le C est un langage compilé, proche du fonctionnement de la machine et largement utilisé pour les systèmes embarqués, les bibliothèques et les outils bas niveau. Ce module introduit la chaîne de compilation, la structure minimale d'un programme et les premières entrées-sorties.
+
+## Objectifs
+
+- Installer ou repérer un compilateur C et le vérifier depuis le terminal.
+- Distinguer préprocesseur, compilation, édition de liens et exécution.
+- Écrire un programme C minimal avec `main`.
+- Compiler avec des avertissements utiles.
+- Lire les entrées et produire une sortie simple.
+- Organiser fichiers source et exécutables.
+
+## Prérequis
+
+- Aucun prérequis de programmation.
+- Un terminal, un éditeur de code et un compilateur C, par exemple GCC, Clang ou MSVC.
+
+## Cours
+
+### Installer et vérifier les outils
+
+GCC et Clang sont disponibles sur de nombreux systèmes Unix et via des distributions adaptées à Windows. MSVC fournit le compilateur de Microsoft. Vérifiez le compilateur réellement utilisé :
+
+```bash
+gcc --version
+clang --version
+```
+
+Installez un seul outil au départ et suivez ses instructions officielles pour configurer le terminal. Une installation de compilateur inclut aussi des en-têtes et un éditeur de liens : la seule présence de l'exécutable ne garantit pas que tout est correctement configuré.
+
+### Premier programme
+
+```c
+#include <stdio.h>
+
+int main(void)
+{
+    puts("Bonjour, monde !");
+    return 0;
+}
+```
+
+`#include` demande au préprocesseur de rendre disponibles les déclarations du fichier d'en-tête. `stdio.h` déclare notamment `puts`. `main` est le point d'entrée du programme. La valeur retournée indique son statut au système, où zéro désigne la réussite.
+
+### Compiler et exécuter
+
+Avec GCC ou Clang :
+
+```bash
+gcc -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow bonjour.c -o bonjour
+./bonjour
+```
+
+Sur PowerShell, l'exécutable généré peut s'appeler `bonjour.exe` :
+
+```powershell
+.\bonjour.exe
+```
+
+Le compilateur traite le code source puis l'éditeur de liens produit un programme exécutable. Les avertissements ne remplacent pas les tests, mais révèlent de nombreuses erreurs évitables. Corrigez-les au lieu de les désactiver.
+
+### Entrées-sorties élémentaires
+
+`printf` affiche des valeurs et `fgets` lit une ligne bornée :
+
+```c
+#include <stdio.h>
+
+int main(void)
+{
+    char nom[100];
+
+    printf("Votre nom : ");
+    if (fgets(nom, sizeof nom, stdin) == NULL) {
+        fputs("Lecture impossible.\n", stderr);
+        return 1;
+    }
+
+    printf("Bonjour %s", nom);
+    return 0;
+}
+```
+
+La capacité du tableau est fournie à `fgets`. N'utilisez pas `gets`, qui ne permet pas de borner la lecture et a été supprimée du langage. Les chaînes C devront être étudiées plus en détail après les types et les tableaux.
+
+### Erreurs de compilation
+
+- Une erreur de syntaxe empêche le compilateur d'analyser le programme.
+- Une erreur de déclaration indique souvent un en-tête oublié ou une faute de nom.
+- Une erreur d'édition de liens survient lorsqu'une définition nécessaire manque.
+- Un avertissement révèle une construction suspecte qui peut compiler malgré tout.
+
+Examinez la première erreur signalée puis recompilé : les erreurs suivantes peuvent être des conséquences de la première.
+
+<Callout type="tip">
+Compilez fréquemment avec le niveau d'avertissements maximal adapté à votre compilateur. Un programme sans avertissement est plus facile à maintenir, mais doit encore être vérifié à l'exécution.
+</Callout>
+
+## Erreurs fréquentes
+
+**Oublier l'en-tête**
+
+Les fonctions standard doivent être déclarées par le bon en-tête. N'inventez pas une déclaration manuellement pour faire taire le compilateur.
+
+**Oublier le point-virgule**
+
+Les instructions C se terminent généralement par `;`. La ligne indiquée par le compilateur n'est pas toujours celle où commence la faute.
+
+**Exécuter un ancien binaire**
+
+Après une compilation échouée, l'exécutable précédent peut toujours exister. Vérifiez que la compilation réussit avant de l'exécuter.
+
+**Lire une entrée sans limite**
+
+N'utilisez jamais une fonction qui lit une chaîne sans connaître la capacité du tableau de destination.
+
+## Exercices
+
+<Exercise n="1.1" title="Compiler le premier programme">
+Créez un fichier `bonjour.c`, affichez deux lignes, compilez-le en C17 avec des avertissements et exécutez-le.
+</Exercise>
+
+<Solution>
+Utilisez `#include <stdio.h>`, définissez `int main(void)`, appelez `puts` deux fois puis retournez zéro. Compilez avec `gcc -std=c17 -Wall -Wextra -Wpedantic bonjour.c -o bonjour` ou l'équivalent Clang.
+</Solution>
+
+<Exercise n="1.2" title="Lire une ligne de façon bornée">
+Demandez le prénom de l'utilisateur, lisez au plus la capacité du tableau et affichez un message d'erreur si la lecture échoue.
+</Exercise>
+
+<Solution>
+Déclarez par exemple `char prenom[80]`, affichez la demande puis vérifiez le retour de `fgets(prenom, sizeof prenom, stdin)`. Sur `NULL`, écrivez l'erreur sur `stderr` et renvoyez un statut non nul.
+</Solution>
+
+<Exercise n="1.3" title="Diagnostiquer un échec de compilation">
+Introduisez une faute de syntaxe, observez le diagnostic, corrigez-la et expliquez pourquoi il faut vérifier le code de retour avant de lancer le programme.
+</Exercise>
+
+<Solution>
+Le compilateur retourne un échec et ne produit pas nécessairement un nouvel exécutable. Un ancien binaire peut encore être présent : vérifiez le succès de la compilation avant l'exécution pour ne pas confondre les versions.
+</Solution>
+
+## Livrable
+
+Un programme C compilé en C17 avec avertissements activés, qui affiche un message, lit une entrée bornée et traite explicitement l'échec de lecture.

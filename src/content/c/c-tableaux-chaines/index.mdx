@@ -1,0 +1,158 @@
+# Tableaux et chaînes de caractères en C
+
+Les tableaux C contiennent des éléments contigus de même type. Ils ne mémorisent pas automatiquement leur longueur. Les chaînes ajoutent une convention de terminaison par zéro. Ce module apprend à respecter ces contrats et à éviter les lectures et écritures hors limites.
+
+## Objectifs
+
+- Déclarer, initialiser et parcourir des tableaux.
+- Transmettre la longueur d'un tableau à une fonction.
+- Comprendre les tableaux multidimensionnels et les indices valides.
+- Manipuler des chaînes C terminées par `'\0'`.
+- Employer des fonctions de `<string.h>` sans dépasser les buffers.
+- Lire et traiter des lignes de texte avec une capacité connue.
+
+## Prérequis
+
+- Types, boucles et fonctions.
+
+## Cours
+
+### Déclarer et parcourir un tableau
+
+```c
+int notes[] = {12, 17, 14};
+size_t longueur = sizeof notes / sizeof notes[0];
+
+for (size_t i = 0; i < longueur; i++) {
+    printf("%d\n", notes[i]);
+}
+```
+
+`sizeof` mesure les octets de son opérande. L'expression ci-dessus calcule le nombre d'éléments uniquement tant que `notes` est encore un tableau dans cette portée. Lorsque le tableau est passé à une fonction, il est ajusté en pointeur : transmettez sa longueur séparément.
+
+```c
+int somme(const int valeurs[], size_t longueur)
+{
+    int resultat = 0;
+    for (size_t i = 0; i < longueur; i++) {
+        resultat += valeurs[i];
+    }
+    return resultat;
+}
+```
+
+Le qualificateur `const` exprime que cette fonction ne modifie pas les éléments.
+
+### Tableaux multidimensionnels
+
+```c
+int grille[2][3] = {
+    {1, 2, 3},
+    {4, 5, 6},
+};
+printf("%d\n", grille[1][2]);
+```
+
+L'accès `grille[1][2]` est valide ici. Chaque dimension a une borne distincte. Dans une fonction, les dimensions autres que la première doivent être connues dans le type paramètre ou représentées autrement.
+
+### Chaînes terminées par zéro
+
+Une chaîne C est un tableau de caractères dont le dernier élément est `'\0'`. Il faut réserver une case supplémentaire par rapport au nombre de caractères du texte :
+
+```c
+char nom[6] = "Ada";
+```
+
+Cette déclaration réserve six caractères, dont le terminateur. `strlen` compte les caractères avant le terminateur, sans compter cette case.
+
+Les littéraux de chaîne ne doivent pas être modifiés. Pour une valeur modifiable, utilisez un tableau suffisamment grand.
+
+### Fonctions de `<string.h>`
+
+`strlen`, `strcmp` et `strchr` servent à examiner des chaînes. `strcpy` et `strcat` n'acceptent aucune capacité de destination et ne doivent être utilisés que si la taille a été démontrée suffisante.
+
+```c
+#include <string.h>
+
+if (strcmp(reponse, "oui") == 0) {
+    puts("Confirmation");
+}
+```
+
+Ne comparez pas deux chaînes avec `==` : cela compare des adresses et non les caractères. `strcmp` renvoie zéro lorsque les chaînes sont égales.
+
+### Lire une ligne en sécurité
+
+```c
+char ligne[128];
+
+if (fgets(ligne, sizeof ligne, stdin) == NULL) {
+    fputs("Lecture impossible.\n", stderr);
+    return 1;
+}
+```
+
+`fgets` lit au plus capacité moins un caractères et termine la chaîne. Si la ligne est plus longue, elle peut être lue en plusieurs morceaux : décidez si vous devez la rejeter ou consommer le reste du flux.
+
+Pour retirer un saut de ligne éventuel, recherchez-le avec `strchr` :
+
+```c
+char *saut = strchr(ligne, '\n');
+if (saut != NULL) {
+    *saut = '\0';
+}
+```
+
+Ne présumez pas que la ligne est terminée par `'\n'` : le buffer peut avoir été rempli avant la fin de la ligne.
+
+<Callout type="warn">
+Un accès hors limites ou une chaîne sans terminateur entraîne un comportement indéfini. C vérifie peu de bornes automatiquement : transmettez les capacités et choisissez des fonctions de lecture bornées.
+</Callout>
+
+## Erreurs fréquentes
+
+**Calculer `sizeof` dans une fonction**
+
+Le paramètre tableau devient un pointeur et `sizeof parametre` donne la taille du pointeur, pas celle du tableau d'origine.
+
+**Oublier l'octet nul**
+
+Un buffer de `n` caractères de texte doit réserver au moins `n + 1` cases pour le terminateur.
+
+**Comparer des chaînes avec `==`**
+
+Utilisez `strcmp` et vérifiez son résultat égal à zéro.
+
+**Utiliser l'index égal à la taille**
+
+Les indices valides vont de zéro à longueur moins un. La condition de parcours est `i < longueur`.
+
+## Exercices
+
+<Exercise n="5.1" title="Calculer le minimum et le maximum">
+Écrivez une fonction qui parcourt un tableau d'entiers de longueur fournie et retourne son minimum et son maximum sans modifier les valeurs.
+</Exercise>
+
+<Solution>
+Retournez une erreur si le pointeur de tableau ou les sorties sont nulles ou si la longueur est nulle. Initialisez les deux résultats à la première valeur, puis parcourez les éléments restants avec `i < longueur`.
+</Solution>
+
+<Exercise n="5.2" title="Compter les voyelles d'une ligne">
+Lisez une ligne dans un buffer borné, retirez éventuellement le saut de ligne et comptez les voyelles minuscules.
+</Exercise>
+
+<Solution>
+Parcourez la chaîne jusqu'à `'\0'`, puis utilisez une condition explicite qui compare le caractère à `a`, `e`, `i`, `o` et `u`. Vérifiez le retour de `fgets` avant le parcours.
+</Solution>
+
+<Exercise n="5.3" title="Comparer deux chaînes">
+Lisez deux noms dans des tableaux bornés, comparez-les avec `strcmp` et affichez un message sans utiliser `==` pour les chaînes.
+</Exercise>
+
+<Solution>
+Vérifiez les deux lectures, supprimez les sauts de ligne présents et testez `strcmp(nom1, nom2) == 0`. Les tableaux doivent être initialisés par les lectures avant toute comparaison.
+</Solution>
+
+## Livrable
+
+Un analyseur de texte qui lit une ligne bornée, calcule des statistiques élémentaires et traite les cas de lignes absentes ou trop longues.

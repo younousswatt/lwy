@@ -1,0 +1,158 @@
+# Conditions et boucles en C
+
+Les conditions et répétitions permettent de traduire un algorithme en décisions explicites. Ce module travaille les branchements, les boucles et les contrôles d'entrée en construisant des programmes déterministes et faciles à tester.
+
+## Objectifs
+
+- Écrire des conditions avec `if`, `else if`, `else` et `switch`.
+- Construire des boucles `for`, `while` et `do while`.
+- Utiliser `break` et `continue` à bon escient.
+- Valider des entrées et définir des bornes de boucle.
+- Éviter les erreurs de décalage d'indice et les boucles infinies.
+
+## Prérequis
+
+- Variables, expressions, comparaisons et entrées-sorties en C.
+
+## Cours
+
+### Conditions
+
+```c
+if (note >= 16) {
+    puts("Très bien");
+} else if (note >= 10) {
+    puts("Admis");
+} else {
+    puts("À retravailler");
+}
+```
+
+Une condition évalue zéro comme faux et une valeur non nulle comme vraie. Utilisez les opérateurs de comparaison explicites pour rendre l'intention lisible.
+
+`switch` convient à plusieurs choix discrets :
+
+```c
+switch (commande) {
+    case 1:
+        puts("Ajouter");
+        break;
+    case 2:
+        puts("Lister");
+        break;
+    default:
+        puts("Commande inconnue");
+        break;
+}
+```
+
+Sans `break`, l'exécution continue dans le cas suivant. Cet enchaînement n'est utile que s'il est intentionnel.
+
+### Boucle `for`
+
+La boucle `for` convient lorsque l'initialisation, la condition et la progression sont connues :
+
+```c
+for (int i = 0; i < 5; i++) {
+    printf("%d\n", i);
+}
+```
+
+L'index prend successivement les valeurs de zéro à quatre. La borne supérieure est exclue. Cette forme évite fréquemment un accès au-delà de la dernière case d'un tableau.
+
+### Boucles conditionnelles
+
+`while` vérifie sa condition avant chaque tour :
+
+```c
+int compteur = 3;
+while (compteur > 0) {
+    printf("%d\n", compteur);
+    compteur--;
+}
+```
+
+`do while` exécute le corps au moins une fois :
+
+```c
+int choix;
+do {
+    puts("1. Continuer  0. Quitter");
+    if (scanf("%d", &choix) != 1) {
+        return 1;
+    }
+} while (choix != 0 && choix != 1);
+```
+
+Chaque boucle doit avoir un chemin de terminaison clair.
+
+### Validation et bornes
+
+Ne traitez pas une valeur avant d'avoir vérifié l'entrée et sa plage. Pour des tableaux, la condition doit garantir `i < longueur`, jamais `i <= longueur`.
+
+Si `scanf` échoue, l'entrée problématique peut rester dans le flux. Pour des interfaces robustes, utilisez `fgets` pour lire la ligne entière et traitez-la séparément au lieu de répéter indéfiniment le même `scanf`.
+
+### `break` et `continue`
+
+`break` quitte la boucle ou le `switch` courant. `continue` passe à l'itération suivante. Utilisez-les lorsque le flux reste simple à suivre ; des sorties dispersées peuvent rendre les boucles difficiles à vérifier.
+
+```c
+for (int i = 1; i <= 10; i++) {
+    if (i % 2 != 0) {
+        continue;
+    }
+    printf("%d\n", i);
+}
+```
+
+## Erreurs fréquentes
+
+**Confondre `=` et `==`**
+
+`=` affecte une valeur et `==` compare deux expressions. Les avertissements du compilateur peuvent repérer une affectation accidentelle dans une condition.
+
+**Écrire une condition avec une borne incorrecte**
+
+Pour un tableau de longueur `n`, le dernier indice valide est `n - 1`. La condition d'itération usuelle est `i < n`.
+
+**Oublier de faire progresser la boucle**
+
+Vérifiez que chaque chemin du corps mène vers une mise à jour ou une sortie.
+
+**Répéter une lecture invalide sans vider l'entrée**
+
+Une conversion échouée peut laisser la même entrée à traiter. Préférez une lecture de ligne avec `fgets` pour contrôler le cycle de saisie.
+
+<Callout type="tip">
+Testez les limites : zéro, une valeur minimale, une valeur maximale et une valeur immédiatement à l'extérieur de la plage.
+</Callout>
+
+## Exercices
+
+<Exercise n="3.1" title="Classer une note">
+Lisez une note entière de 0 à 20, vérifiez la saisie et affichez une appréciation avec des conditions.
+</Exercise>
+
+<Solution>
+Vérifiez d'abord que `scanf` retourne 1, puis que la note est comprise entre 0 et 20 inclus. Utilisez une chaîne de `if` / `else if` / `else` pour sélectionner une appréciation.
+</Solution>
+
+<Exercise n="3.2" title="Additionner les entiers d'une plage">
+Demandez une borne entière positive puis calculez la somme de 1 jusqu'à cette borne avec une boucle.
+</Exercise>
+
+<Solution>
+Initialisez la somme à zéro et parcourez les valeurs de 1 à la borne incluse. Vérifiez le résultat et choisissez un type suffisamment grand pour éviter le débordement pour la plage annoncée.
+</Solution>
+
+<Exercise n="3.3" title="Créer un jeu de devinettes">
+Choisissez une constante secrète, donnez au joueur cinq essais et indiquez si chaque proposition est trop petite ou trop grande.
+</Exercise>
+
+<Solution>
+Utilisez une boucle bornée sur cinq tours, validez chaque lecture, comparez la proposition à la valeur secrète et utilisez `break` en cas de réussite. Après la boucle, distinguez victoire et épuisement des essais.
+</Solution>
+
+## Livrable
+
+Un jeu de devinettes en console avec limite d'essais, contrôles d'entrée et tests des bornes.

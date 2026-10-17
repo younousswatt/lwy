@@ -1,0 +1,152 @@
+# Templates, erreurs et fichiers en C++
+
+Les templates permettent de généraliser des fonctions et classes tout en conservant le contrôle des types à la compilation. Les fichiers et erreurs nécessitent des contrats précis pour que les programmes résistent aux entrées invalides.
+
+## Objectifs
+
+- Écrire une fonction template simple.
+- Comprendre l'instanciation et les diagnostics de templates.
+- Lancer et traiter une exception avec un contrat clair.
+- Lire et écrire des fichiers avec les flux standard.
+- Distinguer données absentes, données invalides et erreurs système.
+- Éviter de masquer les exceptions inattendues.
+
+## Prérequis
+
+- Classes, RAII, conteneurs et algorithmes standard.
+
+## Cours
+
+### Fonction template
+
+```cpp
+template <typename T>
+const T& minimum(const T& gauche, const T& droite)
+{
+    return droite < gauche ? droite : gauche;
+}
+```
+
+Le compilateur instancie une version compatible avec les types utilisés. Les opérations requises sur le type doivent être disponibles. Les définitions de templates sont souvent placées dans des en-têtes, car elles doivent être visibles à l'instanciation.
+
+La référence retournée par `minimum` est sûre uniquement si les arguments référencés vivent assez longtemps. Ne passez pas des temporaires si le résultat est conservé au-delà de l'expression ; retournez une valeur dans les cas où la propriété simplifie le contrat.
+
+### Contraindre les templates
+
+Un template générique n'accepte pas automatiquement tous les types. C++20 fournit les concepts pour exprimer une contrainte :
+
+```cpp
+#include <concepts>
+
+template <std::totally_ordered T>
+T minimumValeur(T gauche, T droite)
+{
+    return droite < gauche ? droite : gauche;
+}
+```
+
+Une contrainte précise l'exigence et améliore les diagnostics. N'introduisez pas un template lorsque quelques fonctions clairement nommées suffisent.
+
+### Exceptions et erreurs
+
+Une exception est adaptée à un échec que l'appelant doit traiter et que la signature par valeur de retour ne représente pas naturellement :
+
+```cpp
+if (!fichier) {
+    throw std::runtime_error("Impossible d'ouvrir le fichier");
+}
+```
+
+Un gestionnaire ciblé traite uniquement les erreurs prévues :
+
+```cpp
+try {
+    chargerCatalogue(chemin);
+} catch (const std::ios_base::failure& erreur) {
+    std::cerr << erreur.what() << '\n';
+}
+```
+
+N'attrapez pas toutes les exceptions pour les ignorer. À la frontière du programme, une erreur inattendue doit au minimum être signalée et produire un code d'échec.
+
+### Flux de fichiers
+
+```cpp
+#include <fstream>
+#include <stdexcept>
+
+std::ifstream fichier{"livres.txt"};
+if (!fichier) {
+    throw std::runtime_error("Ouverture impossible");
+}
+
+std::string ligne;
+while (std::getline(fichier, ligne)) {
+    // Valider puis traiter la ligne.
+}
+if (fichier.bad()) {
+    throw std::runtime_error("Erreur de lecture");
+}
+```
+
+La fin normale du fichier place le flux dans un état qui rend la boucle fausse. `bad()` aide à distinguer une erreur d'E/S grave d'une fin ordinaire. Validez le format de chaque enregistrement.
+
+### En-têtes et templates
+
+Les définitions des templates doivent généralement être visibles depuis les sites d'utilisation. Placez-les dans un `.hpp` ou séparez explicitement l'interface et l'implémentation incluse depuis l'en-tête. Les fonctions non templates peuvent rester dans des fichiers `.cpp`.
+
+### Format et compatibilité
+
+Un format de fichier destiné à évoluer devrait porter une version et définir le traitement des champs inconnus ou invalides. Les fichiers texte sont faciles à inspecter, mais nécessitent une stratégie d'échappement des séparateurs et retours à la ligne.
+
+<Callout type="info">
+Les erreurs de format, les fichiers manquants et les pannes d'E/S représentent des situations différentes. Définissez lesquelles créent un catalogue vide, lesquelles interrompent le traitement et lesquelles peuvent être corrigées par l'utilisateur.
+</Callout>
+
+## Erreurs fréquentes
+
+**Retourner une référence vers une valeur temporaire**
+
+La référence devient pendante. Retournez une valeur ou documentez strictement la durée de vie requise.
+
+**Attraper `std::exception` partout**
+
+Un large `catch` au milieu du programme peut cacher un défaut. Attrapez des erreurs précises au niveau où elles peuvent être traitées.
+
+**Considérer toute fin de flux comme une panne**
+
+Une fin de fichier normale termine une boucle de lecture; une erreur de lecture doit être détectée séparément.
+
+**Mettre les templates dans un `.cpp` invisible**
+
+Les sites d'instanciation doivent voir la définition, sauf si des instanciations explicites ont été organisées.
+
+## Exercices
+
+<Exercise n="6.1" title="Écrire un template de recherche">
+Écrivez un template qui recherche une valeur dans une séquence d'itérateurs et retourne l'itérateur trouvé ou la fin de la séquence.
+</Exercise>
+
+<Solution>
+Une fonction template reçoit deux itérateurs et une valeur, puis délègue à `std::find`. Incluez `<algorithm>` et gardez la définition visible dans l'en-tête.
+</Solution>
+
+<Exercise n="6.2" title="Lire un catalogue avec diagnostics">
+Lisez un fichier ligne par ligne, validez chaque enregistrement et indiquez son numéro si son format est invalide.
+</Exercise>
+
+<Solution>
+Incrémentez un compteur de lignes, analysez chaque champ avec une stratégie vérifiable et renvoyez un diagnostic contenant le chemin et le numéro de ligne. Distinguez erreur de format et erreur système de lecture.
+</Solution>
+
+<Exercise n="6.3" title="Définir une stratégie d'erreurs">
+Déterminez quelles erreurs du catalogue deviennent des exceptions, quelles erreurs ont une valeur de retour et où les erreurs inattendues sont signalées.
+</Exercise>
+
+<Solution>
+Documentez le contrat de chaque fonction. Une absence ordinaire peut être représentée par `std::optional`, une violation de précondition par une exception, et une panne de lecture par une erreur explicite. À la frontière CLI, affichez un message et retournez un statut non nul.
+</Solution>
+
+## Livrable
+
+Une bibliothèque de recherche générique et un module de chargement de catalogue avec format documenté et diagnostics contextualisés.

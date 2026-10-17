@@ -1,0 +1,143 @@
+# Classes et encapsulation en C++
+
+Une classe définit un invariant et les opérations permises sur ses données. Ce module distingue interface publique et état privé, et applique l'initialisation moderne pour construire des objets toujours cohérents.
+
+## Objectifs
+
+- Définir une classe et contrôler ses membres avec `public` et `private`.
+- Initialiser les membres avec une liste d'initialisation.
+- Établir et préserver des invariants.
+- Définir des méthodes `const`.
+- Comprendre constructeurs et destruction.
+- Séparer interface et implémentation.
+
+## Prérequis
+
+- Types, fonctions, références et const-correctness.
+
+## Cours
+
+### Définir une classe
+
+```cpp
+#include <string>
+
+class Livre {
+public:
+    Livre(int identifiant, std::string titre)
+        : id_{identifiant}, titre_{std::move(titre)}
+    {
+    }
+
+    int id() const { return id_; }
+    const std::string& titre() const { return titre_; }
+
+private:
+    int id_;
+    std::string titre_;
+};
+```
+
+Les membres privés protègent l'état contre des modifications arbitraires. Les méthodes `const` promettent de ne pas modifier l'objet. Incluez `<utility>` si vous utilisez `std::move`.
+
+### Constructeur et invariants
+
+Un constructeur prépare tous les membres. Les listes d'initialisation sont la manière directe d'initialiser les membres :
+
+```cpp
+Compte(int numero, double soldeInitial)
+    : numero_{numero}, solde_{soldeInitial}
+{
+    if (soldeInitial < 0.0) {
+        throw std::invalid_argument("Le solde initial doit être positif");
+    }
+}
+```
+
+Incluez `<stdexcept>` pour `std::invalid_argument`. Une classe doit empêcher les états invalides ou documenter clairement ses préconditions. Une méthode de dépôt doit valider le montant avant de modifier le solde.
+
+L'ordre d'initialisation suit l'ordre de déclaration des membres dans la classe, pas l'ordre écrit dans la liste. Déclarez les membres dans un ordre qui rend cette règle claire.
+
+### Visibilité et interface
+
+Les opérations nécessaires au client sont `public`. Les données internes et auxiliaires sont `private`. N'exposez pas des setters pour chaque champ si cela permet de briser un invariant.
+
+```cpp
+class Compte {
+public:
+    explicit Compte(double soldeInitial);
+    bool deposer(double montant);
+    double solde() const;
+
+private:
+    double solde_;
+};
+```
+
+`explicit` empêche certaines conversions implicites involontaires lors de la construction.
+
+### Fichier d'en-tête et implémentation
+
+`compte.hpp` déclare la classe; `compte.cpp` définit ses méthodes. Utilisez `#pragma once` si le projet l'adopte, ou des gardes d'inclusion classiques. N'écrivez pas `using namespace std;` dans un en-tête public, car cela pollue l'espace de noms de tous les appelants.
+
+### Comparaison et affichage
+
+Définissez une opération de comparaison uniquement si elle a un sens métier clair. En C++20, l'opérateur de comparaison à trois voies peut être utile, mais il ne remplace pas une réflexion sur les membres qui devraient participer à l'égalité.
+
+Préférez une fonction de formatage ou un opérateur de flux adapté au besoin plutôt qu'une méthode qui écrit directement sur la sortie standard.
+
+### Composition avant héritage
+
+Une classe de bibliothèque peut contenir une collection de livres et déléguer l'affichage à ses éléments. La composition exprime souvent mieux « possède un » que l'héritage. Réservez l'héritage aux relations de substitution réellement nécessaires, étudiées dans les architectures qui en ont besoin.
+
+<Callout type="info">
+Une classe utile protège ses invariants et offre une interface petite et cohérente. Ajouter une classe autour de chaque type simple n'améliore pas automatiquement le programme.
+</Callout>
+
+## Erreurs fréquentes
+
+**Laisser les données publiques sans nécessité**
+
+Les appelants peuvent créer un état incohérent sans passer par les validations.
+
+**Initialiser les membres dans le corps sans raison**
+
+Préférez les listes d'initialisation; certains membres ne peuvent être qu'initialisés et non affectés ensuite.
+
+**Oublier `const` sur une méthode de lecture**
+
+La méthode ne peut alors pas être appelée sur un objet constant.
+
+**Utiliser l'héritage pour réutiliser quelques lignes**
+
+La composition ou une fonction partagée est souvent plus claire qu'une relation artificielle entre classes.
+
+## Exercices
+
+<Exercise n="3.1" title="Créer une classe Compte">
+Créez une classe `Compte` avec un solde privé, un constructeur qui refuse un solde initial négatif et une méthode `solde()` constante.
+</Exercise>
+
+<Solution>
+Initialisez le membre dans la liste d'initialisation, vérifiez la valeur et lancez `std::invalid_argument` si elle est négative. La méthode de lecture retourne le solde et porte le qualificatif `const`.
+</Solution>
+
+<Exercise n="3.2" title="Préserver l'invariant d'un dépôt">
+Ajoutez une méthode de dépôt qui refuse un montant nul ou négatif et ne modifie pas le solde lorsqu'il est invalide.
+</Exercise>
+
+<Solution>
+Vérifiez le montant avant l'addition. Retournez un résultat explicite ou lancez une exception selon le contrat, sans altérer l'état en cas d'échec.
+</Solution>
+
+<Exercise n="3.3" title="Séparer déclaration et définition">
+Placez une classe dans un en-tête et ses méthodes dans un `.cpp`. Compilez le tout avec un fichier `main.cpp`.
+</Exercise>
+
+<Solution>
+L'en-tête contient la déclaration de classe et sa garde d'inclusion. Le `.cpp` inclut cet en-tête et définit les méthodes avec `Compte::`. Chaque unité inclut la même interface publique.
+</Solution>
+
+## Livrable
+
+Un modèle de compte ou de livre qui protège son état, valide ses invariants et expose une interface documentée.

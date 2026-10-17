@@ -1,0 +1,140 @@
+# Tests, débogage et qualité C++
+
+Les tests et outils de construction rendent les changements vérifiables. Ce module met en place une compilation reproductible, des tests unitaires et des outils qui détectent erreurs mémoire et comportements indéfinis.
+
+## Objectifs
+
+- Organiser un build multi-fichier avec CMake.
+- Compiler avec un standard explicite et des avertissements.
+- Écrire des tests reproductibles sans dépendance au réseau.
+- Utiliser assertions, débogueur et sanitizers.
+- Contrôler les ressources et les erreurs de compilation.
+- Distinguer tests unitaires et tests d'intégration.
+
+## Prérequis
+
+- Templates, fichiers, classes et bibliothèques standard.
+
+## Cours
+
+### CMake minimal
+
+Un `CMakeLists.txt` déclare la version minimale, le projet, le standard et les cibles :
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(catalogue LANGUAGES CXX)
+
+add_executable(catalogue
+    src/main.cpp
+    src/catalogue.cpp
+)
+target_compile_features(catalogue PRIVATE cxx_std_20)
+target_compile_options(catalogue PRIVATE
+    -Wall -Wextra -Wpedantic
+)
+```
+
+Les options de compilation montrées conviennent aux compilateurs GCC/Clang; elles ne sont pas portables telles quelles à MSVC. Dans un projet multi-compilateur, appliquez des options par compilateur ou adoptez une cible d'avertissements partagée.
+
+Configurez et construisez dans un dossier séparé :
+
+```bash
+cmake -S . -B build
+cmake --build build
+```
+
+Ne versionnez pas le dossier généré.
+
+### Tests déterministes
+
+Un test vérifie un contrat à partir de données connues :
+
+```cpp
+#include <cassert>
+
+void test_recherche()
+{
+    Catalogue catalogue;
+    catalogue.ajouter(Livre{"Dune", "Frank Herbert"});
+    assert(catalogue.contient("Dune"));
+    assert(!catalogue.contient("Inconnu"));
+}
+```
+
+`assert` convient aux exemples élémentaires, mais peut être désactivé en compilation de production. Pour une suite durable, utilisez un framework de test et assurez-vous que les assertions restent actives dans la configuration de test.
+
+### Tests de fichiers
+
+Les tests de stockage utilisent des chemins temporaires uniques et nettoient leurs fichiers. Ne dépendez pas d'un fichier personnel ni d'un ordre d'exécution. Testez création, relecture, format invalide, permissions impossibles à simuler et absence de fichier selon le contrat.
+
+### Sanitizers et débogueur
+
+Avec GCC ou Clang, les sanitizers de mémoire et comportement indéfini aident à détecter des défauts :
+
+```bash
+g++ -std=c++20 -g -fsanitize=address,undefined -fno-omit-frame-pointer src/*.cpp -o catalogue
+```
+
+Utilisez `gdb` ou `lldb` pour examiner un arrêt et une pile d'appels. Les commandes et options varient selon la plateforme. Les sanitizers ne trouvent que les erreurs activées par les scénarios exécutés.
+
+### Qualité et conception
+
+- Activez des avertissements appropriés et traitez-les.
+- Évitez les conversions implicites qui changent la valeur.
+- Faites respecter les invariants dans les classes.
+- Utilisez RAII pour les ressources.
+- Réduisez les dépendances globales.
+- Testez erreurs et entrées limites.
+
+<Callout type="tip">
+Un build propre depuis un nouveau dossier est une vérification importante : il révèle les dépendances cachées vers des artefacts anciens présents dans votre répertoire de travail.
+</Callout>
+
+## Erreurs fréquentes
+
+**Construire depuis un ancien dossier configuré**
+
+Les fichiers générés peuvent cacher une configuration manquante. Testez un dossier neuf lorsque le projet change.
+
+**Désactiver les avertissements pour obtenir un build vert**
+
+Les avertissements signalent des risques; comprenez-les et corrigez leur cause.
+
+**Utiliser un test dépendant de l'ordre**
+
+Chaque test doit créer et nettoyer son propre état.
+
+**Penser qu'un sanitizer prouve l'absence de défaut**
+
+Il ne détecte que certains problèmes durant l'exécution des chemins réellement testés.
+
+## Exercices
+
+<Exercise n="7.1" title="Construire avec CMake">
+Créez un projet CMake qui compile plusieurs fichiers et active C++20. Construisez dans un dossier séparé et supprimez ce dossier avant de refaire une configuration propre.
+</Exercise>
+
+<Solution>
+Déclarez chaque fichier source dans une cible, utilisez `target_compile_features`, puis lancez `cmake -S . -B build` et `cmake --build build`. Le dossier de build est généré et doit rester séparé des sources.
+</Solution>
+
+<Exercise n="7.2" title="Tester les règles métier">
+Écrivez des tests pour ajout, recherche, entrée invalide et suppression. Chaque test doit fonctionner indépendamment.
+</Exercise>
+
+<Solution>
+Créez un catalogue frais dans chaque test, vérifiez résultat et état après l'opération, puis utilisez un test distinct pour les erreurs. N'utilisez pas de données ou fichiers partagés non réinitialisés.
+</Solution>
+
+<Exercise n="7.3" title="Rechercher une erreur mémoire">
+Compilez un scénario de test avec AddressSanitizer et UndefinedBehaviorSanitizer lorsque votre compilateur les prend en charge. Corrigez chaque rapport confirmé.
+</Exercise>
+
+<Solution>
+Ajoutez les options de sanitizers à une configuration de développement, exécutez des scénarios qui couvrent les chemins concernés et analysez la première trace signalée. Les options ne sont pas universelles et doivent être adaptées au compilateur.
+</Solution>
+
+## Livrable
+
+Un projet CMake reproductible avec tests unitaires, avertissements activés et procédure de validation documentée.

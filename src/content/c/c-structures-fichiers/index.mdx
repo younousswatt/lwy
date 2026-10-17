@@ -1,0 +1,166 @@
+# Structures, fichiers et modules en C
+
+Les structures regroupent des valeurs liées. Les fichiers permettent de conserver des données entre exécutions et les en-têtes séparent les interfaces des implémentations. Ce module combine ces concepts sans masquer les erreurs d'entrée-sortie.
+
+## Objectifs
+
+- Définir et initialiser une `struct`.
+- Passer des structures par valeur et par pointeur.
+- Ouvrir, lire, écrire et fermer des fichiers.
+- Vérifier les erreurs et les capacités des buffers.
+- Diviser un programme en `.h` et `.c`.
+- Compiler plusieurs unités de traduction.
+
+## Prérequis
+
+- Fonctions, tableaux, chaînes, pointeurs et allocation dynamique.
+
+## Cours
+
+### Définir une structure
+
+```c
+typedef struct {
+    unsigned int id;
+    char nom[80];
+    char email[120];
+} Contact;
+```
+
+La structure stocke ses membres ensemble. Initialisez les objets de façon explicite :
+
+```c
+Contact contact = {
+    .id = 1,
+    .nom = "Ada Lovelace",
+    .email = "ada@example.test",
+};
+```
+
+Accédez à un membre avec `.` et à un membre via un pointeur avec `->`. Une structure contenant des tableaux fixes se copie par affectation, mais cela ne s'applique pas aux ressources dynamiques détenues par pointeurs sans une politique de copie définie.
+
+### Ouvrir un fichier
+
+`fopen` retourne un pointeur ou `NULL`. Vérifiez l'ouverture et fermez tout flux ouvert :
+
+```c
+FILE *fichier = fopen("contacts.txt", "r");
+if (fichier == NULL) {
+    perror("contacts.txt");
+    return 1;
+}
+```
+
+Les modes usuels sont `"r"` pour lecture, `"w"` pour créer ou tronquer, `"a"` pour ajouter et leurs variantes binaires. Choisissez le mode avec soin : `"w"` détruit le contenu existant.
+
+### Lire des lignes
+
+```c
+char ligne[256];
+while (fgets(ligne, sizeof ligne, fichier) != NULL) {
+    fputs(ligne, stdout);
+}
+
+if (ferror(fichier)) {
+    perror("lecture");
+    fclose(fichier);
+    return 1;
+}
+
+if (fclose(fichier) == EOF) {
+    perror("fermeture");
+    return 1;
+}
+```
+
+Une ligne plus longue que le buffer peut arriver en plusieurs lectures. Définissez si le format autorise cette situation et détectez-la lorsque chaque enregistrement doit tenir sur une ligne.
+
+### Écrire un fichier
+
+`fprintf` peut écrire des valeurs formatées, mais chaque opération et la fermeture peuvent échouer. Le succès du `fprintf` ne garantit pas nécessairement que les données ont atteint le support avant la fermeture.
+
+Écrivez d'abord vers un fichier temporaire dans le même dossier, vérifiez l'écriture et la fermeture, puis remplacez le fichier de données selon les garanties de la plateforme si une sauvegarde résistante aux interruptions est nécessaire.
+
+### En-têtes et implémentations
+
+`contact.h` déclare le type et les opérations publiques :
+
+```c
+#ifndef CONTACT_H
+#define CONTACT_H
+
+typedef struct {
+    unsigned int id;
+    char nom[80];
+} Contact;
+
+void contact_afficher(const Contact *contact);
+
+#endif
+```
+
+`contact.c` inclut son en-tête et fournit la définition. `main.c` inclut l'interface et appelle les fonctions. Chaque `.c` est compilé séparément puis les objets sont liés :
+
+```bash
+gcc -std=c17 -Wall -Wextra -Wpedantic -c contact.c
+gcc -std=c17 -Wall -Wextra -Wpedantic -c main.c
+gcc contact.o main.o -o carnet
+```
+
+Les prototypes de l'en-tête et les définitions doivent avoir des types identiques. Évitez de définir les mêmes symboles globaux dans plusieurs unités de traduction.
+
+### Format de fichier
+
+Avant de sérialiser une structure brute, réfléchissez au padding, à l'endianness, à la version du format et aux tailles des types. Un fichier texte documenté est souvent plus facile à inspecter pour un premier projet. La lecture d'un fichier binaire n'est pas une garantie que les octets sont fiables.
+
+<Callout type="tip">
+Toujours vérifier les retours de `fopen`, `fgets`, `fprintf` et `fclose`. Une erreur de stockage doit être signalée à l'utilisateur ; elle ne doit pas se transformer en succès apparent.
+</Callout>
+
+## Erreurs fréquentes
+
+**Utiliser `while (!feof(fichier))`**
+
+`feof` devient vrai seulement après une tentative de lecture qui a atteint la fin. Testez directement le résultat de `fgets` ou de la fonction de lecture.
+
+**Oublier de fermer le fichier**
+
+Tout chemin après ouverture doit fermer le flux. Les ressources doivent être libérées même lors d'une erreur.
+
+**Tronquer le fichier accidentellement**
+
+Le mode `"w"` remplace le contenu. Choisissez `"a"` ou une stratégie temporaire si vous devez conserver les données.
+
+**Redéclarer différemment un prototype**
+
+Centralisez la déclaration dans un en-tête inclus par l'implémentation et les appelants.
+
+## Exercices
+
+<Exercise n="7.1" title="Définir et afficher un contact">
+Définissez une structure de contact avec identifiant, nom et adresse. Écrivez une fonction qui affiche un contact via un pointeur constant et gère un pointeur nul.
+</Exercise>
+
+<Solution>
+Déclarez `void contact_afficher(const Contact *contact)`. Vérifiez `contact != NULL`, puis affichez chaque membre avec des spécificateurs correspondant à leurs types.
+</Solution>
+
+<Exercise n="7.2" title="Sauvegarder des enregistrements texte">
+Écrivez une fonction qui sauvegarde une liste de contacts, vérifie chaque opération et ferme le fichier même si une écriture échoue.
+</Exercise>
+
+<Solution>
+Vérifiez `fopen`, inspectez le retour de chaque écriture, mémorisez l'échec, puis appelez toujours `fclose` sur le flux ouvert. Retournez un statut qui distingue réussite et erreur.
+</Solution>
+
+<Exercise n="7.3" title="Compiler séparément un projet">
+Déplacez le modèle et ses fonctions dans un module comprenant un `.h` et un `.c`. Compilez ces fichiers avec `main.c` et supprimez tout prototype dupliqué.
+</Exercise>
+
+<Solution>
+L'en-tête définit ses gardes, publie le type et les prototypes. L'implémentation inclut cet en-tête et contient les définitions. Compilez chaque `.c` et liez les objets, ou donnez tous les sources à une commande GCC unique.
+</Solution>
+
+## Livrable
+
+Un carnet de contacts modulaire qui conserve des enregistrements dans un fichier et signale explicitement les erreurs de lecture et d'écriture.

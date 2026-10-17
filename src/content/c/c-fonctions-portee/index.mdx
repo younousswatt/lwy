@@ -1,0 +1,164 @@
+# Fonctions et portée en C
+
+Les fonctions découpent un programme en opérations nommées, réutilisables et testables. En C, la déclaration d'une fonction et sa définition ont des rôles distincts : comprendre les prototypes est essentiel pour structurer un programme et plusieurs fichiers.
+
+## Objectifs
+
+- Déclarer et définir une fonction.
+- Passer des arguments et retourner un résultat.
+- Comprendre le passage des valeurs et des adresses.
+- Utiliser la portée locale, globale et la durée de stockage `static`.
+- Écrire des fonctions avec contrats et paramètres validés.
+- Préparer des fonctions pour une compilation séparée.
+
+## Prérequis
+
+- Conditions, boucles, variables et types C.
+
+## Cours
+
+### Prototype et définition
+
+Le prototype annonce au compilateur le nom, le type de retour et les paramètres :
+
+```c
+int maximum(int gauche, int droite);
+```
+
+La définition fournit le corps :
+
+```c
+int maximum(int gauche, int droite)
+{
+    return gauche > droite ? gauche : droite;
+}
+```
+
+Un programme peut placer le prototype avant `main` et la définition après `main`. Le type de retour doit correspondre exactement. Une fonction sans valeur retournée utilise `void`.
+
+### Paramètres et retour
+
+En C, les arguments sont passés par valeur : la fonction reçoit une copie :
+
+```c
+void incrementer(int valeur)
+{
+    valeur++;
+}
+```
+
+L'appel ne modifie pas la variable originale. Pour modifier une valeur de l'appelant, transmettez son adresse et déclarez un paramètre pointeur :
+
+```c
+void incrementer(int *valeur)
+{
+    if (valeur != NULL) {
+        (*valeur)++;
+    }
+}
+```
+
+Appelez avec `incrementer(&compteur)`. Les pointeurs et leurs risques seront détaillés dans leur module dédié.
+
+### Contrat de fonction
+
+Une fonction doit préciser les entrées acceptées, son résultat et le traitement des erreurs. Si une division reçoit un dénominateur nul, définissez une stratégie explicite :
+
+```c
+#include <stdbool.h>
+
+bool diviser(double numerateur, double denominateur, double *resultat)
+{
+    if (resultat == NULL || denominateur == 0.0) {
+        return false;
+    }
+    *resultat = numerateur / denominateur;
+    return true;
+}
+```
+
+Le résultat booléen indique le succès et le pointeur de sortie reçoit la valeur seulement si l'opération est possible.
+
+### Portée et durée de vie
+
+Une variable déclarée dans un bloc a une portée locale à ce bloc et cesse d'exister à la sortie. Une variable globale a une portée plus large, mais un état global modifiable rend les dépendances difficiles à repérer.
+
+`static` sur une variable locale conserve sa valeur entre les appels :
+
+```c
+unsigned int prochain_numero(void)
+{
+    static unsigned int numero = 0;
+    return ++numero;
+}
+```
+
+Cette fonction possède un état implicite et n'est pas réentrante de manière générale. Préférez transmettre explicitement l'état lorsqu'il doit être contrôlé ou partagé.
+
+### Récursivité
+
+Une fonction récursive se rappelle avec un problème plus petit et doit avoir un cas de base :
+
+```c
+unsigned long factorielle(unsigned int n)
+{
+    if (n <= 1U) {
+        return 1UL;
+    }
+    return n * factorielle(n - 1U);
+}
+```
+
+La factorielle déborde rapidement la capacité des types entiers. Dans un vrai programme, vérifiez les bornes avant le calcul. Une solution itérative évite également la consommation de pile liée aux appels récursifs.
+
+### Interfaces de fonctions
+
+Un prototype peut être déclaré dans un fichier d'en-tête inclus par les fichiers clients. Les en-têtes décrivent l'interface publique et doivent protéger leurs inclusions répétées avec des gardes. L'implémentation reste dans un fichier `.c`, sujet étudié dans le module consacré aux modules.
+
+## Erreurs fréquentes
+
+**Oublier le prototype**
+
+Déclarez la fonction avant son utilisation. Une fonction qui retourne un type incorrect provoque une erreur de compilation ou une interprétation erronée du résultat.
+
+**Confondre copie et adresse**
+
+Un argument scalaire passé par valeur ne modifie pas la variable de l'appelant. Utilisez un pointeur seulement lorsque l'opération a besoin d'écrire dans cette variable.
+
+**Retourner l'adresse d'une variable locale**
+
+La durée de vie de cette variable se termine au retour. Son adresse ne peut pas être utilisée de façon valide après l'appel.
+
+**Utiliser trop d'état global**
+
+Les entrées d'une fonction doivent être visibles dans ses paramètres lorsque cela est possible. Les dépendances implicites compliquent les tests.
+
+## Exercices
+
+<Exercise n="4.1" title="Écrire une fonction de maximum">
+Déclarez et définissez une fonction qui retourne le maximum de deux entiers. Appelez-la depuis `main` avec plusieurs cas.
+</Exercise>
+
+<Solution>
+Le prototype est `int maximum(int gauche, int droite);`. La définition retourne le plus grand argument et `main` vérifie deux valeurs où le premier puis le second argument gagne, ainsi qu'une égalité.
+</Solution>
+
+<Exercise n="4.2" title="Retourner plusieurs résultats">
+Écrivez une fonction qui calcule quotient et reste d'une division entière. Elle doit signaler un dénominateur nul sans produire de résultat invalide.
+</Exercise>
+
+<Solution>
+Utilisez un résultat booléen, vérifiez les pointeurs de sortie et le dénominateur, puis écrivez les valeurs dans les sorties seulement en cas de succès. L'appelant vérifie le booléen avant d'utiliser quotient et reste.
+</Solution>
+
+<Exercise n="4.3" title="Découper un programme en fonctions">
+Transformez un programme de calcul en au moins trois fonctions, chacune avec une responsabilité claire, des paramètres explicites et un retour documenté.
+</Exercise>
+
+<Solution>
+Une fonction peut valider les bornes, une autre calculer le résultat et une dernière présenter le menu. `main` orchestre le programme sans contenir tous les détails.
+</Solution>
+
+## Livrable
+
+Une bibliothèque de fonctions de calcul avec prototypes, contrats documentés et tests des cas limites.

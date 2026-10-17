@@ -1,0 +1,143 @@
+# Tests et qualité d'une application Angular
+
+Une application maintenable se vérifie à plusieurs niveaux : tests unitaires de logique, tests de composants, vérifications de compilation et contrôle manuel de l'accessibilité. Ce module établit une stratégie ciblée, sans confondre couverture mesurée et confiance fonctionnelle.
+
+## Objectifs
+
+- Lire et exécuter les tests générés par Angular CLI.
+- Tester un service isolément et un composant dans TestBed.
+- Simuler un événement utilisateur sans dépendre de l'implémentation interne.
+- Tester les états HTTP avec un contrôleur de requêtes.
+- Utiliser les diagnostics du compilateur et la construction de production.
+- Vérifier les critères d'accessibilité et les parcours essentiels.
+
+## Prérequis
+
+- Formulaires réactifs, services, routeur et HTTP.
+
+## Cours
+
+### Lancer les tests du projet
+
+Angular CLI configure un outil de test en fonction de la version et du générateur. Examinez les scripts de `package.json` et utilisez la commande créée par le projet :
+
+```bash
+npm test
+npm run build
+```
+
+Certains projets utilisent un mode sans interface graphique ou un exécuteur différent. Ne remplacez pas l'outillage avant d'avoir compris le script existant.
+
+### Tester un service
+
+Un service pur ou un service de données peut être instancié par TestBed. Vérifiez les comportements observables et les cas limites, pas la structure privée de l'objet.
+
+```typescript
+describe("CatalogueService", () => {
+  let service: CatalogueService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(CatalogueService);
+  });
+
+  it("refuse un titre vide", () => {
+    expect(() => service.ajouter(" ", "Auteur")).toThrow();
+  });
+});
+```
+
+Si le service dépend d'une API, remplacez cette dépendance par un faux adapté ou utilisez les outils de test HTTP.
+
+### Tester un composant standalone
+
+Le TestBed importe directement un composant standalone :
+
+```typescript
+await TestBed.configureTestingModule({
+  imports: [FormulaireLivreComponent],
+}).compileComponents();
+
+const fixture = TestBed.createComponent(FormulaireLivreComponent);
+fixture.detectChanges();
+```
+
+Le `fixture` donne accès au composant et à son DOM de test. Déclenchez une action utilisateur, exécutez la détection des changements, puis vérifiez le comportement visible. Préférez des sélecteurs accessibles ou des attributs stables aux détails de classes CSS accidentels.
+
+```typescript
+const bouton = fixture.nativeElement.querySelector("button[type=submit]");
+expect(bouton.disabled).toBeTrue();
+```
+
+Les APIs d'assertion peuvent varier selon l'environnement choisi; suivez les conventions présentes dans le dépôt.
+
+### Tester les cas importants
+
+Pour un formulaire, vérifiez au minimum l'état initial, une valeur invalide, une valeur valide et l'effet de la soumission. Pour le routeur, vérifiez les principales navigations. Pour le service HTTP, vérifiez l'URL, la méthode, les paramètres et le traitement d'erreur.
+
+Les tests ne doivent pas dépendre d'un ordre global ni d'un vrai backend. Chaque test doit créer les données et dépendances nécessaires et nettoyer ses ressources.
+
+### Compilation stricte et qualité
+
+La compilation détecte les types incompatibles et plusieurs erreurs de template. Exécutez le build de production avant livraison. Traitez les avertissements pertinents plutôt que de les cacher et utilisez le débogueur du navigateur pour confirmer les comportements réellement observés.
+
+Contrôlez aussi :
+
+- libellés de champs associés ;
+- navigation clavier et focus visible ;
+- titres cohérents ;
+- messages de chargement et d'erreur ;
+- taille initiale et chargement différé ;
+- affichage avec des données absentes ou lentes.
+
+<Callout type="tip">
+Un test utile exprime un contrat : « après cette action, l'utilisateur voit ce résultat ». Évitez de tester une fonction interne simplement parce qu'elle existe si aucun comportement important n'en dépend.
+</Callout>
+
+## Erreurs fréquentes
+
+**Tester seulement le chemin heureux**
+
+Les données absentes, erreurs réseau, entrées invalides et états de chargement sont des situations normales à tester.
+
+**Tester l'implémentation interne**
+
+Un test qui inspecte le nom d'une variable privée devient fragile. Testez les sorties et interactions observables.
+
+**Ignorer les tests asynchrones**
+
+Attendez explicitement la compilation du composant et la réponse simulée. Sinon, le test peut terminer avant l'assertion.
+
+**Assimiler couverture et qualité**
+
+La couverture indique quelles lignes ont été exécutées, pas si les attentes métier sont correctes.
+
+## Exercices
+
+<Exercise n="7.1" title="Tester un formulaire invalide et valide">
+Testez que la soumission invalide ne transmet rien au service, puis qu'une soumission valide transmet les valeurs attendues.
+</Exercise>
+
+<Solution>
+Injectez un service espion, créez le composant avec TestBed et déclenchez le gestionnaire de soumission. Commencez avec des champs invalides et vérifiez zéro appel. Renseignez ensuite des valeurs valides, soumettez et vérifiez l'appel et son objet de données.
+</Solution>
+
+<Exercise n="7.2" title="Tester une réponse HTTP et une erreur">
+Simulez une réponse réussie et une réponse en erreur du service API. Vérifiez que l'interface affiche un résultat dans le premier cas et un message explicite dans le second.
+</Exercise>
+
+<Solution>
+Utilisez le contrôleur HTTP de test pour terminer la requête avec une réponse valide, puis avec une erreur contrôlée dans un test séparé. Vérifiez les états visibles après chaque réponse et assurez-vous que les requêtes restantes sont vérifiées.
+</Solution>
+
+<Exercise n="7.3" title="Vérifier un parcours clavier">
+Parcourez la page de bibliothèque au clavier. Notez l'ordre de focus, les noms accessibles des actions et les erreurs qui ne peuvent être comprises qu'à la couleur.
+</Exercise>
+
+<Solution>
+Utilisez Tab et Maj+Tab, vérifiez que chaque action a un élément sémantique et un nom compréhensible, et que le focus reste visible. Associez les erreurs de formulaire à leurs champs et fournissez un message textuel.
+</Solution>
+
+## Livrable
+
+Une suite de tests ciblée sur services, formulaires et HTTP, accompagnée d'une vérification de build et d'une courte checklist d'accessibilité.

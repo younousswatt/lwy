@@ -1,0 +1,131 @@
+# Projet final — Tableau de bord Angular
+
+Le projet final assemble les compétences du parcours dans une application de suivi de lectures. Le tableau de bord permet d'afficher, d'ajouter, de filtrer et de consulter des livres, puis d'expliquer clairement les états de chargement et d'erreur lors d'une recherche distante.
+
+## Objectifs
+
+- Définir une architecture de routes et composants standalone.
+- Partager et encapsuler l'état avec des services.
+- Valider les données saisies avec un formulaire réactif.
+- Consommer une API HTTP et gérer les erreurs de façon visible.
+- Ajouter des tests aux règles métier et parcours essentiels.
+- Vérifier accessibilité, construction et documentation.
+
+## Prérequis
+
+- Tous les modules précédents du parcours Angular.
+
+## Cours
+
+### Cahier des charges
+
+L'application doit inclure :
+
+- une page d'accueil présentant les indicateurs principaux ;
+- un catalogue avec recherche et filtre par état de lecture ;
+- un formulaire d'ajout avec validations ;
+- une page de détail navigable par identifiant ;
+- un service qui détient les opérations et l'état de la bibliothèque ;
+- une fonctionnalité de recherche distante, ou une source simulée documentée si aucune API publique fiable n'est disponible ;
+- tests, messages d'erreur et documentation d'installation.
+
+La recherche distante enrichit l'application, mais les fonctionnalités locales doivent rester utilisables quand le réseau est indisponible.
+
+### Architecture recommandée
+
+```text
+src/app/
+├── core/
+│   └── livres-api.service.ts
+├── livres/
+│   ├── data/
+│   │   └── catalogue.service.ts
+│   ├── pages/
+│   │   ├── liste-livres.component.ts
+│   │   └── detail-livre.component.ts
+│   └── ui/
+│       └── carte-livre.component.ts
+├── accueil/
+│   └── accueil.component.ts
+├── app.routes.ts
+└── app.config.ts
+```
+
+Évitez de multiplier les dossiers si le projet reste petit. Chaque dossier doit représenter une responsabilité ou une fonctionnalité claire.
+
+### Modèle et état
+
+Définissez un modèle `Livre` avec identifiant, titre, auteur, état de lecture et éventuellement une date. Le service de catalogue expose l'état en lecture seule et fournit des opérations telles qu'ajout, suppression, marquage comme lu et recherche locale.
+
+Gardez les identifiants uniques. Validez les valeurs avant de modifier l'état. Ne partagez pas la même instance d'objet entre plusieurs couches si une mutation pourrait surprendre les vues.
+
+### Parcours utilisateur
+
+Le parcours d'ajout commence par un formulaire valide, transmet les valeurs au service, puis réinitialise les champs après succès. La suppression doit demander confirmation si l'action est difficilement réversible. La page de détail doit gérer un identifiant incorrect ou absent.
+
+La recherche distante montre son état de chargement, ses résultats, une liste vide ou une erreur récupérable. Une erreur réseau ne doit pas effacer les livres locaux.
+
+### Tests et qualité
+
+Testez les règles du service, la validation du formulaire, la présentation des états asynchrones et les navigations principales. Les tests HTTP utilisent des réponses contrôlées. Ajoutez un scénario manuel clavier et testez un écran étroit.
+
+Avant livraison :
+
+```bash
+npm test
+npm run build
+```
+
+Les commandes exactes de test dépendent de la configuration créée par Angular CLI. Documentez la version de Node compatible, l'installation, le démarrage et les tests.
+
+<Callout type="info">
+Un tableau de bord complet ne nécessite pas une architecture surdimensionnée. Commencez par les parcours utilisateur, puis introduisez une abstraction seulement lorsque plusieurs responsabilités ou écrans la justifient.
+</Callout>
+
+## Erreurs fréquentes
+
+**Faire dépendre toutes les pages d'un seul composant**
+
+Une page trop chargée rend les règles difficiles à tester et les états difficiles à comprendre. Séparez les composants selon les parcours et responsabilités réels.
+
+**Confondre état vide et échec réseau**
+
+Un résultat vide est une réponse valide, tandis qu'une erreur réseau empêche la recherche. Affichez des messages et actions différents pour ces états.
+
+**Ne tester que le rendu initial**
+
+Les formulaires invalides, identifiants inconnus, suppressions et réponses HTTP lentes font partie du comportement attendu.
+
+**Laisser des données sensibles côté client**
+
+Une application navigateur ne peut pas protéger un secret d'API privé. N'y incluez pas de clés secrètes.
+
+## Exercices
+
+<Exercise n="8.1" title="Planifier les écrans et les routes">
+Établissez la liste des écrans, leurs URL, les données dont ils ont besoin et les états vides ou en erreur à couvrir. Identifiez les composants réutilisables.
+</Exercise>
+
+<Solution>
+Un plan minimal comprend `/` pour l'accueil, `/livres` pour le catalogue et `/livres/:id` pour le détail. Le formulaire peut être intégré à la liste ou disposer d'une route dédiée. Prévoyez une route inconnue, un détail inexistant et les états chargement, vide et erreur de la recherche distante.
+</Solution>
+
+<Exercise n="8.2" title="Réaliser les fonctionnalités de bibliothèque">
+Implémentez l'ajout, la consultation, le filtrage et la suppression dans un service partagé. Créez un formulaire réactif accessible et une carte livre réutilisable.
+</Exercise>
+
+<Solution>
+Le service détient la source d'état et applique les mutations de manière immuable. Le formulaire vérifie les champs avant l'ajout. La carte reçoit un livre via input et émet les actions via output. Les labels identifient les champs et les actions disposent d'un texte explicite.
+</Solution>
+
+<Exercise n="8.3" title="Finaliser recherche, tests et documentation">
+Ajoutez la recherche distante avec états explicites, écrivez des tests de service et de formulaire, vérifiez le build et documentez le lancement ainsi que les limites de l'API.
+</Exercise>
+
+<Solution>
+Le service HTTP expose un observable et la page gère chargement, résultat vide, succès et erreur. Utilisez HttpTestingController pour les appels réseau simulés. Les tests de formulaire vérifient les cas valides et invalides. Le README précise prérequis, installation, démarrage, tests et configuration éventuelle de l'API.
+</Solution>
+
+## Livrable
+
+Un tableau de bord Angular responsive et documenté, doté de routes, d'un catalogue de lectures, d'un formulaire validé, d'une recherche asynchrone testée et d'un build de production réussi.

@@ -1,0 +1,231 @@
+# Composants et templates Angular
+
+Un composant Angular associe une classe à un template. Ce module détaille la liaison des données, les événements, le contrôle de flux moderne, les signaux et la communication entre composants. Vous construirez un catalogue réutilisable plutôt qu'un long template monolithique.
+
+## Objectifs
+
+- Afficher des valeurs avec l'interpolation et la liaison de propriétés.
+- Réagir aux événements utilisateur.
+- Afficher des collections et des conditions avec `@for` et `@if`.
+- Employer les signaux pour représenter un état local réactif.
+- Séparer un composant de page de composants de présentation.
+- Transmettre des données avec `input` et remonter des événements avec `output`.
+
+## Prérequis
+
+- Composants standalone et notions TypeScript du module précédent.
+
+## Cours
+
+### Templates et interpolations
+
+L'interpolation affiche une valeur calculée par le composant. Elle doit représenter du texte, pas construire une chaîne de code ou injecter du HTML arbitraire.
+
+```typescript
+export class AccueilComponent {
+  titre = "Ma bibliothèque";
+  total = 3;
+}
+```
+
+```html
+<h1>{{ titre }}</h1>
+<p>{{ total }} livres enregistrés</p>
+```
+
+La liaison de propriété transmet une valeur à une propriété DOM ou à un input de composant :
+
+```html
+<button [disabled]="total === 0">Exporter</button>
+<img [src]="couvertureUrl" [alt]="'Couverture de ' + livre.titre">
+```
+
+Les expressions de template sont volontairement limitées. Gardez les transformations métier dans TypeScript ou dans des pipes adaptés.
+
+### Événements
+
+Les parenthèses déclarent un gestionnaire d'événement :
+
+```html
+<button type="button" (click)="incrementer()">Ajouter</button>
+```
+
+```typescript
+export class CompteurComponent {
+  total = 0;
+
+  incrementer(): void {
+    this.total += 1;
+  }
+}
+```
+
+La liaison bidirectionnelle `[(ngModel)]` est pratique pour certaines interfaces, mais exige le module `FormsModule`. Pour des formulaires structurés et validés, préférez les formulaires réactifs abordés dans le module consacré.
+
+### Contrôle de flux
+
+Angular moderne fournit `@if` et `@for` dans les templates :
+
+```html
+@if (livres.length === 0) {
+  <p>Aucun livre pour le moment.</p>
+} @else {
+  <ul>
+    @for (livre of livres; track livre.id) {
+      <li>{{ livre.titre }} — {{ livre.auteur }}</li>
+    }
+  </ul>
+}
+```
+
+`track livre.id` permet de relier chaque ligne à une identité stable. Choisissez un identifiant réellement unique et durable, pas l'index si la collection peut être réordonnée ou modifiée.
+
+### État réactif avec les signaux
+
+Un signal contient une valeur observable par les templates et calcule ses changements de façon explicite :
+
+```typescript
+import { Component, computed, signal } from "@angular/core";
+
+@Component({
+  selector: "app-liste-livres",
+  standalone: true,
+  template: `
+    <p>{{ livres().length }} livres</p>
+    <p>{{ livresLus() }} terminés</p>
+    <button type="button" (click)="ajouterExemple()">Ajouter un livre</button>
+  `,
+})
+export class ListeLivresComponent {
+  livres = signal([
+    { id: 1, titre: "Dune", lu: false },
+  ]);
+  livresLus = computed(() => this.livres().filter((livre) => livre.lu).length);
+
+  ajouterExemple(): void {
+    this.livres.update((liste) => [
+      ...liste,
+      { id: 2, titre: "Fondation", lu: false },
+    ]);
+  }
+}
+```
+
+Lisez un signal en l'appelant. Utilisez `set` pour remplacer sa valeur et `update` pour dériver la nouvelle valeur de l'ancienne. `computed` décrit un état dérivé sans le dupliquer.
+
+### Composants enfants, inputs et outputs
+
+Un composant de carte reçoit le livre à afficher et signale une action au parent :
+
+```typescript
+import { Component, input, output } from "@angular/core";
+
+interface Livre {
+  id: number;
+  titre: string;
+}
+
+@Component({
+  selector: "app-carte-livre",
+  standalone: true,
+  template: `
+    <article>
+      <h3>{{ livre().titre }}</h3>
+      <button type="button" (click)="supprimer.emit(livre().id)">Supprimer</button>
+    </article>
+  `,
+})
+export class CarteLivreComponent {
+  livre = input.required<Livre>();
+  supprimer = output<number>();
+}
+```
+
+Le composant parent utilise l'input avec une liaison de propriété et écoute l'output :
+
+```html
+<app-carte-livre
+  [livre]="livre"
+  (supprimer)="retirerLivre($event)"
+/>
+```
+
+Les composants standalone importent explicitement les composants et directives utilisés dans leur template.
+
+### Séparer présentation et comportement
+
+Conservez la collection, les règles de modification et les décisions de page dans un composant de conteneur. La carte enfant se concentre sur l'affichage d'un livre et émet une intention. Cette séparation simplifie la réutilisation et les tests.
+
+Utilisez des éléments HTML natifs et des libellés explicites pour les interactions. Un bouton doit avoir une action, un lien doit naviguer et les icônes décoratives doivent être masquées aux technologies d'assistance.
+
+<Callout type="tip">
+Préférez des noms d'inputs qui décrivent les données et des outputs qui décrivent l'événement émis, comme `livre` et `supprimer`. Le parent reste responsable de la mutation de sa collection.
+</Callout>
+
+## Erreurs fréquentes
+
+**Oublier l'appel des signaux**
+
+Dans un template, affichez `livres()` et non la fonction signal `livres`. Le signal est une source de valeur réactive.
+
+**Modifier directement une collection dans un signal**
+
+Une mutation interne comme `push` ne déclenche pas nécessairement le changement attendu. Employez `update` et renvoyez une nouvelle collection.
+
+**Utiliser l'index comme identité stable**
+
+Après un tri ou une suppression, l'index représente un autre livre. Suivez chaque entrée avec une clé unique.
+
+**Mettre toute la logique dans le template**
+
+Les templates doivent rester lisibles. Déplacez les règles et transformations non triviales dans le composant ou un service.
+
+## Exercices
+
+<Exercise n="2.1" title="Afficher une collection de livres">
+Déclarez une collection de livres typés et affichez leurs titres avec `@for`. Affichez un message distinct lorsque la liste est vide et utilisez l'identifiant pour le suivi.
+</Exercise>
+
+<Solution>
+```html
+@if (livres().length === 0) {
+  <p>La bibliothèque est vide.</p>
+} @else {
+  @for (livre of livres(); track livre.id) {
+    <article><h2>{{ livre.titre }}</h2></article>
+  }
+}
+```
+
+La propriété `livres` peut être un signal typé. Chaque livre doit avoir un identifiant stable.
+</Solution>
+
+<Exercise n="2.2" title="Créer une carte réutilisable">
+Créez un composant `CarteLivre` qui reçoit un livre obligatoire et émet son identifiant lorsqu'on clique sur un bouton de suppression. Le parent doit retirer le livre concerné.
+</Exercise>
+
+<Solution>
+Déclarez `livre = input.required<Livre>()` et `supprimer = output<number>()`. Le bouton émet `supprimer.emit(livre().id)`. Le parent gère `(supprimer)="retirerLivre($event)"` et met à jour son signal avec `filter`.
+</Solution>
+
+<Exercise n="2.3" title="Ajouter un filtre réactif">
+Ajoutez un signal booléen qui permet d'afficher tous les livres ou uniquement ceux qui ne sont pas encore lus. Calculez la liste visible avec `computed`.
+</Exercise>
+
+<Solution>
+```typescript
+afficherSeulementNonLus = signal(false);
+livresVisibles = computed(() => {
+  const livres = this.livres();
+  return this.afficherSeulementNonLus()
+    ? livres.filter((livre) => !livre.lu)
+    : livres;
+});
+```
+
+Le template parcourt `livresVisibles()`. L'état filtré reste dérivé et n'est pas copié dans une seconde variable modifiable.
+</Solution>
+
+## Livrable
+
+Un catalogue Angular composé d'une page et de cartes de livres réutilisables, avec liste vide, filtres réactifs, ajout et suppression.

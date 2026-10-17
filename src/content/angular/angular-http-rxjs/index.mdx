@@ -1,0 +1,208 @@
+# HTTP, RxJS et données asynchrones
+
+Les applications consomment souvent des données distantes. Ce module relie `HttpClient`, les observables RxJS et l'interface Angular. Il insiste sur les états chargement/succès/erreur, l'annulation des flux devenus inutiles et la validation de données externes.
+
+## Objectifs
+
+- Configurer `HttpClient` dans une application standalone.
+- Construire un service API qui retourne des observables typés.
+- Utiliser les opérateurs RxJS courants et gérer le cycle de vie d'un flux.
+- Présenter chargement, données vides, succès et erreur.
+- Traiter les paramètres, réponses et échecs HTTP.
+- Tester un service HTTP sans appeler un vrai serveur.
+
+## Prérequis
+
+- Services, injection de dépendances et routage.
+- Bases des promesses et de JavaScript asynchrone.
+
+## Cours
+
+### Fournir `HttpClient`
+
+Ajoutez `provideHttpClient()` à la configuration de l'application :
+
+```typescript
+import { ApplicationConfig } from "@angular/core";
+import { provideHttpClient } from "@angular/common/http";
+
+export const appConfig: ApplicationConfig = {
+  providers: [provideHttpClient()],
+};
+```
+
+### Un service API typé
+
+Une API renvoie des données qui doivent correspondre au contrat attendu. Les interfaces TypeScript documentent la forme, mais ne valident pas automatiquement le JSON à l'exécution :
+
+```typescript
+export interface LivreApi {
+  id: number;
+  title: string;
+  author: string;
+}
+```
+
+```typescript
+import { HttpClient } from "@angular/common/http";
+import { Injectable, inject } from "@angular/core";
+import { Observable } from "rxjs";
+
+@Injectable({ providedIn: "root" })
+export class LivresApiService {
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = "https://api.example.test/books";
+
+  rechercher(query: string): Observable<LivreApi[]> {
+    return this.http.get<LivreApi[]>(this.baseUrl, {
+      params: { q: query },
+    });
+  }
+
+  charger(id: number): Observable<LivreApi> {
+    return this.http.get<LivreApi>(`${this.baseUrl}/${id}`);
+  }
+}
+```
+
+Les paramètres sont fournis séparément à `HttpClient`, ce qui assure leur encodage correct. N'insérez jamais de secrets privés dans une application navigateur.
+
+### Observable et abonnement
+
+Un `Observable` décrit une suite de valeurs qui peut produire une valeur, une erreur ou une fin. Les requêtes HTTP Angular s'exécutent lors de l'abonnement et sont annulables au désabonnement.
+
+La pipe transforme le flux sans modifier le service source :
+
+```typescript
+return this.http.get<LivreApi[]>(this.baseUrl).pipe(
+  map((livres) => livres.filter((livre) => livre.title.length > 0)),
+  catchError((erreur: HttpErrorResponse) => {
+    return throwError(() => erreur);
+  }),
+);
+```
+
+N'interceptez pas une erreur en renvoyant silencieusement une collection vide : l'interface ne pourrait plus distinguer « aucune donnée » d'un échec serveur. Convertissez l'erreur en état explicite ou laissez-la remonter vers une couche qui la traite.
+
+### Présenter les états de chargement
+
+Une page doit rendre visibles les différents états :
+
+```typescript
+livres: LivreApi[] = [];
+chargement = false;
+messageErreur: string | null = null;
+
+rechercher(query: string): void {
+  this.chargement = true;
+  this.messageErreur = null;
+
+  this.api.rechercher(query).subscribe({
+    next: (livres) => {
+      this.livres = livres;
+      this.chargement = false;
+    },
+    error: () => {
+      this.messageErreur = "Les livres ne peuvent pas être chargés.";
+      this.chargement = false;
+    },
+  });
+}
+```
+
+Dans une application réelle, évitez de souscrire manuellement à de longs flux sans gestion du cycle de vie. Utilisez `AsyncPipe`, `toSignal` ou des opérateurs de gestion de destruction selon le contexte Angular.
+
+```html
+@if (chargement) {
+  <p role="status">Chargement des livres…</p>
+} @else if (messageErreur) {
+  <p role="alert">{{ messageErreur }}</p>
+} @else if (livres.length === 0) {
+  <p>Aucun résultat.</p>
+} @else {
+  @for (livre of livres; track livre.id) {
+    <article>{{ livre.title }}</article>
+  }
+}
+```
+
+### Opérateurs de flux
+
+- `map` transforme une valeur.
+- `tap` observe une valeur pour un effet secondaire ponctuel, sans la transformer.
+- `catchError` traite ou relaie une erreur.
+- `switchMap` remplace un flux interne par le plus récent, pratique pour une recherche où la dernière saisie prévaut.
+- `debounceTime` attend une pause entre les saisies.
+- `distinctUntilChanged` évite de traiter deux valeurs consécutives identiques.
+
+Évitez les abonnements imbriqués. Composez les flux avec `switchMap` et gardez leur durée de vie explicite.
+
+### Tester le service HTTP
+
+`HttpTestingController` permet d'intercepter les requêtes :
+
+```typescript
+TestBed.configureTestingModule({
+  providers: [
+    provideHttpClient(),
+    provideHttpClientTesting(),
+  ],
+});
+
+const service = TestBed.inject(LivresApiService);
+const httpMock = TestBed.inject(HttpTestingController);
+```
+
+Abonnez-vous au résultat, vérifiez la méthode, l'URL et les paramètres, puis répondez avec `flush`. Terminez chaque test en vérifiant qu'aucune requête inattendue ne reste en attente.
+
+<Callout type="info">
+Les types génériques d'HttpClient facilitent l'édition mais ne vérifient pas les données reçues. Les entrées externes restent non fiables et peuvent nécessiter une validation à l'exécution.
+</Callout>
+
+## Erreurs fréquentes
+
+**Confondre interface TypeScript et validation à l'exécution**
+
+Le générique de `get` n'inspecte pas le JSON. Validez sa structure aux frontières lorsque la fiabilité des données est importante.
+
+**Oublier l'état d'erreur**
+
+Un écran vide après une panne ne dit pas à l'utilisateur si la recherche n'a rien trouvé ou si elle a échoué.
+
+**Créer plusieurs abonnements à la même recherche**
+
+La répétition peut déclencher plusieurs requêtes. Conservez un flux unique et utilisez les opérateurs appropriés.
+
+**Cacher une erreur par une valeur de remplacement**
+
+Une réponse vide en cas d'échec ressemble à un succès. Distinguez les états et affichez un message.
+
+## Exercices
+
+<Exercise n="6.1" title="Créer un service de recherche HTTP">
+Écrivez un service qui interroge une API de livres avec un paramètre de recherche encodé par `HttpClient` et retourne un observable typé.
+</Exercise>
+
+<Solution>
+Utilisez `http.get<LivreApi[]>(url, { params: { q: query } })`. Retournez l'observable au composant au lieu de vous abonner dans le service afin que l'appelant contrôle la durée de vie et la présentation des états.
+</Solution>
+
+<Exercise n="6.2" title="Afficher tous les états de l'écran">
+Présentez un état de chargement, une erreur accessible, un résultat vide et la liste des livres. Vérifiez qu'ils sont mutuellement exclusifs.
+</Exercise>
+
+<Solution>
+Utilisez un état explicite ou une suite de branches `@if` et `@else if`. Le message de chargement peut utiliser `role="status"` et l'erreur `role="alert"`. Effacez l'erreur au lancement d'une nouvelle recherche.
+</Solution>
+
+<Exercise n="6.3" title="Tester une requête sans réseau">
+Utilisez `HttpTestingController` pour vérifier la requête de recherche et retourner une réponse simulée.
+</Exercise>
+
+<Solution>
+Configurez les fournisseurs HTTP et de test, appelez le service, récupérez la requête correspondante, vérifiez sa méthode et ses paramètres, appelez `flush` avec des données simulées, puis vérifiez les requêtes restantes avec `verify`.
+</Solution>
+
+## Livrable
+
+Un explorateur de livres qui interroge une API, traite les erreurs explicitement, distingue les états de l'écran et teste ses requêtes sans accès réseau.

@@ -1,0 +1,146 @@
+# Pointeurs et gestion mémoire en C
+
+Les pointeurs stockent des adresses. Ils permettent aux fonctions de modifier des objets, de parcourir des tableaux et de gérer de la mémoire dynamique. Leur flexibilité exige toutefois de définir clairement propriété, durée de vie et capacité.
+
+## Objectifs
+
+- Comprendre adresse et indirection.
+- Déclarer, initialiser et vérifier les pointeurs.
+- Passer une valeur par adresse.
+- Allouer, redimensionner et libérer de la mémoire.
+- Éviter les fuites, doubles libérations et accès après libération.
+- Documenter qui possède chaque bloc dynamique.
+
+## Prérequis
+
+- Fonctions, tableaux et chaînes C.
+
+## Cours
+
+### Adresse et indirection
+
+L'opérateur `&` produit l'adresse d'un objet. L'opérateur `*` appliqué à un pointeur accède à l'objet pointé :
+
+```c
+int compteur = 4;
+int *adresse = &compteur;
+*adresse = 5;
+printf("%d\n", compteur);
+```
+
+Le pointeur doit désigner un objet valide avant d'être déréférencé. Un pointeur non initialisé ne doit jamais être utilisé. La valeur `NULL` représente l'absence de pointeur valide et doit être testée avant usage quand elle est autorisée.
+
+### Pointeurs et tableaux
+
+Dans une expression, le nom d'un tableau est généralement converti en pointeur vers son premier élément. L'arithmétique de pointeur avance en éléments de leur type, non en octets. Le pointeur n'inclut pas la longueur : maintenez la capacité à part.
+
+Les pointeurs « un élément après la fin » peuvent être formés pour décrire une borne, mais ne doivent pas être déréférencés.
+
+### Allocation dynamique
+
+`malloc` réserve des octets et renvoie `NULL` en cas d'échec. Vérifiez le résultat avant utilisation :
+
+```c
+#include <stdlib.h>
+
+size_t longueur = 10;
+int *valeurs = malloc(longueur * sizeof *valeurs);
+if (valeurs == NULL) {
+    return 1;
+}
+
+for (size_t i = 0; i < longueur; i++) {
+    valeurs[i] = 0;
+}
+
+free(valeurs);
+valeurs = NULL;
+```
+
+La forme `sizeof *valeurs` suit le type pointé et reste correcte si le type de la variable change. Vérifiez aussi que la multiplication de capacité par taille ne déborde pas avant une allocation pour des dimensions contrôlées par l'utilisateur.
+
+En C, n'écrivez pas de conversion explicite du résultat de `malloc`. Incluez `<stdlib.h>` pour obtenir sa déclaration correcte.
+
+### Redimensionner
+
+`realloc` peut déplacer le bloc. Utilisez un pointeur temporaire pour ne pas perdre l'adresse initiale en cas d'échec :
+
+```c
+int *temporaire = realloc(valeurs, nouvelle_longueur * sizeof *valeurs);
+if (temporaire == NULL) {
+    /* valeurs désigne toujours le bloc initial */
+    free(valeurs);
+    return 1;
+}
+valeurs = temporaire;
+```
+
+Le traitement de la taille zéro a des subtilités dépendant de la version du standard et de l'implémentation. Traitez séparément le cas où la capacité devient nulle.
+
+### Propriété et durée de vie
+
+Pour chaque pointeur propriétaire, définissez qui libère la ressource et quand. Une fonction qui reçoit un buffer emprunté ne doit pas le libérer sauf contrat explicite. Une fonction qui crée et retourne un buffer doit documenter que l'appelant en devient responsable.
+
+Un pointeur pendant référence une zone dont la durée de vie est terminée ou qui a été libérée. Ne retournez pas l'adresse d'une variable locale et ne réutilisez pas un pointeur après `free`.
+
+### Outils de détection
+
+Les compilateurs et leurs sanitizers peuvent révéler des erreurs mémoire pendant le développement. Avec GCC ou Clang :
+
+```bash
+gcc -std=c17 -Wall -Wextra -Wpedantic -g -fsanitize=address,undefined programme.c -o programme
+```
+
+Les options disponibles dépendent du compilateur et de la plateforme. Elles complètent les tests, sans remplacer une conception correcte.
+
+<Callout type="warn">
+Une fuite, un double `free`, un déréférencement de `NULL` ou un accès après libération peut corrompre le programme ou ses données. Le comportement indéfini ne se corrige pas en observant qu'un test « semble fonctionner ».
+</Callout>
+
+## Erreurs fréquentes
+
+**Déréférencer un pointeur indéterminé**
+
+Initialisez chaque pointeur à une adresse valide ou à `NULL` avant de l'utiliser.
+
+**Perdre le pointeur lors d'un `realloc`**
+
+Conservez le résultat dans un pointeur temporaire et ne remplacez l'original qu'après succès.
+
+**Libérer deux fois**
+
+Définissez clairement la propriété et remettez le pointeur propriétaire à `NULL` après libération.
+
+**Utiliser un pointeur après `free`**
+
+La mémoire n'appartient plus au programme. Ne lisez et ne modifiez plus le bloc, même si les anciennes valeurs semblent encore présentes.
+
+## Exercices
+
+<Exercise n="6.1" title="Échanger deux entiers">
+Écrivez une fonction qui échange les valeurs de deux entiers à l'aide de pointeurs. Elle doit ignorer proprement un pointeur nul.
+</Exercise>
+
+<Solution>
+Vérifiez les deux pointeurs, sauvegardez `*gauche` dans une variable temporaire, affectez `*gauche = *droite`, puis restaurez la valeur sauvegardée dans `*droite`.
+</Solution>
+
+<Exercise n="6.2" title="Créer un tableau dynamique">
+Allouez un tableau d'entiers de taille choisie, initialisez ses éléments, affichez-les puis libérez la mémoire sur chaque chemin de sortie.
+</Exercise>
+
+<Solution>
+Vérifiez que la taille demandée est positive et que la multiplication `taille * sizeof *tableau` ne déborde pas. Vérifiez `malloc`, utilisez le tableau, puis appelez `free` avant de retourner.
+</Solution>
+
+<Exercise n="6.3" title="Redimensionner sans perdre les données">
+Ajoutez une capacité à un tableau dynamique et augmentez-la par `realloc` lorsqu'il est plein. Simulez ou testez le chemin d'échec.
+</Exercise>
+
+<Solution>
+Calculez la nouvelle taille après contrôle de débordement, stockez `realloc` dans un pointeur temporaire et ne remplacez le pointeur détenu qu'en cas de succès. En cas d'échec, le bloc original reste valide et peut être libéré selon le contrat de la fonction.
+</Solution>
+
+## Livrable
+
+Un tableau dynamique C qui suit capacité et longueur, vérifie chaque allocation et dispose d'une propriété et d'une libération documentées.

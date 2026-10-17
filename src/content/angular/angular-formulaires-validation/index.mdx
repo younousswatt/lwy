@@ -1,0 +1,176 @@
+# Formulaires réactifs et validation Angular
+
+Les formulaires réactifs modélisent les champs et leurs règles de validation en TypeScript. Ils permettent de construire des interfaces prévisibles, de présenter des erreurs compréhensibles et de traiter une soumission sans accepter des données invalides.
+
+## Objectifs
+
+- Construire un formulaire avec `FormGroup`, `FormControl` et `FormBuilder`.
+- Déclarer des validateurs synchrones intégrés et personnalisés.
+- Afficher les états touched, dirty et invalid sans bruit prématuré.
+- Soumettre des valeurs typées et valides.
+- Améliorer l'accessibilité des labels et messages d'erreur.
+- Tester les principales règles d'un formulaire.
+
+## Prérequis
+
+- Composants et injection de dépendances Angular.
+- Notions de validation HTML.
+
+## Cours
+
+### Activer les formulaires réactifs
+
+Un composant standalone importe `ReactiveFormsModule` pour utiliser les directives du formulaire :
+
+```typescript
+import { Component, inject } from "@angular/core";
+import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
+
+@Component({
+  selector: "app-formulaire-livre",
+  standalone: true,
+  imports: [ReactiveFormsModule],
+  template: `...`,
+})
+export class FormulaireLivreComponent {
+  private readonly fb = inject(FormBuilder);
+}
+```
+
+### Définir le modèle et ses validations
+
+`FormBuilder` construit le groupe de contrôles. Les validateurs sont déclarés près du modèle :
+
+```typescript
+livreForm = this.fb.nonNullable.group({
+  titre: ["", [Validators.required, Validators.minLength(2)]],
+  auteur: ["", Validators.required],
+  annee: [2024, [Validators.required, Validators.min(0), Validators.max(2100)]],
+});
+```
+
+`nonNullable` évite que les valeurs des champs initialisés avec des chaînes deviennent `null`. Le groupe offre `valid`, `invalid`, `dirty`, `touched` et `value`.
+
+### Relier le template
+
+```html
+<form [formGroup]="livreForm" (ngSubmit)="enregistrer()">
+  <label for="titre">Titre</label>
+  <input id="titre" type="text" formControlName="titre" required>
+  @if (livreForm.controls.titre.touched && livreForm.controls.titre.hasError("required")) {
+    <p id="titre-erreur">Le titre est obligatoire.</p>
+  }
+  @if (livreForm.controls.titre.touched && livreForm.controls.titre.hasError("minlength")) {
+    <p id="titre-longueur">Le titre doit contenir au moins deux caractères.</p>
+  }
+
+  <label for="auteur">Auteur</label>
+  <input id="auteur" type="text" formControlName="auteur" required>
+
+  <label for="annee">Année</label>
+  <input id="annee" type="number" formControlName="annee">
+
+  <button type="submit" [disabled]="livreForm.invalid">Ajouter le livre</button>
+</form>
+```
+
+`formControlName` relie chaque champ au contrôle du groupe. Les labels associés avec `for` et `id` donnent un nom accessible aux champs.
+
+### Soumettre et réinitialiser
+
+```typescript
+enregistrer(): void {
+  if (this.livreForm.invalid) {
+    this.livreForm.markAllAsTouched();
+    return;
+  }
+
+  const livre = this.livreForm.getRawValue();
+  this.catalogue.ajouter(livre.titre, livre.auteur);
+  this.livreForm.reset({
+    titre: "",
+    auteur: "",
+    annee: new Date().getFullYear(),
+  });
+}
+```
+
+La vérification doit également être faite dans le gestionnaire, même si le bouton est désactivé. L'interface n'est pas une frontière de sécurité ; toute donnée doit être validée à l'endroit où elle est traitée.
+
+### Validateur personnalisé
+
+Un validateur reçoit un contrôle et renvoie `null` si la valeur est valide, ou un objet d'erreur si elle ne l'est pas :
+
+```typescript
+import { AbstractControl, ValidationErrors } from "@angular/forms";
+
+function anneeDisponible(control: AbstractControl): ValidationErrors | null {
+  const annee = Number(control.value);
+  const anneeCourante = new Date().getFullYear();
+  return Number.isInteger(annee) && annee <= anneeCourante
+    ? null
+    : { anneeFuture: true };
+}
+```
+
+Ajoutez ce validateur à la liste du contrôle puis affichez une explication lorsqu'il est présent. Un validateur doit rester pur : il ne doit pas modifier l'interface ou effectuer un appel réseau.
+
+### Validation asynchrone
+
+La validation asynchrone sert par exemple à vérifier une disponibilité auprès d'un serveur. Elle retourne un `Promise` ou un `Observable` d'erreurs et doit gérer les retards et erreurs réseau. Le serveur reste responsable de l'application de ses propres règles.
+
+### Erreurs accessibles
+
+Présentez les erreurs après interaction ou à la soumission, avec un texte qui explique comment corriger la valeur. Associez les aides aux champs avec `aria-describedby` lorsque pertinent, et ne signalez pas une erreur uniquement par une couleur.
+
+<Callout type="warn">
+Ne masquez pas tous les messages tant que le formulaire est invalide. Un utilisateur doit pouvoir identifier le champ concerné, comprendre l'erreur et savoir comment la corriger.
+</Callout>
+
+## Erreurs fréquentes
+
+**Utiliser les formulaires réactifs sans importer le module**
+
+Le composant standalone doit importer `ReactiveFormsModule`.
+
+**Confondre la valeur affichée et la valeur validée**
+
+Le champ HTML peut fournir une chaîne même pour un nombre. Déclarez les contrôles et convertissez ou validez explicitement les données.
+
+**Se fier uniquement au bouton désactivé**
+
+Validez également dans le gestionnaire de soumission et dans la couche métier.
+
+**Afficher les erreurs avant que l'utilisateur ait interagi**
+
+Utilisez `touched`, `dirty` ou l'état de soumission pour afficher les messages au bon moment.
+
+## Exercices
+
+<Exercise n="4.1" title="Créer un formulaire réactif">
+Créez un formulaire de création de livre avec titre obligatoire, titre d'au moins deux caractères et auteur obligatoire. Reliez les champs au groupe et désactivez le bouton lorsque le formulaire est invalide.
+</Exercise>
+
+<Solution>
+Utilisez `fb.nonNullable.group`, `Validators.required` et `Validators.minLength(2)`. Importez `ReactiveFormsModule`, ajoutez `[formGroup]`, les `formControlName` correspondants et un bouton dont la propriété `disabled` dépend de `form.invalid`.
+</Solution>
+
+<Exercise n="4.2" title="Afficher des messages d'erreur utiles">
+Affichez un message pour un titre vide et un autre pour un titre trop court uniquement après interaction. Chaque champ doit avoir un label et les erreurs doivent rester compréhensibles sans couleur.
+</Exercise>
+
+<Solution>
+Testez `control.touched` avec `hasError("required")` ou `hasError("minlength")`. Placez un label associé au champ et du texte explicite à proximité. Ajoutez `aria-describedby` si le message est rendu de façon persistante et possède un identifiant.
+</Solution>
+
+<Exercise n="4.3" title="Tester la validation et la soumission">
+Testez le formulaire invalide au départ, une valeur trop courte, puis une valeur valide. Vérifiez que le service n'est appelé qu'après une soumission valide.
+</Exercise>
+
+<Solution>
+Configurez le TestBed, récupérez le composant, renseignez les contrôles et déclenchez la soumission. Utilisez un service simulé et vérifiez qu'il n'est pas appelé avec les données invalides, puis qu'il l'est avec les valeurs valides.
+</Solution>
+
+## Livrable
+
+Un formulaire réactif typé qui valide les données, explique les erreurs de façon accessible et ne transmet au service que les valeurs acceptées.

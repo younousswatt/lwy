@@ -1,0 +1,151 @@
+# Conteneurs et algorithmes de la STL
+
+La bibliothèque standard C++ fournit conteneurs, itérateurs et algorithmes génériques. Les connaître permet d'écrire un code plus expressif, plus sûr et souvent plus efficace qu'une implémentation artisanale.
+
+## Objectifs
+
+- Choisir un conteneur adapté à un usage.
+- Utiliser `vector`, `map`, `unordered_map` et `set`.
+- Parcourir des conteneurs avec des itérateurs.
+- Composer les algorithmes standards avec lambdas.
+- Comprendre invalidation d'itérateurs et complexité élémentaire.
+- Utiliser les vues sans prolonger leur durée de vie par erreur.
+
+## Prérequis
+
+- Fonctions C++ et principe RAII.
+
+## Cours
+
+### Conteneurs séquentiels
+
+`std::vector` est le choix général pour une séquence dynamique contiguë :
+
+```cpp
+#include <vector>
+
+std::vector<int> notes{12, 17, 14};
+notes.push_back(19);
+```
+
+Utilisez `std::array` pour une séquence de taille fixe connue à la compilation. `std::deque` répond à des besoins particuliers d'insertion aux extrémités. Ne choisissez pas un conteneur avant d'avoir identifié les opérations dominantes.
+
+### Conteneurs associatifs
+
+`std::map` maintient les clés ordonnées; `std::unordered_map` fournit une table de hachage sans ordre garanti; `std::set` stocke des valeurs uniques ordonnées.
+
+```cpp
+#include <string>
+#include <unordered_map>
+
+std::unordered_map<std::string, int> exemplaires{
+    {"Dune", 3},
+    {"Fondation", 2},
+};
+exemplaires["Dune"] += 1;
+```
+
+`operator[]` crée une entrée lorsque la clé n'existe pas. Pour une simple lecture, utilisez `find` ou `at` afin d'éviter une insertion involontaire.
+
+### Itérateurs
+
+Les itérateurs relient les conteneurs aux algorithmes :
+
+```cpp
+for (auto it = notes.begin(); it != notes.end(); ++it) {
+    // *it désigne l'élément courant.
+}
+```
+
+La boucle par plage est plus simple lorsque l'itérateur lui-même n'est pas nécessaire :
+
+```cpp
+for (const int note : notes) {
+    std::cout << note << '\n';
+}
+```
+
+Une insertion dans un vecteur peut invalider ses itérateurs et références si sa capacité augmente. Ne conservez pas un itérateur au-delà d'une opération qui pourrait invalider le conteneur.
+
+### Algorithmes et lambdas
+
+```cpp
+#include <algorithm>
+#include <vector>
+
+std::vector<int> positifs;
+std::copy_if(
+    notes.begin(),
+    notes.end(),
+    std::back_inserter(positifs),
+    [](int note) { return note > 0; }
+);
+```
+
+`std::sort`, `std::find_if`, `std::count_if`, `std::transform` et `std::accumulate` couvrent de nombreux besoins courants. Incluez l'en-tête qui déclare chaque algorithme, généralement `<algorithm>` ou `<numeric>`.
+
+### Effacer une collection avec un prédicat
+
+En C++20, `std::erase_if` supprime les éléments qui répondent à un prédicat dans plusieurs conteneurs standard :
+
+```cpp
+std::erase_if(notes, [](int note) { return note < 0; });
+```
+
+Pour un vecteur et des versions plus anciennes, l'idiome erase-remove demeure pertinent. Vérifiez le standard sélectionné par le build.
+
+### Vues et durée de vie
+
+`std::string_view` et les vues de plages ne possèdent généralement pas les données référencées. Elles ne doivent pas survivre à la chaîne ou au conteneur source. Les utilisez pour emprunter temporairement des données, pas pour les stocker sans contrat de durée de vie.
+
+<Callout type="tip">
+Choisissez d'abord le bon conteneur, puis utilisez l'algorithme standard qui exprime l'opération. Évitez de modifier la taille d'un conteneur dans une boucle dont les itérateurs peuvent être invalidés.
+</Callout>
+
+## Erreurs fréquentes
+
+**Utiliser `operator[]` pour une lecture incertaine**
+
+Sur `map` et `unordered_map`, cet opérateur insère une valeur par défaut si la clé manque.
+
+**Garder une référence après croissance d'un vecteur**
+
+Une réallocation peut invalider références, pointeurs et itérateurs. Recherchez l'élément à nouveau après la modification.
+
+**Écrire des algorithmes pour la STL**
+
+Les algorithmes standards sont documentés et composables. Évitez de les réimplémenter sans raison pédagogique ou exigence particulière.
+
+**Conserver une vue vers une donnée temporaire**
+
+La vue n'est pas propriétaire. Assurez-vous que les données originales vivent plus longtemps.
+
+## Exercices
+
+<Exercise n="5.1" title="Analyser une collection avec des algorithmes">
+À partir d'un vecteur de notes, comptez les notes au-dessus de la moyenne et triez une copie sans modifier le vecteur d'origine.
+</Exercise>
+
+<Solution>
+Calculez la moyenne avec `std::accumulate` de `<numeric>`, utilisez `std::count_if` pour le compte et triez une copie avec `std::sort`. Gérez explicitement le vecteur vide.
+</Solution>
+
+<Exercise n="5.2" title="Indexer les exemplaires par titre">
+Utilisez un conteneur associatif pour compter les exemplaires de chaque titre. Recherchez un titre sans en insérer un nouveau lorsqu'il est absent.
+</Exercise>
+
+<Solution>
+Utilisez `std::unordered_map<std::string, int>` ou `std::map`. Pour consulter sans insertion, utilisez `find` et comparez à `end`, ou `at` si l'absence doit être signalée par exception.
+</Solution>
+
+<Exercise n="5.3" title="Éviter l'invalidation d'itérateur">
+Identifiez les risques d'une insertion dans un vecteur pendant son parcours et réécrivez l'opération avec un algorithme approprié.
+</Exercise>
+
+<Solution>
+Une insertion qui augmente la capacité peut invalider l'itérateur courant et ceux qui suivent. Construisez plutôt une nouvelle collection avec `copy_if`, ou utilisez `std::erase_if` lorsque l'opération consiste à retirer des éléments.
+</Solution>
+
+## Livrable
+
+Un analyseur de résultats qui combine conteneurs associatifs, séquences et algorithmes standards, avec complexité et limites documentées.

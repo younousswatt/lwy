@@ -1,0 +1,182 @@
+# Services et injection de dépendances
+
+Les services centralisent les responsabilités qui ne relèvent pas de l'affichage : accès aux données, règles partagées et état commun. L'injection de dépendances permet à Angular de fournir ces services aux composants, tout en facilitant leur remplacement lors des tests.
+
+## Objectifs
+
+- Créer un service injectable et comprendre son cycle de vie.
+- Injecter un service dans un composant avec `inject`.
+- Déplacer les opérations de bibliothèque hors des composants de présentation.
+- Partager un état avec les signaux.
+- Comprendre les fournisseurs et les scopes d'injection.
+- Préparer un service remplaçable pour les tests.
+
+## Prérequis
+
+- Composants, signaux, inputs et outputs.
+
+## Cours
+
+### Responsabilité d'un service
+
+Un composant présente l'interface et traduit les interactions en actions. Un service porte une logique réutilisable ou communique avec une source de données. Cette séparation permet de tester les règles sans rendre le composant.
+
+La CLI peut générer le fichier :
+
+```bash
+ng generate service livres/catalogue
+```
+
+Un service partagé dans l'application utilise généralement `providedIn: "root"` :
+
+```typescript
+import { Injectable, signal } from "@angular/core";
+
+export interface Livre {
+  id: number;
+  titre: string;
+  auteur: string;
+  lu: boolean;
+}
+
+@Injectable({ providedIn: "root" })
+export class CatalogueService {
+  private readonly livresState = signal<Livre[]>([]);
+  readonly livres = this.livresState.asReadonly();
+
+  ajouter(titre: string, auteur: string): void {
+    const nouveau: Livre = {
+      id: Date.now(),
+      titre: titre.trim(),
+      auteur: auteur.trim(),
+      lu: false,
+    };
+    this.livresState.update((livres) => [...livres, nouveau]);
+  }
+
+  marquerCommeLu(id: number): void {
+    this.livresState.update((livres) =>
+      livres.map((livre) =>
+        livre.id === id ? { ...livre, lu: true } : livre,
+      ),
+    );
+  }
+}
+```
+
+Dans un vrai système, préférez un identifiant fourni par la base de données ou créé par une fonction dédiée, plutôt que `Date.now()` seul, qui ne garantit pas l'unicité en cas d'opérations rapprochées.
+
+### Injecter le service
+
+La fonction `inject` demande au système d'injection Angular de fournir le service :
+
+```typescript
+import { Component, inject } from "@angular/core";
+import { CatalogueService } from "./catalogue.service";
+
+@Component({
+  selector: "app-page-livres",
+  standalone: true,
+  template: `
+    @for (livre of catalogue.livres(); track livre.id) {
+      <article>
+        <h2>{{ livre.titre }}</h2>
+        <button type="button" (click)="catalogue.marquerCommeLu(livre.id)">
+          Marquer comme lu
+        </button>
+      </article>
+    }
+  `,
+})
+export class PageLivresComponent {
+  readonly catalogue = inject(CatalogueService);
+}
+```
+
+L'injection par constructeur reste aussi prise en charge et peut être utile pour rendre les dépendances explicites. Choisissez un style cohérent dans le projet.
+
+### État partagé et encapsulation
+
+Exposez une vue en lecture seule et gardez le signal modifiable privé. Le composant peut lire la liste et appeler des méthodes métier, mais ne peut pas remplacer directement l'état.
+
+Évitez un service fourre-tout. Un service nommé `CatalogueService` doit gérer le catalogue, tandis que des responsabilités indépendantes peuvent appartenir à des services distincts.
+
+### Fournisseurs et portée
+
+`providedIn: "root"` crée une instance partagée à l'échelle de l'application et permet l'élimination du code inutilisé. Déclarer un fournisseur dans un composant crée une instance à une portée plus locale. Le choix de portée modifie le partage de l'état : deux sous-arbres ayant chacun une instance locale n'observent pas la même collection.
+
+Ne fournissez pas un état global au niveau d'un composant de carte si toutes les cartes doivent consulter le même catalogue.
+
+### Construire un service testable
+
+Une dépendance peut être remplacée dans les tests avec un faux service ou un fournisseur adapté. Une classe de service qui ne dépend pas directement du DOM ou de `window` se teste plus facilement dans le TestBed.
+
+```typescript
+import { TestBed } from "@angular/core/testing";
+import { CatalogueService } from "./catalogue.service";
+
+describe("CatalogueService", () => {
+  let service: CatalogueService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(CatalogueService);
+  });
+
+  it("ajoute un livre", () => {
+    service.ajouter("Dune", "Frank Herbert");
+    expect(service.livres().length).toBe(1);
+    expect(service.livres()[0].titre).toBe("Dune");
+  });
+});
+```
+
+Les outils de test intégrés dépendent de la version Angular et du générateur utilisés. Suivez la commande générée par votre projet et conservez la configuration cohérente.
+
+<Callout type="info">
+L'injection de dépendances est un mécanisme de composition, pas une raison de transformer chaque fonction en service. Créez un service lorsqu'une responsabilité est partagée, a un cycle de vie utile ou dépend d'une ressource externe.
+</Callout>
+
+## Erreurs fréquentes
+
+**Rendre le signal d'état public et modifiable**
+
+Un composant peut alors contourner les règles métier. Conservez le signal modifiable privé et exposez une version en lecture seule.
+
+**Créer plusieurs instances sans le vouloir**
+
+Un fournisseur déclaré localement peut créer un nouvel état pour chaque branche de l'arbre. Vérifiez la portée du fournisseur lorsque des composants ne voient pas les mêmes données.
+
+**Faire dépendre le modèle de l'interface**
+
+Un service métier ne devrait pas connaître un élément DOM ou manipuler directement un template.
+
+## Exercices
+
+<Exercise n="3.1" title="Créer un service de catalogue">
+Créez un service avec un signal privé de livres exposé en lecture seule. Ajoutez des méthodes pour créer un livre et marquer un livre existant comme lu.
+</Exercise>
+
+<Solution>
+Utilisez `signal<Livre[]>([])`, exposez `readonly livres = this.etat.asReadonly()`, puis mettez à jour la collection avec `update` et des opérations immuables comme `map`. Ignorez ou signalez clairement un identifiant inconnu selon le contrat choisi.
+</Solution>
+
+<Exercise n="3.2" title="Déléguer la logique du composant">
+Remplacez une collection locale de page par le service. Le template doit lire la liste depuis le service, et le composant doit déléguer l'ajout sans modifier directement le signal.
+</Exercise>
+
+<Solution>
+Injectez `CatalogueService` avec `inject`, exposez une propriété de service en lecture dans le composant, et appelez `catalogue.ajouter(...)` depuis un gestionnaire d'action. La page ne possède plus une copie séparée des livres.
+</Solution>
+
+<Exercise n="3.3" title="Tester l'ajout et l'état partagé">
+Écrivez un test qui récupère le service depuis TestBed, ajoute un livre puis vérifie l'état exposé. Vérifiez également qu'une instance injectée deux fois au scope racine partage le même état.
+</Exercise>
+
+<Solution>
+Dans le test, utilisez `TestBed.inject(CatalogueService)`, appelez `ajouter`, puis vérifiez le nombre et le contenu du livre. Récupérez une seconde fois le même service au scope racine et contrôlez que les deux références observent le même signal.
+</Solution>
+
+## Livrable
+
+Un service de catalogue testable, utilisé par plusieurs composants, avec état privé, API publique limitée et tests unitaires.

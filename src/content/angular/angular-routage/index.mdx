@@ -1,0 +1,179 @@
+# Routage et navigation Angular
+
+Le routeur Angular associe une URL à une vue. Il permet de séparer les écrans, de transmettre des paramètres, de construire une navigation accessible et de charger certaines fonctionnalités uniquement lorsque l'utilisateur les demande.
+
+## Objectifs
+
+- Déclarer des routes et afficher leur composant dans `RouterOutlet`.
+- Naviguer avec `RouterLink` et depuis le code.
+- Lire un paramètre de route typé et gérer les identifiants invalides.
+- Organiser des routes enfants et une route de repli.
+- Comprendre les gardes et les limites de la sécurité côté client.
+- Charger une fonctionnalité de façon différée.
+
+## Prérequis
+
+- Composants standalone et services Angular.
+
+## Cours
+
+### Configurer le routeur
+
+La CLI active le routage lors de la création du projet. Les routes sont généralement déclarées dans `app.routes.ts` :
+
+```typescript
+import { Routes } from "@angular/router";
+
+export const routes: Routes = [
+  {
+    path: "",
+    title: "Ma bibliothèque",
+    loadComponent: () =>
+      import("./accueil/accueil.component").then((m) => m.AccueilComponent),
+  },
+  {
+    path: "livres",
+    title: "Livres",
+    loadComponent: () =>
+      import("./livres/livres.component").then((m) => m.LivresComponent),
+  },
+  { path: "**", redirectTo: "" },
+];
+```
+
+Enregistrez les routes avec `provideRouter(routes)` dans la configuration de l'application. Le composant racine contient le point d'insertion :
+
+```html
+<app-entete />
+<main>
+  <router-outlet />
+</main>
+```
+
+Le composant qui déclare `RouterOutlet` doit importer la directive correspondante.
+
+### Liens et navigation
+
+Utilisez `RouterLink` pour la navigation interne :
+
+```html
+<a routerLink="/livres">Tous les livres</a>
+<a [routerLink]="['/livres', livre.id]">Détails</a>
+```
+
+Importez `RouterLink` dans le composant standalone qui utilise la directive. Les liens natifs conservent le comportement attendu par le clavier et le navigateur.
+
+Depuis TypeScript, injectez le routeur et déclenchez une navigation après une action :
+
+```typescript
+private readonly router = inject(Router);
+
+ouvrirLivre(id: number): void {
+  void this.router.navigate(["/livres", id]);
+}
+```
+
+### Paramètres de route
+
+Déclarez une route avec un paramètre :
+
+```typescript
+{ path: "livres/:id", component: DetailLivreComponent }
+```
+
+Récupérez et validez la valeur, car un paramètre d'URL est une chaîne et peut être absent ou mal formé :
+
+```typescript
+private readonly route = inject(ActivatedRoute);
+readonly id = Number(this.route.snapshot.paramMap.get("id"));
+
+ngOnInit(): void {
+  if (!Number.isInteger(this.id) || this.id <= 0) {
+    this.router.navigate(["/non-trouve"]);
+    return;
+  }
+  this.chargerLivre(this.id);
+}
+```
+
+Lorsque le même composant reste monté pendant un changement de paramètre, utilisez le flux `paramMap` plutôt que de lire uniquement un instantané.
+
+### Routes enfants
+
+Les routes enfants partagent une mise en page. La route parente fournit un `RouterOutlet` imbriqué :
+
+```typescript
+{
+  path: "compte",
+  component: CompteLayoutComponent,
+  children: [
+    { path: "", redirectTo: "profil", pathMatch: "full" },
+    { path: "profil", component: ProfilComponent },
+    { path: "preferences", component: PreferencesComponent },
+  ],
+}
+```
+
+Choisissez des chemins et titres compréhensibles. Ajoutez un état actif visible et ne supprimez pas l'indicateur de focus.
+
+### Gardes et autorisation
+
+Les gardes peuvent rediriger ou empêcher une navigation selon l'état courant. Elles améliorent le parcours utilisateur, mais ne sécurisent jamais à elles seules les données : le serveur doit vérifier chaque accès protégé.
+
+Une garde fonctionnelle peut injecter un service d'authentification et renvoyer un booléen ou un `UrlTree`. Préférez renvoyer une redirection plutôt que de déclencher une navigation secondaire depuis la garde.
+
+### Chargement différé
+
+`loadComponent` et `loadChildren` utilisent des imports dynamiques et fractionnent le code. Le code d'une grande fonctionnalité n'est alors chargé qu'à la navigation vers sa route. Le fractionnement améliore le chargement initial si les limites suivent les fonctionnalités réellement distinctes.
+
+<Callout type="warn">
+Une route inconnue doit aboutir à une vue ou une redirection prévue. Une route cachée par une garde ne remplace pas un contrôle des autorisations côté serveur.
+</Callout>
+
+## Erreurs fréquentes
+
+**Oublier `RouterOutlet`**
+
+Les URL changent mais la vue ne s'affiche pas sans le point d'insertion.
+
+**Utiliser un bouton pour naviguer**
+
+Préférez un lien pour une navigation et un bouton pour une action.
+
+**Traiter un paramètre URL comme déjà valide**
+
+Convertissez et validez le paramètre avant de le passer au service.
+
+**Croire qu'une garde protège l'API**
+
+Tout client peut être modifié ou contourné. Les autorisations doivent être appliquées par le serveur.
+
+## Exercices
+
+<Exercise n="5.1" title="Créer les routes du catalogue">
+Déclarez les routes d'accueil, de liste des livres, de détail d'un livre et de repli. Affichez-les dans un `RouterOutlet` et reliez la liste avec `RouterLink`.
+</Exercise>
+
+<Solution>
+Utilisez une route vide, `livres`, `livres/:id` et une route wildcard placée à la fin. Enregistrez les routes avec `provideRouter`, importez les directives dans les composants concernés et prévoyez un lien natif vers chaque détail.
+</Solution>
+
+<Exercise n="5.2" title="Valider l'identifiant d'une route">
+Lisez l'identifiant de la route de détail, vérifiez qu'il s'agit d'un entier positif et affichez la page non trouvée si le livre n'existe pas.
+</Exercise>
+
+<Solution>
+Convertissez l'identifiant avec `Number`, vérifiez `Number.isInteger` et `id > 0`, puis cherchez le livre dans le service. Une valeur invalide ou un identifiant inconnu doit conduire à un état explicite, pas à une erreur d'exécution.
+</Solution>
+
+<Exercise n="5.3" title="Organiser les routes d'un compte">
+Créez une route parent `compte` avec un layout et deux enfants, `profil` et `preferences`. Ajoutez un lien actif vers chaque sous-page.
+</Exercise>
+
+<Solution>
+Déclarez `children` dans la route du layout et placez un `RouterOutlet` dans ce layout. Dans la barre de navigation, employez `RouterLink` et `RouterLinkActive`, en conservant des libellés descriptifs.
+</Solution>
+
+## Livrable
+
+Une application à plusieurs routes comprenant liste, détail, navigation accessible, routes inconnues et chargement différé d'au moins une fonctionnalité.

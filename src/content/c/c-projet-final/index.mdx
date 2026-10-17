@@ -1,0 +1,128 @@
+# Projet final — Gestionnaire de contacts en C
+
+Le projet final consiste à créer un carnet de contacts en console qui conserve les données entre exécutions. Il consolide structures, chaînes, allocation dynamique, fichiers, interfaces séparées et compilation avec avertissements.
+
+## Objectifs
+
+- Concevoir un modèle de contact avec identifiant stable.
+- Ajouter, rechercher, lister et supprimer des contacts.
+- Valider les entrées et les capacités de stockage.
+- Persister les données dans un format documenté.
+- Séparer modèle, stockage et interface en fichiers.
+- Compiler, tester les erreurs mémoire et rédiger une documentation.
+
+## Prérequis
+
+- Tous les modules précédents du parcours C.
+
+## Cours
+
+### Fonctionnalités et contrats
+
+Le programme doit permettre d'ajouter un contact, lister le carnet, rechercher par identifiant, supprimer un enregistrement et sauvegarder ou recharger les données. Chaque commande inconnue, identifiant absent, fichier illisible ou allocation échouée doit produire un message et un code d'échec cohérent.
+
+Définissez les limites du premier livrable : capacité maximale de contacts, longueur des champs, comportement quand le stockage est absent ou corrompu.
+
+### Architecture
+
+```text
+carnet/
+├── include/
+│   ├── contact.h
+│   └── stockage.h
+├── src/
+│   ├── contact.c
+│   ├── stockage.c
+│   └── main.c
+├── tests/
+├── Makefile
+└── README.md
+```
+
+Le module `contact` contient les opérations sur les données. `stockage` traduit les données vers un fichier. `main` gère les commandes et messages. L'en-tête expose seulement les contrats nécessaires.
+
+### Collection dynamique
+
+Une collection peut être représentée par un tableau dynamique accompagné d'une longueur et d'une capacité :
+
+```c
+typedef struct {
+    Contact *elements;
+    size_t longueur;
+    size_t capacite;
+} Carnet;
+```
+
+Définissez les fonctions d'initialisation et de destruction. La destruction libère le buffer et remet la structure dans un état vide. Toute fonction qui augmente la capacité doit vérifier le débordement de multiplication et traiter l'échec de `realloc` sans perdre l'ancien pointeur.
+
+### Identifiants et recherche
+
+Un identifiant ne doit pas dépendre de l'index du tableau si les suppressions déplacent les éléments. Recherchez par valeur et renvoyez un statut explicite quand il n'existe pas. Évitez les références conservées vers des éléments après un redimensionnement : la nouvelle allocation peut déplacer le tableau.
+
+### Persistance et fiabilité
+
+Choisissez un format texte simple documenté. Échappez ou interdisez les séparateurs présents dans les champs. Vérifiez les longueurs avant copie, puis validez les données relues avant de les ajouter en mémoire. Si le fichier est invalide, conservez l'ancien fichier et signalez l'erreur.
+
+Une sauvegarde robuste écrit d'abord un fichier temporaire, vérifie les opérations puis remplace la sauvegarde selon les garanties de la plateforme. Cette stratégie doit être documentée si le programme ne la met pas en œuvre.
+
+### Interface console
+
+Lisez les lignes avec `fgets` dans des buffers bornés. Rejetez une commande tronquée ou consommez explicitement le reste de la ligne. Convertissez les identifiants avec une fonction de conversion qui permet de détecter les caractères restants et les dépassements.
+
+Présentez une aide simple, puis séparez le choix de commande de son opération métier. Chaque opération doit pouvoir être testée sans dépendre de la lecture interactive.
+
+### Compilation et vérifications
+
+Fournissez une commande de compilation reproductible, utilisez C17 et activez les avertissements. Pendant le développement, essayez les sanitizers compatibles pour rechercher les erreurs mémoire. Testez les cas : carnet vide, capacité atteinte, allocation impossible si le test peut être simulé, fichier absent et fichier corrompu.
+
+<Callout type="warn">
+La persistance ne rend pas une entrée fiable. Un utilisateur peut modifier le fichier à la main : vérifiez le format, les longueurs, les identifiants et les limites au chargement.
+</Callout>
+
+## Erreurs fréquentes
+
+**Perdre le pointeur lors du redimensionnement**
+
+Conservez l'adresse retournée par `realloc` dans une variable temporaire. Ne remplacez le propriétaire qu'après succès.
+
+**Lire un champ sans vérifier sa longueur**
+
+Chaque destination a une capacité connue. Rejetez les champs trop longs ou définissez une stratégie documentée de troncature.
+
+**Écraser des données après une erreur de chargement**
+
+Un fichier mal formé n'est pas un carnet vide. Signalez l'erreur et ne sauvegardez pas un état vide par-dessus la source.
+
+**Dépendre des index pour les identifiants**
+
+Les suppressions déplacent les cases. Utilisez un identifiant stocké et recherchez par valeur.
+
+## Exercices
+
+<Exercise n="8.1" title="Écrire le modèle du carnet">
+Implémentez initialisation, ajout, recherche et suppression dans des fonctions qui retournent des statuts explicites. Décrivez la propriété du buffer et ses règles de destruction.
+</Exercise>
+
+<Solution>
+La structure stocke tableau, longueur et capacité. L'initialisation crée un état vide valide. L'ajout vérifie les limites avant croissance, utilise un pointeur temporaire pour `realloc`, puis prend la propriété du nouvel élément. La destruction libère le tableau et remet le carnet à zéro.
+</Solution>
+
+<Exercise n="8.2" title="Ajouter le stockage">
+Définissez un format texte et écrivez sauvegarde et chargement. Gérez fichier absent, enregistrement mal formé, champs trop longs et erreur d'écriture.
+</Exercise>
+
+<Solution>
+Documentez séparateur et échappement, ouvrez avec les modes appropriés, validez chaque ligne avant insertion et distinguez fichier absent de fichier corrompu. N'écrasez pas une sauvegarde existante si sa lecture a échoué.
+</Solution>
+
+<Exercise n="8.3" title="Assembler et vérifier le programme">
+Séparez les fichiers, ajoutez un Makefile ou une commande équivalente, testez les scénarios principaux et documentez les limites restantes.
+</Exercise>
+
+<Solution>
+Le Makefile compile les fichiers source avec C17, avertissements et en-têtes du dossier `include`. Testez ajout, recherche, suppression, redémarrage avec sauvegarde existante, fichier invalide et carnet vide. Ajoutez une procédure de construction et d'utilisation au README.
+</Solution>
+
+## Livrable
+
+Un gestionnaire de contacts en C, modulaire, compilable avec avertissements, persistant, testé avec les sanitizers disponibles et documenté.

@@ -24,12 +24,20 @@ Chaque module associe des objectifs observables, des explications précises, des
 13. Qualité web
 14. Projet final — Bibliothèque de films
 
+### Python (9 modules)
+Fondamentaux, programmation orientée objet, packages et projet final CLI.
+
+### Angular (8 modules)
+TypeScript, composants, services, formulaires, routage, RxJS, tests et tableau de bord.
+
+### C (8 modules)
+Compilation, fonctions, tableaux, pointeurs, mémoire, fichiers et projet final.
+
+### C++ (8 modules)
+C++ moderne, classes, RAII, STL, templates, tests et projet final.
+
 ### Parcours à venir
-- Python
-- Angular
 - PHP
-- C
-- C++
 - Java
 
 ## Lancer en local

@@ -1,0 +1,145 @@
+# RAII et gestion des ressources en C++
+
+Le C++ moderne associe durée de vie des objets et propriété des ressources. RAII garantit qu'une ressource est libérée lorsque son propriétaire sort de portée. Les pointeurs intelligents et les règles de copie/déplacement évitent la gestion manuelle fragile.
+
+## Objectifs
+
+- Expliquer le principe RAII.
+- Utiliser des objets de bibliothèque qui gèrent eux-mêmes leurs ressources.
+- Distinguer propriété unique, partagée et empruntée.
+- Choisir entre `unique_ptr`, `shared_ptr` et une référence.
+- Comprendre copie, déplacement et règle des zéros.
+- Éviter les fuites et les cycles de propriété.
+
+## Prérequis
+
+- Classes, constructeurs, méthodes constantes et conteneurs standard.
+
+## Cours
+
+### RAII
+
+RAII (« Resource Acquisition Is Initialization ») associe une ressource à un objet. Le constructeur acquiert ou reçoit la ressource et le destructeur la libère. La bibliothèque standard applique cette approche aux chaînes, vecteurs, flux de fichiers et verrous.
+
+```cpp
+#include <fstream>
+#include <string>
+
+void sauvegarder(const std::string& chemin)
+{
+    std::ofstream fichier{chemin};
+    if (!fichier) {
+        throw std::runtime_error("Impossible d'ouvrir le fichier");
+    }
+    fichier << "Données\n";
+}
+```
+
+Le flux ferme le fichier à sa destruction, y compris lorsqu'une exception traverse la portée. Incluez `<stdexcept>` pour l'exception d'exemple.
+
+### Propriété unique avec `unique_ptr`
+
+```cpp
+#include <memory>
+
+auto livre = std::make_unique<Livre>(1, "Dune");
+```
+
+`unique_ptr` est le propriétaire exclusif. Il n'est pas copiable, mais peut être déplacé vers un nouveau propriétaire :
+
+```cpp
+std::unique_ptr<Livre> transfert = std::move(livre);
+```
+
+Après le déplacement, le propriétaire source est vide ou dans un état valide mais non spécifié; testez-le avant d'utiliser sa valeur. Préférez les objets automatiques et les conteneurs lorsqu'un pointeur n'est pas nécessaire.
+
+### Emprunter sans devenir propriétaire
+
+Une référence ou un pointeur brut non propriétaire peut donner accès à un objet sans en prendre la propriété. La durée de vie du propriétaire doit dépasser celle de l'emprunt. Le contrat doit préciser si l'absence est possible.
+
+Ne retournez pas une référence ou un pointeur vers un objet local dont la durée de vie se termine à la sortie de fonction.
+
+### Propriété partagée
+
+`std::shared_ptr` compte les propriétaires et détruit l'objet lorsque le dernier propriétaire disparaît :
+
+```cpp
+auto configuration = std::make_shared<Configuration>();
+```
+
+Cette propriété a un coût et ne doit être choisie que lorsque plusieurs composants possèdent réellement la ressource. Un cycle de `shared_ptr` conserve les objets indéfiniment ; utilisez `std::weak_ptr` pour une relation d'observation qui ne possède pas.
+
+### Copie et déplacement
+
+Une classe qui contient des ressources doit définir clairement comment elle se copie et se déplace. La règle des zéros recommande d'utiliser des membres RAII et de ne pas écrire soi-même destructeur, constructeur de copie ou opérateur d'affectation lorsque les membres standard suffisent.
+
+```cpp
+class Bibliotheque {
+public:
+    void ajouter(std::string titre)
+    {
+        titres_.push_back(std::move(titre));
+    }
+
+private:
+    std::vector<std::string> titres_;
+};
+```
+
+`std::vector` et `std::string` gèrent déjà leurs ressources; la classe peut se concentrer sur son comportement.
+
+### Exceptions et destruction
+
+Un destructeur doit libérer ses ressources sans lancer d'exception. Les objets automatiques sont détruits en ordre inverse de leur construction à la sortie de portée. C'est la base de la sécurité lors d'une sortie anticipée.
+
+<Callout type="warn">
+N'appelez pas `delete` sur un pointeur obtenu depuis `unique_ptr` ou `shared_ptr`. Le propriétaire RAII doit rester seul responsable de la libération.
+</Callout>
+
+## Erreurs fréquentes
+
+**Utiliser `shared_ptr` partout**
+
+Cela cache la propriété et complique le cycle de vie. Une propriété unique ou un emprunt est souvent le bon contrat.
+
+**Déréférencer après déplacement**
+
+Vérifiez le propriétaire source ou cessez de l'utiliser après transfert.
+
+**Créer un cycle de références partagées**
+
+Un objet qui référence son propriétaire avec `shared_ptr` empêche la destruction. Introduisez une référence faible pour le lien non propriétaire.
+
+**Écrire du code RAII inutile**
+
+Si `std::vector`, un flux ou un pointeur intelligent gère déjà la ressource, évitez une couche manuelle qui duplique la responsabilité.
+
+## Exercices
+
+<Exercise n="4.1" title="Choisir une stratégie de propriété">
+Pour un catalogue qui possède ses livres et une fonction qui affiche un livre sans le conserver, choisissez une représentation de propriété adaptée et justifiez-la.
+</Exercise>
+
+<Solution>
+Le catalogue peut stocker des objets valeur dans un `std::vector<Livre>` si les livres n'ont pas besoin d'identité polymorphe. La fonction d'affichage reçoit un `const Livre&` emprunté et ne prolonge pas sa durée de vie.
+</Solution>
+
+<Exercise n="4.2" title="Transférer une propriété unique">
+Créez un `unique_ptr` pour une ressource, transférez-le à une autre variable et expliquez l'état du propriétaire initial.
+</Exercise>
+
+<Solution>
+Utilisez `std::make_unique<Type>()` et `std::move(proprietaire)`. Après transfert, l'ancien `unique_ptr` ne possède plus la ressource et doit être vérifié avant utilisation.
+</Solution>
+
+<Exercise n="4.3" title="Appliquer la règle des zéros">
+Remplacez dans une classe un buffer `new[]` géré manuellement par un conteneur RAII et supprimez les opérations spéciales devenues inutiles.
+</Exercise>
+
+<Solution>
+Un `std::vector<T>` ou `std::string` gère sa propre allocation. La classe peut alors utiliser le constructeur, destructeur et opérations de copie/déplacement générés, sauf si des invariants métier exigent un comportement distinct.
+</Solution>
+
+## Livrable
+
+Une classe de catalogue fondée sur les types RAII, sans `new`/`delete` manuels, avec une propriété clairement documentée.

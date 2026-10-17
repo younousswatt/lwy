@@ -1,0 +1,161 @@
+# Démarrer avec C++ moderne
+
+C++ est un langage compilé multi-paradigme. Il permet de combiner abstraction, programmation orientée objet et contrôle précis, tout en offrant une bibliothèque standard riche. Ce module introduit la compilation, les types, les entrées-sorties et les pratiques modernes de base.
+
+## Objectifs
+
+- Installer ou repérer un compilateur C++.
+- Compiler un programme en C++20 avec avertissements.
+- Comprendre la structure d'un programme et `main`.
+- Déclarer des valeurs avec une initialisation uniforme.
+- Employer chaînes et conteneurs de la bibliothèque standard.
+- Distinguer erreur de compilation et erreur d'exécution.
+
+## Prérequis
+
+- Aucun prérequis de programmation.
+- Un terminal, un éditeur et un compilateur C++ récent (GCC, Clang ou MSVC).
+
+## Cours
+
+### Premier programme
+
+```cpp
+#include <iostream>
+
+int main()
+{
+    std::cout << "Bonjour, monde !\n";
+    return 0;
+}
+```
+
+`iostream` fournit les flux d'entrée et de sortie. `std::cout` affiche du texte et `\n` termine la ligne. `main` est le point d'entrée.
+
+### Compiler en C++20
+
+Avec GCC ou Clang :
+
+```bash
+g++ -std=c++20 -Wall -Wextra -Wpedantic -Wconversion -Wshadow bonjour.cpp -o bonjour
+./bonjour
+```
+
+Sur Windows, l'exécutable peut être `bonjour.exe`. Pour MSVC, utilisez un terminal développeur et l'option de standard correspondante `/std:c++20`. Les options dépendent du compilateur installé : vérifiez toujours sa documentation.
+
+Les sources C++ ont souvent l'extension `.cpp`. Utilisez le compilateur C++ pour compiler le C++ et ne mélangez pas des commandes de compilation de C et C++ sans raison.
+
+### Variables, types et initialisation
+
+```cpp
+#include <string>
+
+int quantite{3};
+double prix{19.95};
+bool disponible{true};
+std::string titre{"Dune"};
+```
+
+L'initialisation uniforme avec accolades rend visibles les valeurs initiales et rejette plusieurs conversions réductrices. `const` et `constexpr` expriment des valeurs qui ne doivent pas changer, à l'exécution ou à la compilation lorsque c'est possible.
+
+```cpp
+const int capacite{100};
+constexpr double tva{0.20};
+```
+
+### Bibliothèque standard et conteneurs
+
+Préférez `std::string` à un tableau de caractères géré manuellement pour du texte courant, et `std::vector` à un tableau dynamique artisanal :
+
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+
+int main()
+{
+    std::vector<std::string> livres{"Dune", "Fondation"};
+    livres.push_back("Solaris");
+
+    for (const std::string& livre : livres) {
+        std::cout << livre << '\n';
+    }
+}
+```
+
+Les références constantes évitent la copie de chaque chaîne dans la boucle et interdisent sa modification depuis cette référence.
+
+### Entrées-sorties vérifiées
+
+```cpp
+#include <iostream>
+
+int main()
+{
+    int nombre{};
+    std::cout << "Nombre : ";
+    if (!(std::cin >> nombre)) {
+        std::cerr << "Entrée invalide.\n";
+        return 1;
+    }
+    std::cout << "Double : " << nombre * 2 << '\n';
+}
+```
+
+Après une entrée invalide, le flux passe en état d'échec. Ne poursuivez pas comme si une valeur valide avait été lue.
+
+### Organisation d'un projet
+
+Conservez le code source sous `src/`, les tests dans `tests/` et les artefacts de compilation dans un dossier dédié. N'ajoutez pas les exécutables au dépôt. Les modules suivants construiront un projet CMake reproductible.
+
+<Callout type="tip">
+Utilisez les types et conteneurs standard avant de gérer vous-même une allocation. En C++, la bibliothèque standard fournit déjà des abstractions qui rendent la propriété et la durée de vie plus sûres.
+</Callout>
+
+## Erreurs fréquentes
+
+**Compiler en utilisant la commande C**
+
+Le compilateur C peut ne pas lier la bibliothèque d'exécution C++ et rejeter des constructions C++. Utilisez le compilateur C++.
+
+**Ignorer les avertissements**
+
+Les avertissements révèlent conversions suspectes et erreurs probables. Corrigez-les avant de les supprimer.
+
+**Utiliser des tableaux bruts pour toutes les collections**
+
+Un `std::vector` suit sa taille et libère automatiquement sa mémoire.
+
+**Ne pas vérifier une entrée**
+
+L'extraction depuis `std::cin` peut échouer. Vérifiez l'état du flux avant d'utiliser la valeur.
+
+## Exercices
+
+<Exercise n="1.1" title="Compiler un programme C++20">
+Affichez deux lignes, compilez avec le standard C++20 et plusieurs avertissements, puis exécutez l'application.
+</Exercise>
+
+<Solution>
+Écrivez `main` avec `std::cout`, incluez `<iostream>`, puis compilez avec `g++ -std=c++20 -Wall -Wextra -Wpedantic fichier.cpp -o application`.
+</Solution>
+
+<Exercise n="1.2" title="Créer une liste de livres">
+Créez un `std::vector<std::string>`, ajoutez un titre et affichez tous les titres sans les copier inutilement.
+</Exercise>
+
+<Solution>
+Incluez `<string>` et `<vector>`, ajoutez avec `push_back`, puis parcourez avec `for (const std::string& titre : titres)`.
+</Solution>
+
+<Exercise n="1.3" title="Refuser une entrée invalide">
+Lisez un entier, vérifiez l'état du flux et n'effectuez pas le calcul lorsque l'entrée n'est pas valide.
+</Exercise>
+
+<Solution>
+Testez `if (!(std::cin >> valeur))`, écrivez une explication sur `std::cerr`, puis retournez un statut non nul.
+</Solution>
+
+## Livrable
+
+Un petit programme C++20 compilé avec avertissements et utilisant `std::string`, `std::vector` et une entrée contrôlée.

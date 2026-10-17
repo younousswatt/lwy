@@ -1,0 +1,148 @@
+# Types, variables et opérateurs en C
+
+Les types C déterminent la représentation et les opérations possibles sur les valeurs. Ce module traite les entiers, les nombres réels, les conversions, les constantes et les règles à respecter lors des entrées-sorties formatées.
+
+## Objectifs
+
+- Déclarer des variables avec des types adaptés.
+- Distinguer constantes signées et non signées.
+- Calculer avec des opérateurs arithmétiques et logiques.
+- Comprendre les conversions et les divisions entières.
+- Utiliser correctement `printf` et `scanf`.
+- Détecter débordements, divisions par zéro et conversions dangereuses.
+
+## Prérequis
+
+- Compilation et entrées-sorties élémentaires en C.
+
+## Cours
+
+### Types fondamentaux
+
+```c
+int quantite = 12;
+long population = 8000000L;
+unsigned int essais = 3U;
+double prix = 19.95;
+char initiale = 'A';
+_Bool actif = 1;
+```
+
+`int` représente un entier signé courant, `long` une famille d'entiers de largeur au moins équivalente à `int`, `unsigned` un entier non signé, `double` un réel à précision usuelle et `char` une unité de stockage utilisée notamment pour les caractères d'une chaîne. La largeur exacte de nombreux types dépend de l'implémentation.
+
+Pour une largeur numérique précise lorsque le contrat l'exige, utilisez les types de `<stdint.h>` comme `int32_t` si l'implémentation les fournit.
+
+### Constantes et conversions
+
+`const` interdit la modification par l'intermédiaire du nom déclaré :
+
+```c
+const double TAUX_TVA = 0.20;
+```
+
+Une conversion explicite documente un changement de type, mais ne rend pas toute valeur représentable. Une conversion vers un type entier peut perdre la partie fractionnaire :
+
+```c
+double moyenne = 7.8;
+int arrondieVersZero = (int)moyenne; /* 7 */
+```
+
+Ne supposez pas que convertir une valeur trop grande vers un entier signé produira un résultat portable. Vérifiez les bornes avant la conversion.
+
+### Opérateurs et division
+
+```c
+int a = 7;
+int b = 2;
+int quotient = a / b;       /* 3 : division entière */
+double exact = (double)a / b; /* 3.5 */
+int reste = a % b;          /* 1 */
+```
+
+Les opérateurs `&&` et `||` court-circuitent leur second opérande si son évaluation n'est pas nécessaire. Les opérateurs de comparaison produisent une valeur vraie ou fausse.
+
+Évitez la division par zéro. Les débordements d'entiers signés ne sont pas un mécanisme de calcul valide ; vérifiez les bornes lorsque des opérations peuvent dépasser la représentation.
+
+### Entrées formatées
+
+`scanf` retourne le nombre de conversions réussies. Il faut vérifier ce résultat avant d'utiliser les variables :
+
+```c
+#include <stdio.h>
+
+int main(void)
+{
+    int age;
+    printf("Âge : ");
+    if (scanf("%d", &age) != 1) {
+        fputs("Entier invalide.\n", stderr);
+        return 1;
+    }
+    printf("Dans un an : %d\n", age + 1);
+    return 0;
+}
+```
+
+L'opérateur `&` fournit l'adresse de la variable à remplir. Le format et le type du pointeur doivent correspondre exactement. Pour des entrées utilisateur robustes, préférez souvent lire une ligne avec `fgets`, puis convertir et contrôler avec `strtol`.
+
+### Formats de `printf`
+
+Utilisez `%d` pour `int`, `%ld` pour `long`, `%u` pour `unsigned int`, `%f` pour `double` et `%c` pour `char` :
+
+```c
+printf("quantite=%d prix=%.2f initiale=%c\n", quantite, prix, initiale);
+```
+
+Passer un argument d'un type qui ne correspond pas à son spécificateur de format entraîne un comportement indéfini. Activez les avertissements du compilateur.
+
+## Erreurs fréquentes
+
+**Attendre une division décimale entre deux entiers**
+
+Au moins un opérande doit être converti en type réel avant la division.
+
+**Ne pas vérifier `scanf`**
+
+Une entrée invalide laisse la variable non renseignée par cette conversion. Traitez le retour de fonction avant de lire la valeur.
+
+**Confondre capacité et signe**
+
+`unsigned` ne signifie pas « plus grand dans tous les cas ». Il change l'ensemble des valeurs représentables et les règles arithmétiques.
+
+**Mal associer format et type**
+
+Les formats doivent correspondre aux types des arguments. Un écart peut produire un comportement indéfini.
+
+<Callout type="warn">
+Les valeurs fournies par l'utilisateur et les résultats d'opérations arithmétiques doivent être vérifiés. Le C n'effectue pas automatiquement les contrôles de bornes des tableaux ou de toutes les conversions.
+</Callout>
+
+## Exercices
+
+<Exercise n="2.1" title="Calculer une conversion d'unités">
+Lisez une distance en kilomètres sous forme de nombre réel, convertissez-la en mètres et vérifiez la lecture ainsi que la plage choisie.
+</Exercise>
+
+<Solution>
+Lisez un `double` en vérifiant que `scanf` retourne 1, contrôlez que la distance est non négative et calculer `metres = kilometres * 1000.0`. Affichez le résultat avec `%.2f`.
+</Solution>
+
+<Exercise n="2.2" title="Comparer division entière et réelle">
+Calculez `7 / 2` et la division réelle correspondante. Expliquez la différence et affichez les deux résultats.
+</Exercise>
+
+<Solution>
+Le calcul entier donne 3. Pour obtenir 3.5, convertissez un opérande avant la division, par exemple `(double)7 / 2`, puis utilisez `%f` ou un format de précision tel que `%.1f`.
+</Solution>
+
+<Exercise n="2.3" title="Vérifier une entrée utilisateur">
+Demandez un entier et refusez une entrée qui ne peut pas être convertie. Aucun calcul ne doit utiliser la variable en cas d'échec.
+</Exercise>
+
+<Solution>
+Initialisez la variable et testez immédiatement `scanf("%d", &valeur) == 1`. Dans le cas contraire, affichez un diagnostic sur `stderr` et quittez avec un statut non nul.
+</Solution>
+
+## Livrable
+
+Un convertisseur d'unités en console qui utilise des types adaptés, vérifie chaque entrée et affiche des résultats formatés sans conversion implicite risquée.

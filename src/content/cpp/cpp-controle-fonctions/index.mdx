@@ -1,0 +1,158 @@
+# Contrôle du programme et fonctions en C++
+
+Les fonctions nomment des opérations, clarifient les responsabilités et facilitent les tests. C++ apporte notamment références, surcharge et paramètres par défaut. Ce module construit des interfaces de fonction lisibles et sûres.
+
+## Objectifs
+
+- Écrire des fonctions avec paramètres et valeur de retour.
+- Distinguer passage par valeur, référence et référence constante.
+- Comprendre surcharge et arguments par défaut.
+- Utiliser `const` pour exprimer l'absence de modification.
+- Appliquer conditions, boucles et algorithmes standard simples.
+- Décomposer un programme en petites fonctions.
+
+## Prérequis
+
+- Types, chaînes, conteneurs et compilation C++20.
+
+## Cours
+
+### Définir une fonction
+
+```cpp
+int maximum(int gauche, int droite)
+{
+    return gauche > droite ? gauche : droite;
+}
+```
+
+Le type avant le nom est le type de retour. La déclaration doit être visible avant l'appel ou placée dans un en-tête.
+
+### Choisir comment transmettre une valeur
+
+Passez une petite valeur comme `int` par valeur. Passez un objet plus volumineux par référence constante si la fonction doit le lire, et par référence modifiable si elle doit le changer :
+
+```cpp
+#include <string>
+
+void afficher(const std::string& texte)
+{
+    // La fonction consulte le texte sans le copier ni le modifier.
+}
+
+void mettreEnMajuscules(std::string& texte)
+{
+    // La fonction peut modifier la chaîne.
+}
+```
+
+Une référence constante doit être initialisée et ne représente pas une absence de valeur. Si l'absence est légitime, utilisez un type explicite tel que `std::optional` ou une stratégie adaptée.
+
+### Surcharge et paramètres par défaut
+
+Plusieurs fonctions peuvent partager un nom si leurs listes de paramètres diffèrent :
+
+```cpp
+int aire(int largeur, int hauteur)
+{
+    return largeur * hauteur;
+}
+
+double aire(double rayon)
+{
+    constexpr double pi{3.141592653589793};
+    return pi * rayon * rayon;
+}
+```
+
+Un paramètre par défaut simplifie un appel :
+
+```cpp
+void afficherMessage(const std::string& message, bool nouvelleLigne = true);
+```
+
+Les valeurs par défaut sont généralement écrites dans la déclaration d'en-tête, une seule fois. Évitez les surcharges ambiguës.
+
+### Contrats et résultats
+
+Une fonction doit décrire ses conditions d'appel et son résultat. Pour une opération qui peut échouer, utilisez une stratégie explicite : valeur optionnelle, exception ou résultat contenant erreur et valeur. Ne retournez pas une valeur arbitraire qui ressemble à une réussite.
+
+`const` placé après la liste des paramètres d'une méthode membre garantit que cette méthode ne modifie pas l'état observable de l'objet.
+
+### Algorithmes et lambdas
+
+```cpp
+#include <algorithm>
+#include <vector>
+
+std::vector<int> valeurs{8, 3, 5};
+std::sort(valeurs.begin(), valeurs.end());
+```
+
+Pour une recherche conditionnelle :
+
+```cpp
+const auto trouve = std::find_if(
+    valeurs.begin(),
+    valeurs.end(),
+    [](int valeur) { return valeur > 4; }
+);
+```
+
+Une lambda est une fonction locale. Gardez ses captures explicites et n'y conservez pas une référence dont la durée de vie est plus courte que celle de l'appel différé.
+
+### Tester une fonction
+
+Une fonction isolée se teste pour un cas normal, ses limites et ses entrées invalides. Testez les résultats plutôt que de copier la logique de l'implémentation dans le test.
+
+<Callout type="tip">
+Choisissez un retour qui exprime clairement le résultat. Une fonction qui calcule une valeur ne devrait pas afficher elle-même cette valeur : séparez calcul et présentation.
+</Callout>
+
+## Erreurs fréquentes
+
+**Renvoyer une référence vers une variable locale**
+
+La variable disparaît à la fin de la fonction. Retournez une valeur ou référencez un objet dont la durée de vie est garantie par le contrat.
+
+**Copier inutilement une grande chaîne**
+
+Une référence constante permet une lecture sans copie et interdit la modification.
+
+**Multiplier les surcharges ambiguës**
+
+Des conversions implicites peuvent rendre l'appel ambigu. Préférez des noms distincts ou des types explicites lorsque l'intention n'est pas évidente.
+
+**Capturer des références à durée de vie insuffisante**
+
+Une lambda appelée plus tard peut référencer un objet déjà détruit.
+
+## Exercices
+
+<Exercise n="2.1" title="Écrire des fonctions de calcul">
+Créez une fonction de moyenne qui reçoit un vecteur constant de nombres et retourne une option vide si le vecteur est vide.
+</Exercise>
+
+<Solution>
+Acceptez `const std::vector<double>&`, retournez `std::optional<double>`, vérifiez `empty()`, puis calculez avec `std::accumulate` et divisez par la taille convertie en `double`.
+</Solution>
+
+<Exercise n="2.2" title="Filtrer avec un algorithme">
+À partir d'un vecteur de nombres, construisez un second vecteur contenant uniquement les valeurs positives.
+</Exercise>
+
+<Solution>
+Utilisez `std::copy_if` vers un `std::back_inserter`, avec une lambda qui teste `valeur > 0`. Incluez les en-têtes des algorithmes et itérateurs employés.
+</Solution>
+
+<Exercise n="2.3" title="Concevoir une interface de fonction">
+Définissez une fonction de formatage qui lit une chaîne sans la copier et permet de choisir si une nouvelle ligne est ajoutée.
+</Exercise>
+
+<Solution>
+Une interface possible est `void afficher(const std::string& texte, bool nouvelleLigne = true);`. Placez le défaut une seule fois dans la déclaration publique et testez les deux variantes.
+</Solution>
+
+## Livrable
+
+Une petite bibliothèque de fonctions testables pour filtrer, agréger et formater des données de bibliothèque.

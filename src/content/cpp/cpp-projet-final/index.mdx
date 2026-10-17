@@ -1,0 +1,132 @@
+# Projet final — Catalogue de médiathèque en C++
+
+Le projet final est une application en console permettant de gérer un catalogue de livres. Elle s'appuie sur les classes et invariants, les conteneurs standard, les algorithmes, RAII, les fichiers et les tests.
+
+## Objectifs
+
+- Concevoir une application complète avec séparation des responsabilités.
+- Modéliser livres et catalogue avec des interfaces cohérentes.
+- Rechercher, trier, ajouter et supprimer des entrées.
+- Charger et sauvegarder des données persistantes.
+- Gérer explicitement entrées invalides et erreurs d'E/S.
+- Construire le projet avec CMake et tester les règles importantes.
+
+## Prérequis
+
+- Tous les modules précédents du parcours C++.
+
+## Cours
+
+### Fonctionnalités
+
+L'application doit permettre :
+
+- d'ajouter un livre avec titre, auteur et année ;
+- d'afficher le catalogue et de rechercher un titre ;
+- de trier les résultats ;
+- de supprimer un livre choisi ;
+- de charger et sauvegarder les données ;
+- d'afficher une aide et de signaler les erreurs.
+
+Définissez d'abord les règles : titres vides interdits, années plausibles, doublons autorisés ou non, et comportement en cas de fichier invalide.
+
+### Modèle et responsabilités
+
+```text
+catalogue/
+├── CMakeLists.txt
+├── README.md
+├── include/
+│   ├── livre.hpp
+│   ├── catalogue.hpp
+│   └── stockage.hpp
+├── src/
+│   ├── livre.cpp
+│   ├── catalogue.cpp
+│   ├── stockage.cpp
+│   └── main.cpp
+└── tests/
+```
+
+`Livre` protège ses invariants. `Catalogue` possède une collection de livres et offre des opérations métier. `Stockage` traduit les données vers un fichier. L'interface console orchestre les opérations sans intégrer la logique de stockage dans les classes du modèle.
+
+### Collection et opérations
+
+Un `std::vector<Livre>` convient à un catalogue dont l'ordre peut changer et qui est parcouru fréquemment. Les méthodes peuvent ajouter une valeur, trouver un livre par identifiant et retirer un élément. Si une référence vers un livre est retournée, documentez qu'une modification ultérieure du vecteur peut l'invalider.
+
+Pour rechercher, utilisez `std::find_if`. Pour trier, utilisez `std::sort` avec une comparaison explicite. Pour compter par auteur, un `std::map` ou `std::unordered_map` peut être ajouté si ce besoin le justifie.
+
+### Persistance
+
+Choisissez un format simple et documentez son versionnement et son échappement. Les champs contenant séparateurs, guillemets ou retours à la ligne doivent être traités correctement. Pour un premier projet, vous pouvez restreindre explicitement les caractères autorisés au lieu de prétendre gérer un format général.
+
+La sauvegarde utilise un flux RAII et contrôle les erreurs d'ouverture, d'écriture et de fermeture. Ne remplacez pas les données existantes si le chargement a échoué à cause d'un format corrompu.
+
+### Interface console
+
+Utilisez `std::getline` pour lire les commandes et du texte contenant des espaces. Convertissez les nombres en traitant les exceptions et les caractères résiduels. Affichez chaque erreur avec le contexte utile et retournez un code de sortie non nul pour un échec global.
+
+Gardez l'interface séparée du catalogue afin que ses méthodes soient testables sans entrée interactive.
+
+### Tests et livraison
+
+Testez les invariants du modèle, chaque opération du catalogue, les cas vides, les doublons selon votre contrat, les fichiers invalides et les erreurs de sauvegarde. Les tests de stockage doivent employer un chemin temporaire et nettoyer leurs fichiers.
+
+```bash
+cmake -S . -B build
+cmake --build build
+```
+
+Le README décrit un compilateur compatible, les étapes de configuration, les commandes de l'application, le format de stockage et les limites connues. N'incluez pas le dossier `build/` ni les exécutables.
+
+<Callout type="info">
+La qualité du projet se mesure à la cohérence des règles et à la capacité de diagnostiquer les échecs autant qu'au nombre de fonctionnalités.
+</Callout>
+
+## Erreurs fréquentes
+
+**Exposer le conteneur interne**
+
+Les appelants peuvent contourner les invariants du catalogue. Exposez des opérations et vues constantes appropriées.
+
+**Ignorer la durée de vie des références**
+
+Une modification du vecteur peut invalider pointeurs, itérateurs et références. Documentez ces contraintes et évitez de conserver une référence trop longtemps.
+
+**Traiter un fichier corrompu comme un catalogue vide**
+
+Une erreur de format doit produire un diagnostic et préserver les données d'origine.
+
+**Ajouter une abstraction sans besoin concret**
+
+Choisissez des types et services selon les fonctionnalités réelles plutôt que de construire une architecture générique prématurée.
+
+## Exercices
+
+<Exercise n="8.1" title="Définir les règles et le modèle">
+Écrivez les invariants de `Livre`, définissez son constructeur et spécifiez les opérations que le catalogue expose sans publier directement son conteneur interne.
+</Exercise>
+
+<Solution>
+Interdisez au minimum les titres vides et définissez la plage d'années acceptée. Le catalogue expose des opérations de création, recherche, suppression et consultation en lecture seule. Son vecteur reste privé afin que chaque mutation préserve les invariants.
+</Solution>
+
+<Exercise n="8.2" title="Ajouter recherche, tri et persistance">
+Ajoutez une recherche insensible à la casse ou documentez une recherche sensible à la casse, un tri déterministe et la lecture/écriture du format choisi.
+</Exercise>
+
+<Solution>
+Choisissez et documentez précisément les règles de comparaison. Le tri doit départager les titres égaux de manière stable si l'ordre importe. La lecture valide chaque enregistrement et rapporte la ligne fautive; l'écriture vérifie le flux jusqu'à sa fermeture.
+</Solution>
+
+<Exercise n="8.3" title="Tester et livrer l'application">
+Ajoutez des tests unitaires et d'intégration, configurez le build CMake, vérifiez un build propre et rédigez le README d'utilisation.
+</Exercise>
+
+<Solution>
+Les tests couvrent les invariants, opérations, erreurs d'E/S et aller-retour de persistance dans un dossier temporaire. Reconfigurez dans un dossier de build neuf et documentez compilateur requis, commandes, exemples, format et limites.
+</Solution>
+
+## Livrable
+
+Un catalogue de médiathèque C++20 construit avec CMake, testé, persistant, documenté et conçu autour de types RAII.
