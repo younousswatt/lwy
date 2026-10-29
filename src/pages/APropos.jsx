@@ -1,5 +1,11 @@
-import { Mail, Linkedin, Github } from 'lucide-react';
+import { Globe, Mail, Phone } from 'lucide-react';
 import FadeIn from '../components/ui/FadeIn.jsx';
+
+const contact = {
+  email: 'wattyounouss6@gmail.com',
+  website: 'https://younousswatt.netlify.app',
+  phone: '+221777323219',
+};
 
 export default function APropos() {
   return (
@@ -8,36 +14,37 @@ export default function APropos() {
         <p className="eyebrow">À propos</p>
         <h1 className="page-title">Yunus</h1>
         <p className="page-description">
-          Enseignant vacataire en développement web, passionné par la pédagogie et le code propre.
+          Enseignant en algorithmique, programmation et développement, et créateur de LWY : apprendre à raisonner, coder et construire.
         </p>
       </FadeIn>
       <div className="about-layout">
         <div className="about-prose">
           <section>
-            <h2>Parcours</h2>
+            <h2>La démarche LWY</h2>
             <p>
-              Après des études en informatique et plusieurs années d\'expérience en développement,
-              j\'ai choisi de partager mes connaissances à travers l\'enseignement. Je conçois des parcours
-              qui privilégient la compréhension des fondamentaux plutôt que l\'accumulation de frameworks.
+              J’ai créé LWY pour proposer des parcours progressifs, avec des objectifs clairs, des explications,
+              des exercices corrigés et des projets à réaliser. L’apprentissage commence par la logique et la
+              résolution de problèmes, se poursuit avec les langages de programmation, puis mène à la création
+              d’applications et de projets concrets.
             </p>
           </section>
           <section>
-            <h2>Motivation</h2>
+            <h2>Parcours proposés</h2>
             <p>
-              Ce site a pour but de fournir un support de cours structuré et accessible à mes étudiants,
-              tout en servant de portfolio technique. Chaque module est rédigé pour être compréhensible
-              par un débutant complet, sans présupposer de connaissances préalables.
+              LWY ne se limite pas au développement web : les parcours abordent aussi les bases de l’algorithmique,
+              les structures de données et la programmation avec Python, C et C++, ainsi que le développement
+              d’applications web avec HTML, JavaScript, Angular et PHP/MySQL. Chaque parcours indique son ordre,
+              ses prérequis et ses projets. Java est annoncé comme parcours à venir.
             </p>
           </section>
           <section>
-            <h2>Stack maîtrisée</h2>
+            <h2>Une approche axée sur la pratique</h2>
             <ul className="skill-list">
-              <li>HTML5 sémantique et accessibilité</li>
-              <li>CSS moderne (Flexbox, Grid, variables)</li>
-              <li>JavaScript ES2023+ et DOM</li>
-              <li>React et écosystème</li>
-              <li>Git et GitHub</li>
-              <li>Outils de développement (VS Code, DevTools)</li>
+              <li>De la logique algorithmique et des structures de données pour apprendre à décomposer les problèmes.</li>
+              <li>Des notions de programmation et de développement introduites progressivement et reliées à leurs usages.</li>
+              <li>Des exercices accompagnés de solutions pour comparer et comprendre les choix.</li>
+              <li>Des projets concrets pour mettre en œuvre les acquis.</li>
+              <li>Une attention portée à la qualité, à l’accessibilité et à la sécurité du code.</li>
             </ul>
           </section>
         </div>
@@ -48,15 +55,15 @@ export default function APropos() {
           <ul>
             <li>
               <Mail size={16} aria-hidden="true" />
-              <a href="mailto:[EMAIL]">[EMAIL]</a>
+              <a href={`mailto:${contact.email}`}>{contact.email}</a>
             </li>
             <li>
-              <Linkedin size={16} aria-hidden="true" />
-              <a href="[LINKEDIN]" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              <Globe size={16} aria-hidden="true" />
+              <a href={contact.website} target="_blank" rel="noopener noreferrer">Portfolio</a>
             </li>
             <li>
-              <Github size={16} aria-hidden="true" />
-              <a href="[GITHUB]" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <Phone size={16} aria-hidden="true" />
+              <a href={`tel:${contact.phone}`}>+221 77 732 32 19</a>
             </li>
           </ul>
         </aside>

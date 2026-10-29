@@ -1,22 +1,19 @@
 import ModuleCard from './ModuleCard.jsx';
+import { sectionsFromModules, sectionLabel } from '../../data/modules.js';
 
 export default function ModuleList({ modules, trackSlug }) {
-  const sections = ['fondations', 'html', 'css', 'js', 'pro'];
-  const groupedModules = sections.reduce((acc, section) => {
-    const sectionModules = modules.filter((m) => m.section === section);
-    if (sectionModules.length > 0) {
-      acc[section] = sectionModules;
-    }
-    return acc;
-  }, {});
+  const groupedModules = sectionsFromModules(modules).map((section) => ({
+    section,
+    items: modules.filter((module) => module.section === section),
+  }));
 
   return (
     <>
-      {Object.entries(groupedModules).map(([section, sectionModules]) => (
+      {groupedModules.map(({ section, items }) => (
         <div key={section} className="module-group">
-          <h3>{section === 'pro' ? 'Projet' : section.charAt(0).toUpperCase() + section.slice(1)}</h3>
+          <h3>{sectionLabel(section)}</h3>
           <div className="module-list">
-            {sectionModules.map((module) => (
+            {items.map((module) => (
               <ModuleCard key={module.slug} module={module} trackSlug={trackSlug} showLivrable={false} />
             ))}
           </div>

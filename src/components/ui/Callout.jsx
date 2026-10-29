@@ -17,7 +17,7 @@ export default function Callout({ type = 'info', children }) {
   const label = labels[type] || 'Information';
 
   return (
-    <div className="callout">
+    <div className={`callout callout-${type}`}>
       <div className="callout-label">
         <Icon size={16} aria-hidden="true" />
         <span>{label}</span>

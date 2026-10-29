@@ -1,0 +1,257 @@
+# Formulaires HTTP et validation en PHP
+
+Un formulaire HTML envoie des données au serveur avec une requête HTTP. Le navigateur peut améliorer la saisie, mais ne constitue pas une frontière de confiance : PHP doit vérifier toutes les données reçues avant de les utiliser ou de les afficher.
+
+## Objectifs
+
+- Distinguer les méthodes HTTP GET et POST.
+- Lire prudemment les données reçues dans `$_GET` et `$_POST`.
+- Valider les types, longueurs et formats côté serveur.
+- Réafficher des valeurs invalides sans injecter de HTML.
+- Appliquer le modèle POST/Redirect/GET.
+- Associer labels et messages d'erreur accessibles.
+
+## Prérequis
+
+- Variables, fonctions, tableaux et HTML.
+- Apache et PHP démarrés sous XAMPP.
+
+## Cours
+
+### Formulaire HTML
+
+```html
+<form method="post" action="contact.php">
+  <label for="nom">Nom</label>
+  <input id="nom" name="nom" type="text" maxlength="80" required>
+
+  <label for="email">Adresse e-mail</label>
+  <input id="email" name="email" type="email" maxlength="254" required>
+
+  <button type="submit">Envoyer</button>
+</form>
+```
+
+La méthode GET place les paramètres dans l'URL et convient aux recherches ou filtres non sensibles que l'on souhaite pouvoir partager. POST envoie les champs dans le corps de la requête et convient aux opérations qui modifient l'état. POST ne chiffre pas les données : TLS HTTPS est nécessaire en production.
+
+L'attribut `required` améliore l'expérience, mais doit être doublé d'une validation côté serveur.
+
+### Lire une entrée
+
+Les superglobales `$_GET` et `$_POST` sont des tableaux. Une clé peut manquer ; vérifiez son existence et son type :
+
+```php
+$nom = $_POST['nom'] ?? '';
+if (!is_string($nom)) {
+    $nom = '';
+}
+$nom = trim($nom);
+```
+
+`trim` enlève les espaces aux extrémités. Ne convertissez pas aveuglément un tableau reçu en chaîne : un client peut envoyer des paramètres de forme inattendue.
+
+### Valider côté serveur
+
+```php
+$erreurs = [];
+$nomRecu = $_POST['nom'] ?? null;
+$emailRecu = $_POST['email'] ?? null;
+$nom = is_string($nomRecu) ? trim($nomRecu) : '';
+$email = is_string($emailRecu) ? trim($emailRecu) : '';
+
+if ($nom === '' || mb_strlen($nom, 'UTF-8') > 80) {
+    $erreurs['nom'] = 'Le nom est obligatoire et limité à 80 caractères.';
+}
+
+if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+    $erreurs['email'] = 'Saisissez une adresse e-mail valide.';
+}
+```
+
+Pour des données non fiables, contrôlez également que les valeurs originales ont bien le type attendu, au lieu de convertir arbitrairement tableaux ou objets en texte. La validation vérifie une règle métier ; l'échappement protège un contexte de sortie. Ces deux opérations ont des rôles différents.
+
+### Échapper à l'affichage
+
+```php
+function e(string $valeur): string
+{
+    return htmlspecialchars($valeur, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+```
+
+Utilisez `e($nom)` dans du texte HTML ou dans un attribut correctement cité. Le contexte JavaScript, CSS ou URL exige d'autres règles ; évitez d'y injecter directement une valeur externe.
+
+Associez les erreurs aux champs avec `aria-describedby` et affichez un message explicite, sans coder l'erreur uniquement par une couleur.
+
+### Traiter la requête et rediriger
+
+La page doit vérifier la méthode, valider les champs, puis enregistrer seulement les données valides :
+
+```php
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    header('Allow: POST');
+    exit('Méthode non autorisée.');
+}
+
+// Valider les données et effectuer le traitement.
+```
+
+Après une soumission acceptée, redirigez avec un statut adapté et arrêtez le script :
+
+```php
+header('Location: merci.php', true, 303);
+exit;
+```
+
+Ce modèle POST/Redirect/GET évite de répéter la soumission lorsque l'utilisateur actualise la page. Le jeton CSRF, traité au module consacré aux sessions, est aussi nécessaire pour des actions protégées par cookie.
+
+### Réafficher les valeurs
+
+Lorsqu'une validation échoue, réaffichez seulement des valeurs de type attendu et échappées. Ne réaffichez pas un mot de passe soumis. N'enregistrez pas les données dans un message d'erreur ou un journal public.
+
+<Callout type="warn">
+Une validation JavaScript ou HTML peut être désactivée ou contournée. Toute règle affectant les données doit être vérifiée sur le serveur, à chaque requête.
+</Callout>
+
+## Erreurs fréquentes
+
+**Faire confiance à `required`**
+
+Un client peut envoyer une requête sans utiliser votre formulaire. Validez les champs en PHP.
+
+**Utiliser `$_REQUEST` sans distinction**
+
+Cette superglobale mélange sources et comportements de configuration. Vérifiez la méthode et lisez explicitement `$_GET` ou `$_POST`.
+
+**Échapper au moment de l'enregistrement plutôt qu'à la sortie**
+
+Stockez les données validées telles quelles et échappez-les lorsqu'elles sont insérées dans un contexte de sortie.
+
+**Oublier `exit` après une redirection**
+
+Le script continuerait son exécution après l'envoi de l'en-tête `Location`.
+
+## Exercices
+
+<Exercise n="3.1" title="Valider un formulaire de contact">
+Créez un formulaire avec nom, courriel et message. Validez types, champs obligatoires, longueur maximale et format de courriel côté PHP.
+</Exercise>
+
+<Solution>
+Enregistrez le fichier en `contact.php` sous `htdocs`. Ce formulaire valide côté serveur et affiche les erreurs sans envoyer de courriel ni enregistrer de données.
+
+```php
+<?php
+declare(strict_types=1);
+
+function e(string $value): string
+{
+    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+$nom = '';
+$email = '';
+$message = '';
+$erreurs = [];
+$envoye = false;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nomBrut = $_POST['nom'] ?? null;
+    $emailBrut = $_POST['email'] ?? null;
+    $messageBrut = $_POST['message'] ?? null;
+
+    if (!is_string($nomBrut) || !is_string($emailBrut) || !is_string($messageBrut)) {
+        $erreurs['formulaire'] = 'Le formulaire contient des données invalides.';
+    } else {
+        $nom = trim($nomBrut);
+        $email = trim($emailBrut);
+        $message = trim($messageBrut);
+
+        if ($nom === '' || mb_strlen($nom) > 100) {
+            $erreurs['nom'] = 'Le nom est obligatoire et doit contenir au plus 100 caractères.';
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 254) {
+            $erreurs['email'] = 'Saisissez une adresse courriel valide (254 caractères maximum).';
+        }
+        if ($message === '' || mb_strlen($message) > 5000) {
+            $erreurs['message'] = 'Le message est obligatoire et doit contenir au plus 5 000 caractères.';
+        }
+
+        $envoye = $erreurs === [];
+    }
+}
+?>
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<title>Contact</title>
+<h1>Nous contacter</h1>
+<?php if ($erreurs !== []): ?>
+    <ul role="alert">
+        <?php foreach ($erreurs as $erreur): ?><li><?= e($erreur) ?></li><?php endforeach; ?>
+    </ul>
+<?php elseif ($envoye): ?>
+    <p role="status">Les données sont valides. Aucun message n'a été envoyé dans cet exercice.</p>
+<?php endif; ?>
+<form method="post">
+    <label for="nom">Nom</label>
+    <input id="nom" name="nom" required maxlength="100" value="<?= e($nom) ?>">
+    <label for="email">Courriel</label>
+    <input id="email" name="email" type="email" required maxlength="254" value="<?= e($email) ?>">
+    <label for="message">Message</label>
+    <textarea id="message" name="message" required maxlength="5000"><?= e($message) ?></textarea>
+    <button type="submit">Envoyer</button>
+</form>
+</html>
+```
+</Solution>
+
+<Exercise n="3.2" title="Réafficher une erreur accessible">
+En cas de nom invalide, réaffichez le champ et un message associé sans injecter de HTML.
+</Exercise>
+
+<Solution>
+Après avoir défini `e()` avec `htmlspecialchars`, associez explicitement le champ et son erreur :
+
+```php
+<?php
+$erreurNom = $erreurs['nom'] ?? null;
+?>
+<label for="nom">Nom</label>
+<input
+    id="nom"
+    name="nom"
+    value="<?= e($nom) ?>"
+    <?= $erreurNom !== null ? 'aria-invalid="true" aria-describedby="erreur-nom"' : '' ?>
+>
+<?php if ($erreurNom !== null): ?>
+    <p id="erreur-nom" role="alert"><?= e($erreurNom) ?></p>
+<?php endif; ?>
+```
+
+Conservez les erreurs par champ dans un tableau (`$erreurs['nom'] = '...'`) afin de ne pas associer une erreur à un contrôle différent.
+</Solution>
+
+<Exercise n="3.3" title="Appliquer POST/Redirect/GET">
+Après la validation réussie d'un formulaire, redirigez vers une page de confirmation et empêchez la suite du script de traiter encore la requête.
+</Exercise>
+
+<Solution>
+À placer dans le bloc de traitement POST, uniquement après la validation et le traitement réussis, avant tout HTML :
+
+```php
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $erreurs === []) {
+    // Effectuer ici le traitement validé.
+    header('Location: merci.php', true, 303);
+    exit;
+}
+```
+
+Une réponse `303 See Other` demande au navigateur d'ouvrir la page de confirmation en GET. Ne produisez aucun espace, HTML ou message de débogage avant `header()`.
+</Solution>
+
+## Livrable
+
+Un formulaire de contact accessible qui valide côté serveur, affiche des erreurs échappées et redirige après succès.

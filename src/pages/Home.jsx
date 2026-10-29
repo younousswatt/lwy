@@ -15,9 +15,9 @@ const steps = [
 ];
 
 export default function Home() {
-  const devwebModules = MODULES.filter((m) => m.track === 'devweb');
-  const totalExercises = devwebModules.length * 7;
-  const totalWeeks = devwebModules.reduce((acc, m) => {
+  const availableTracks = TRACKS.filter((track) => track.status === 'available').length;
+  const totalModules = MODULES.length;
+  const totalWeeks = MODULES.reduce((acc, m) => {
     const match = m.duration.match(/(\d+)/);
     return acc + (match ? parseInt(match[1], 10) : 0);
   }, 0);
@@ -27,10 +27,15 @@ export default function Home() {
       <section className="hero container">
         <FadeIn>
           <p className="eyebrow">LWY — Learn With Yunus</p>
-          <h1>Apprendre à programmer, sérieusement.</h1>
+          <h1>Apprendre à programmer, <span className="accent-word">sérieusement.</span></h1>
           <p className="hero-copy">
-            Un parcours progressif pour comprendre les fondamentaux du développement web et construire des projets dont vous pouvez expliquer chaque choix.
+            Algorithmique, programmation et développement : apprenez à raisonner, maîtrisez plusieurs langages et construisez des projets dont vous pouvez expliquer chaque choix.
           </p>
+          <ul className="hero-stats">
+            <li><strong>{availableTracks}</strong><span>parcours disponibles</span></li>
+            <li><strong>{totalModules}</strong><span>modules</span></li>
+            <li><strong>{totalWeeks}</strong><span>semaines de contenu</span></li>
+          </ul>
           <div className="hero-actions">
             <Button to="/parcours" icon={ArrowRight} iconPosition="right">Voir les parcours</Button>
             <Button to="/a-propos" variant="ghost">À propos</Button>

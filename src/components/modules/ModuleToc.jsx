@@ -1,7 +1,8 @@
+import { useMemo } from 'react';
 import { useActiveSection } from '../../hooks/useActiveSection.js';
 
 export default function ModuleToc({ sections }) {
-  const sectionIds = sections.map((s) => s.id);
+  const sectionIds = useMemo(() => sections.map((s) => s.id), [sections]);
   const activeId = useActiveSection(sectionIds);
 
   if (!sections.length) return null;

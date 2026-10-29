@@ -47,7 +47,20 @@ export default function ModulePage() {
 
   const previous = moduleIndex > 0 ? trackModules[moduleIndex - 1] : null;
   const next = moduleIndex >= 0 ? trackModules[moduleIndex + 1] : null;
-  if (!module) return null;
+
+  if (!module) {
+    return (
+      <div className="page container">
+        <FadeIn>
+          <h1 className="page-title">Module introuvable</h1>
+          <p className="page-description">Ce module n’existe pas ou a été déplacé.</p>
+          <Link className="text-link" to="/parcours">
+            Retour aux parcours <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </FadeIn>
+      </div>
+    );
+  }
 
   return (
     <div className="page container">

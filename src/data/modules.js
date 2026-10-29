@@ -168,6 +168,102 @@ export const MODULES = [
     prerequisites: ['js-asynchrone-api', 'git-github', 'qualite-web'],
   },
   {
+    track: 'php',
+    slug: 'php-demarrage-xampp',
+    order: 1,
+    title: 'Démarrer avec PHP et XAMPP',
+    section: 'fondations',
+    level: 'Débutant',
+    duration: '1 semaine',
+    description: 'Installation de XAMPP, Apache, PHP, htdocs, première page dynamique et syntaxe PHP.',
+    livrable: 'Page PHP exécutée localement avec Apache',
+    prerequisites: [],
+  },
+  {
+    track: 'php',
+    slug: 'php-variables-controle-fonctions',
+    order: 2,
+    title: 'Types, conditions, boucles et fonctions PHP',
+    section: 'fondations',
+    level: 'Débutant',
+    duration: '1 semaine',
+    description: 'Types, opérateurs, tableaux, structures de contrôle, fonctions et portée des variables.',
+    livrable: 'Calculateur de budget en PHP',
+    prerequisites: ['php-demarrage-xampp'],
+  },
+  {
+    track: 'php',
+    slug: 'php-formulaires-validation',
+    order: 3,
+    title: 'Formulaires HTTP et validation',
+    section: 'intermediate',
+    level: 'Débutant à intermédiaire',
+    duration: '1 semaine',
+    description: 'Requêtes GET et POST, validation côté serveur, échappement HTML et modèle POST/Redirect/GET.',
+    livrable: 'Formulaire de contact validé et accessible',
+    prerequisites: ['php-variables-controle-fonctions'],
+  },
+  {
+    track: 'php',
+    slug: 'php-mysql-pdo',
+    order: 4,
+    title: 'MySQL avec PDO et XAMPP',
+    section: 'intermediate',
+    level: 'Intermédiaire',
+    duration: '1 semaine',
+    description: 'Configuration de MySQL, schéma relationnel, connexion PDO, requêtes préparées et transactions.',
+    livrable: 'Base de données de bibliothèque connectée avec PDO',
+    prerequisites: ['php-formulaires-validation'],
+  },
+  {
+    track: 'php',
+    slug: 'php-crud-mysql',
+    order: 5,
+    title: 'CRUD et relations MySQL',
+    section: 'intermediate',
+    level: 'Intermédiaire',
+    duration: '2 semaines',
+    description: 'Créer, lire, modifier et supprimer des données, clés étrangères, pagination et erreurs SQL.',
+    livrable: 'Gestionnaire de livres avec persistance MySQL',
+    prerequisites: ['php-mysql-pdo'],
+  },
+  {
+    track: 'php',
+    slug: 'php-sessions-auth',
+    order: 6,
+    title: 'Sessions, authentification et protection CSRF',
+    section: 'advanced',
+    level: 'Intermédiaire',
+    duration: '1 semaine',
+    description: 'Sessions PHP, mots de passe hachés, connexion, contrôle d’accès, cookies et jetons CSRF.',
+    livrable: 'Espace privé à accès protégé',
+    prerequisites: ['php-crud-mysql'],
+  },
+  {
+    track: 'php',
+    slug: 'php-architecture-tests-deploiement',
+    order: 7,
+    title: 'Architecture, tests et déploiement PHP',
+    section: 'advanced',
+    level: 'Intermédiaire',
+    duration: '1 semaine',
+    description: 'Séparation des responsabilités, configuration, Composer, tests, journaux et préparation à la production.',
+    livrable: 'Application organisée, testée et documentée',
+    prerequisites: ['php-sessions-auth'],
+  },
+  {
+    track: 'php',
+    slug: 'php-projet-final',
+    order: 8,
+    title: 'Projet final — Bibliothèque avec PHP et MySQL',
+    section: 'project',
+    level: 'Intermédiaire',
+    duration: '2 semaines',
+    description: 'Application web complète avec XAMPP, PHP, PDO, MySQL, CRUD, authentification, sécurité et tests.',
+    livrable: 'Bibliothèque web privée, persistante et documentée',
+    prerequisites: ['php-architecture-tests-deploiement'],
+  },
+  {
     track: 'angular',
     slug: 'angular-demarrage-typescript',
     order: 1,
@@ -576,6 +672,31 @@ export const SECTIONS = [
   { id: 'advanced', label: 'Avancé' },
   { id: 'project', label: 'Projet' },
 ];
+
+const SECTION_LABELS = {
+  fondations: 'Fondations',
+  html: 'HTML',
+  css: 'CSS',
+  js: 'JavaScript',
+  intermediate: 'Intermédiaire',
+  advanced: 'Avancé',
+  project: 'Projet',
+  pro: 'Projet',
+};
+
+const SECTION_ORDER = ['fondations', 'html', 'css', 'js', 'intermediate', 'advanced', 'project', 'pro'];
+
+export const sectionLabel = (section) =>
+  SECTION_LABELS[section] ??
+  (section ? section.charAt(0).toUpperCase() + section.slice(1) : '');
+
+export const sectionsFromModules = (modules) => {
+  const present = [...new Set(modules.map((module) => module.section))];
+  return [
+    ...SECTION_ORDER.filter((id) => present.includes(id)),
+    ...present.filter((id) => !SECTION_ORDER.includes(id)),
+  ];
+};
 
 export const getModulesByTrack = (trackSlug) => MODULES.filter((module) => module.track === trackSlug);
 export const getModuleBySlug = (slug) => MODULES.find((module) => module.slug === slug);

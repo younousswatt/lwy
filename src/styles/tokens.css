@@ -1,19 +1,52 @@
 :root {
-  color-scheme: dark;
-  --bg: #0d0d10;
-  --bg-soft: #15151a;
-  --bg-code: #0a0a0d;
-  --border: #25252d;
-  --border-hover: #3a3a45;
-  --text: #ededf0;
-  --text-muted: #8f8f9c;
-  --accent: #6366f1;
-  --content-width: 1100px;
+  color-scheme: light;
+
+  /* Paper & ink (warm editorial light) */
+  --bg: #f6f1e7; /* page paper */
+  --bg-soft: #efe8da; /* deeper paper / section bands */
+  --bg-elevated: #fdfbf6; /* raised surfaces / cards */
+  --bg-code: #efe9dc;
+  --ink: #1b1917; /* headings, near-black warm */
+  --text: #34302a; /* body */
+  --text-muted: #6b655b;
+  --text-subtle: #938c7e;
+
+  /* Hairlines */
+  --border: #e4ddcc;
+  --border-hover: #d2c8b2;
+
+  /* Single muted accent (brick) */
+  --accent: #a8432c;
+  --accent-ink: #8f3823;
+  --accent-soft: #f4e7e0;
+  --accent-border: #e6cdc2;
+
+  /* Layout */
+  --content-width: 1120px;
   --header-height: 64px;
-  --radius-sm: 8px;
-  --radius-card: 12px;
-  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Radii (restrained, print-like) */
+  --radius-sm: 4px;
+  --radius-card: 8px;
+  --radius-pill: 999px;
+
+  /* Soft, warm shadows (subtle depth only) */
+  --shadow-sm: 0 1px 2px rgba(27, 25, 23, 0.06);
+  --shadow-md: 0 10px 24px -16px rgba(27, 25, 23, 0.28);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur: 220ms;
+  --dur-slow: 420ms;
+
+  /* Type */
+  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+
+  /* Spacing */
   --space-4: 4px;
   --space-8: 8px;
   --space-12: 12px;

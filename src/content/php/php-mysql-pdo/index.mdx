@@ -1,0 +1,272 @@
+# MySQL avec PDO et XAMPP
+
+MySQL persiste les données dans des tables relationnelles. PDO fournit une interface PHP pour se connecter à la base, envoyer des requêtes préparées et traiter les résultats. Ce module configure un schéma de bibliothèque local et établit une connexion sûre depuis PHP.
+
+## Objectifs
+
+- Démarrer MySQL dans XAMPP et créer une base avec phpMyAdmin.
+- Définir tables, clés primaires, contraintes et encodage `utf8mb4`.
+- Créer une connexion PDO avec une configuration explicite.
+- Utiliser des requêtes préparées et des paramètres.
+- Lire un résultat et gérer l'absence de ligne.
+- Comprendre transactions, privilèges et erreurs de connexion.
+
+## Prérequis
+
+- PHP et XAMPP exécutant Apache.
+- Formulaires et validation côté serveur.
+
+## Cours
+
+### Créer la base MySQL
+
+Démarrez MySQL dans le panneau XAMPP, ouvrez phpMyAdmin en local et créez une base `bibliotheque` avec le jeu de caractères `utf8mb4`. Vous pouvez également exécuter ce SQL depuis l'onglet SQL :
+
+```sql
+CREATE DATABASE bibliotheque
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE bibliotheque;
+
+CREATE TABLE livres (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  titre VARCHAR(200) NOT NULL,
+  auteur VARCHAR(150) NOT NULL,
+  annee SMALLINT UNSIGNED NULL,
+  cree_le TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CHECK (annee IS NULL OR annee BETWEEN 1 AND 2100)
+);
+```
+
+Les noms de colonnes et longueurs sont à adapter au projet. Une clé primaire identifie chaque ligne. `NOT NULL` rend obligatoire un champ. Les contraintes rendent la base capable de refuser une partie des données invalides même si une erreur PHP passe inaperçue.
+
+### Créer un compte de base dédié
+
+Certaines installations XAMPP locales proposent `root` sans mot de passe. C'est un défaut de développement local, pas une configuration à conserver.
+
+Pour apprendre à appliquer le moindre privilège, créez un compte limité à la base du projet avec un mot de passe local, en utilisant l'interface d'administration MySQL :
+
+```sql
+CREATE USER 'bibliotheque_app'@'localhost'
+  IDENTIFIED BY 'choisir-un-mot-de-passe-local';
+
+GRANT SELECT, INSERT, UPDATE, DELETE
+  ON bibliotheque.*
+  TO 'bibliotheque_app'@'localhost';
+```
+
+Ne réutilisez pas cet exemple de mot de passe et ne stockez aucun vrai secret dans un dépôt. Les droits d'administration et de création de schéma ne sont pas nécessaires au compte exécutant les pages.
+
+### Connexion PDO
+
+```php
+<?php
+declare(strict_types=1);
+
+$dsn = 'mysql:host=127.0.0.1;dbname=bibliotheque;charset=utf8mb4';
+$utilisateur = getenv('DB_USER');
+$motDePasse = getenv('DB_PASSWORD');
+
+if ($utilisateur === false || $motDePasse === false) {
+    throw new RuntimeException('Configuration MySQL manquante.');
+}
+
+$options = [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES => false,
+];
+
+$pdo = new PDO($dsn, $utilisateur, $motDePasse, $options);
+```
+
+Placez les identifiants dans un fichier local non versionné ou des variables d'environnement configurées pour Apache. La syntaxe ci-dessus montre le point de lecture des variables, mais la configuration du serveur XAMPP doit réellement les définir. Ne placez pas le fichier de configuration sensible sous `htdocs`.
+
+### Lire avec une requête préparée
+
+```php
+$requete = $pdo->prepare(
+    'SELECT id, titre, auteur, annee
+     FROM livres
+     WHERE id = :id'
+);
+$requete->execute(['id' => $id]);
+$livre = $requete->fetch();
+
+if ($livre === false) {
+    http_response_code(404);
+}
+```
+
+Les paramètres liés protègent les valeurs contre l'interprétation comme morceaux de SQL. Une requête préparée ne permet généralement pas de paramétrer un nom de table ou de colonne ; les choix de tri doivent venir d'une liste blanche définie côté serveur.
+
+### Ajouter une ligne
+
+```php
+$requete = $pdo->prepare(
+    'INSERT INTO livres (titre, auteur, annee)
+     VALUES (:titre, :auteur, :annee)'
+);
+$requete->execute([
+    'titre' => $titre,
+    'auteur' => $auteur,
+    'annee' => $annee,
+]);
+
+$nouvelId = (int) $pdo->lastInsertId();
+```
+
+Validez les valeurs avant l'exécution et utilisez des paramètres, même pour un formulaire local. Les données préparées et affichées restent à échapper en fonction de leur contexte de sortie.
+
+### Transactions
+
+Une transaction regroupe plusieurs écritures qui doivent réussir ensemble :
+
+```php
+try {
+    $pdo->beginTransaction();
+    // Exécuter les écritures liées.
+    $pdo->commit();
+} catch (Throwable $erreur) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    throw $erreur;
+}
+```
+
+Les tables doivent utiliser un moteur transactionnel tel qu'InnoDB. Une transaction ne remplace pas la validation et ne devrait pas couvrir des opérations longues sans nécessité.
+
+### Erreurs de connexion
+
+En développement, les exceptions PDO sont utiles pour diagnostiquer le problème. Dans une application publique, journalisez les détails côté serveur et affichez une erreur générique. N'affichez jamais DSN, identifiants, requêtes sensibles ou traces aux visiteurs.
+
+<Callout type="warn">
+Ne concaténez jamais une valeur de formulaire dans une requête SQL. Une injection SQL peut lire, modifier ou supprimer les données. Utilisez PDO et des paramètres pour les valeurs, et une liste blanche pour les identifiants SQL dynamiques.
+</Callout>
+
+## Erreurs fréquentes
+
+**Ne pas démarrer MySQL**
+
+Apache et MySQL sont deux services séparés. Le serveur PHP peut démarrer tandis que le service de base de données reste arrêté.
+
+**Utiliser un mauvais encodage**
+
+Définissez `charset=utf8mb4` dans le DSN et choisissez un jeu de caractères cohérent dans la base.
+
+**Concaténer un identifiant dans le SQL**
+
+Les paramètres sont pour les valeurs, pas les noms de colonne. Pour un tri, mappez une option utilisateur vers une liste de fragments SQL connus.
+
+**Afficher une erreur PDO brute**
+
+Les détails d'accès et de schéma sont réservés aux journaux. L'interface ne présente qu'une erreur compréhensible.
+
+## Exercices
+
+<Exercise n="4.1" title="Créer le schéma de bibliothèque">
+Créez la base `bibliotheque`, sa table `livres`, une clé primaire et les contraintes nécessaires pour le titre et l'auteur.
+</Exercise>
+
+<Solution>
+Dans phpMyAdmin (accessible localement via le panneau XAMPP), ouvrez l'onglet SQL et exécutez :
+
+```sql
+CREATE DATABASE bibliotheque
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE bibliotheque;
+
+CREATE TABLE livres (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    titre VARCHAR(200) NOT NULL,
+    auteur VARCHAR(150) NOT NULL,
+    annee SMALLINT UNSIGNED NULL,
+    cree_le TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX idx_livres_titre (titre),
+    CONSTRAINT chk_livres_annee CHECK (annee IS NULL OR annee BETWEEN 1 AND 9999)
+) ENGINE=InnoDB;
+```
+
+`CHECK` est appliqué par les versions récentes de MySQL. Si votre version locale ne le prend pas en charge, conservez la validation de l'année côté PHP.
+</Solution>
+
+<Exercise n="4.2" title="Connecter PHP à MySQL">
+Configurez PDO avec MySQL, UTF-8, exceptions et requêtes préparées natives. Vérifiez la connexion sans imprimer de secret.
+</Exercise>
+
+<Solution>
+Créez un fichier de configuration local hors du dépôt contenant les identifiants XAMPP (sur une installation locale neuve, l'utilisateur MySQL est souvent `root` sans mot de passe ; configurez un mot de passe plutôt que de reprendre cette valeur en production). Puis utilisez :
+
+```php
+<?php
+declare(strict_types=1);
+
+$host = getenv('DB_HOST');
+$name = getenv('DB_NAME');
+$user = getenv('DB_USER');
+$password = getenv('DB_PASSWORD');
+
+if (!is_string($host) || !is_string($name) || !is_string($user) || !is_string($password)) {
+    throw new RuntimeException('Configuration MySQL manquante.');
+}
+
+$pdo = new PDO(
+    "mysql:host={$host};dbname={$name};charset=utf8mb4",
+    $user,
+    $password,
+    [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ]
+);
+
+echo 'Connexion MySQL établie.';
+```
+
+Définissez ces variables dans votre environnement avant de démarrer Apache. Ne les affichez jamais et ne versionnez pas de fichier contenant des secrets.
+</Solution>
+
+<Exercise n="4.3" title="Chercher un livre par identifiant">
+Préparez et exécutez une requête de sélection par identifiant. Distinguez une ligne trouvée d'un résultat absent.
+</Exercise>
+
+<Solution>
+Avec le `$pdo` configuré dans l'exercice précédent, validez l'identifiant puis utilisez un paramètre lié :
+
+```php
+<?php
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1],
+]);
+
+if ($id === false || $id === null) {
+    http_response_code(400);
+    exit('Identifiant invalide.');
+}
+
+$requete = $pdo->prepare(
+    'SELECT id, titre, auteur, annee FROM livres WHERE id = :id'
+);
+$requete->execute(['id' => $id]);
+$livre = $requete->fetch();
+
+if ($livre === false) {
+    http_response_code(404);
+    exit('Livre introuvable.');
+}
+
+echo htmlspecialchars($livre['titre'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+```
+
+La valeur de `id` ne devient jamais une partie du texte SQL.
+</Solution>
+
+## Livrable
+
+Une base MySQL locale avec schéma documenté et une connexion PDO capable de sélectionner un livre avec paramètres liés.

@@ -19,8 +19,14 @@ export default function TrackCard({ track }) {
       <h3>{track.title}</h3>
       <p className="track-card-description">{track.description}</p>
       <div className="track-card-details">
-        <span>{trackModules.length} modules</span>
-        <span>{totalDuration} semaines</span>
+        {track.status === 'available' ? (
+          <>
+            <span>{trackModules.length} modules</span>
+            {totalDuration > 0 && <span>{totalDuration} semaines indicatives</span>}
+          </>
+        ) : (
+          <span>Parcours en préparation</span>
+        )}
         <span>{track.level}</span>
       </div>
       {track.status === 'available' ? (

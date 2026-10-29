@@ -1,0 +1,292 @@
+# Sessions, authentification et protection CSRF
+
+Les sessions relient plusieurs requêtes HTTP à un utilisateur. Elles permettent de construire une connexion, mais introduisent des responsabilités sensibles : protéger les cookies, vérifier chaque accès, stocker uniquement des empreintes de mots de passe et empêcher les actions déclenchées à l'insu de l'utilisateur.
+
+## Objectifs
+
+- Démarrer et utiliser une session PHP.
+- Configurer un cookie de session avec des options adaptées.
+- Inscrire et vérifier un mot de passe avec les fonctions PHP dédiées.
+- Renouveler l'identifiant de session après authentification.
+- Protéger les formulaires contre CSRF.
+- Vérifier l'autorisation côté serveur à chaque page et requête.
+
+## Prérequis
+
+- CRUD, MySQL et PDO.
+- Formulaires POST et validation côté serveur.
+
+## Cours
+
+### Démarrer une session
+
+Configurez le cookie avant `session_start()` et avant toute sortie :
+
+```php
+<?php
+declare(strict_types=1);
+
+session_set_cookie_params([
+    'httponly' => true,
+    'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    'samesite' => 'Lax',
+    'path' => '/',
+]);
+session_start();
+```
+
+`HttpOnly` empêche l'accès direct au cookie depuis JavaScript. `Secure` doit être activé sous HTTPS. `SameSite` réduit certaines requêtes intersites, mais ne remplace pas un jeton CSRF pour les actions protégées.
+
+En local HTTP XAMPP, `secure` peut être faux. En production HTTPS, il doit être vrai. Ne modifiez pas l'identifiant de session à chaque page ; renouvelez-le aux changements de privilège, notamment lors de la connexion.
+
+### Stocker un mot de passe
+
+Ne conservez jamais un mot de passe en clair, chiffré de façon réversible, ni avec un hachage rapide tel que MD5 ou SHA-1. Utilisez les fonctions spécialisées :
+
+```php
+$hash = password_hash($motDePasse, PASSWORD_DEFAULT);
+```
+
+Conservez le résultat dans une colonne dimensionnée pour évoluer, par exemple `VARCHAR(255)`. Pour l'authentification :
+
+```php
+if (password_verify($motDePasseSaisi, $utilisateur['mot_de_passe_hash'])) {
+    // Le mot de passe correspond.
+}
+```
+
+`password_hash` gère automatiquement un sel. Ne construisez pas votre propre algorithme de hachage de mot de passe.
+
+### Connexion
+
+Recherchez l'utilisateur par une requête préparée, vérifiez l'empreinte et renouvelez la session :
+
+```php
+if ($utilisateur !== false
+    && password_verify($motDePasseSaisi, $utilisateur['mot_de_passe_hash'])) {
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = (int) $utilisateur['id'];
+}
+```
+
+Présentez un message générique si le compte ou le mot de passe est incorrect, sans révéler si une adresse précise existe. Les tentatives répétées doivent être limitées et journalisées sans conserver le mot de passe.
+
+### Protéger une page
+
+Vérifiez la session sur le serveur :
+
+```php
+if (!isset($_SESSION['user_id'])) {
+    header('Location: connexion.php', true, 303);
+    exit;
+}
+```
+
+Répétez le contrôle d'autorisation dans chaque point d'entrée qui accède aux données. Masquer un lien dans le HTML ne protège pas l'URL. Pour des ressources appartenant à un utilisateur, ajoutez aussi son identifiant aux filtres SQL : connaître un identifiant de ligne ne confère pas le droit de la lire.
+
+### Jeton CSRF
+
+Créez un jeton imprévisible conservé en session :
+
+```php
+if (!isset($_SESSION['csrf'])) {
+    $_SESSION['csrf'] = bin2hex(random_bytes(32));
+}
+```
+
+Dans le formulaire :
+
+```php
+<input
+    type="hidden"
+    name="csrf"
+    value="<?= htmlspecialchars($_SESSION['csrf'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+>
+```
+
+À réception d'une requête POST, comparez le jeton soumis avec celui de la session en temps constant :
+
+```php
+$soumis = $_POST['csrf'] ?? '';
+if (!is_string($soumis)
+    || !hash_equals($_SESSION['csrf'] ?? '', $soumis)) {
+    http_response_code(403);
+    exit('Requête non autorisée.');
+}
+```
+
+Vérifiez le jeton avant toute mutation. Les opérations qui changent l'état utilisent POST ; ne déclenchez jamais une suppression avec GET.
+
+### Déconnexion
+
+La déconnexion doit être une action POST protégée par CSRF. Supprimez les données serveur de session, expirez le cookie avec les mêmes attributs et terminez la requête. Un simple lien GET ne doit pas déconnecter l'utilisateur par effet secondaire.
+
+Les durées d'inactivité, la rotation de session et la suppression côté serveur doivent être choisies selon le niveau de risque et documentées.
+
+<Callout type="warn">
+L'authentification ne donne pas automatiquement accès à toutes les ressources. Vérifiez l'identité, puis les autorisations sur chaque opération et chaque ligne de données concernée.
+</Callout>
+
+## Erreurs fréquentes
+
+**Stocker le mot de passe directement**
+
+Ne sauvegardez que le résultat de `password_hash` et vérifiez avec `password_verify`.
+
+**Ne pas renouveler l'identifiant après connexion**
+
+Sans renouvellement, une session fixée avant authentification pourrait être réutilisée. Appelez `session_regenerate_id(true)` après authentification réussie.
+
+**Protéger seulement les boutons**
+
+Tout contrôle important doit exister dans le code serveur de la route, pas uniquement dans le template.
+
+**Penser que SameSite élimine CSRF**
+
+SameSite est une défense supplémentaire. Les formulaires de mutation doivent vérifier un jeton aléatoire lié à la session.
+
+**Exposer l'existence d'un compte**
+
+Des messages différents pendant la connexion facilitent l'énumération. Gardez un message générique et protégez le débit d'essais.
+
+## Exercices
+
+<Exercise n="6.1" title="Créer la table des utilisateurs">
+Créez une table utilisateurs avec identifiant, adresse unique et colonne de hachage de mot de passe. Expliquez pourquoi le champ de hachage doit avoir une taille extensible.
+</Exercise>
+
+<Solution>
+```sql
+CREATE TABLE utilisateurs (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    email VARCHAR(254) NOT NULL,
+    mot_de_passe_hash VARCHAR(255) NOT NULL,
+    cree_le TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_utilisateurs_email (email)
+) ENGINE=InnoDB
+  DEFAULT CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+```
+
+`password_hash()` peut changer d'algorithme et de longueur de sortie ; `VARCHAR(255)` évite de devoir modifier le schéma lors d'une évolution.
+</Solution>
+
+<Exercise n="6.2" title="Mettre en place une connexion">
+Recherchez un compte avec PDO, vérifiez son mot de passe, créez sa session et renouvelez l'identifiant après succès. Les erreurs ne doivent pas révéler si le compte existe.
+</Exercise>
+
+<Solution>
+Au début de `connexion.php`, avant tout HTML, configurez la session et traitez le POST :
+
+```php
+<?php
+declare(strict_types=1);
+session_set_cookie_params([
+    'httponly' => true,
+    'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    'samesite' => 'Lax',
+]);
+session_start();
+require __DIR__ . '/bootstrap.php'; // Fournit $pdo.
+
+$erreur = null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'] ?? null;
+    $motDePasse = $_POST['mot_de_passe'] ?? null;
+    if (is_string($email) && is_string($motDePasse)) {
+        $select = $pdo->prepare(
+            'SELECT id, mot_de_passe_hash FROM utilisateurs WHERE email = :email'
+        );
+        $select->execute(['email' => trim($email)]);
+        $utilisateur = $select->fetch();
+        if ($utilisateur !== false && password_verify($motDePasse, $utilisateur['mot_de_passe_hash'])) {
+            session_regenerate_id(true);
+            $_SESSION['utilisateur_id'] = (int) $utilisateur['id'];
+            header('Location: prive.php', true, 303);
+            exit;
+        }
+    }
+    $erreur = 'Adresse courriel ou mot de passe invalide.';
+}
+?>
+<?php if ($erreur !== null): ?><p role="alert"><?= htmlspecialchars($erreur, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p><?php endif; ?>
+<form method="post">
+    <label>Courriel <input type="email" name="email" required></label>
+    <label>Mot de passe <input type="password" name="mot_de_passe" required></label>
+    <button type="submit">Se connecter</button>
+</form>
+```
+
+Le même message est renvoyé si le compte n'existe pas ou si le mot de passe est faux. Ajoutez limitation de tentatives pour un service exposé publiquement.
+</Solution>
+
+<Exercise n="6.3" title="Protéger une mutation avec CSRF">
+Ajoutez un jeton de session à un formulaire POST de suppression, vérifiez-le avec `hash_equals` avant l'accès à la base et refusez une valeur manquante ou invalide.
+</Exercise>
+
+<Solution>
+Après `session_start()`, partagez ces helpers entre le rendu du formulaire et son gestionnaire :
+
+```php
+<?php
+function jetonCsrf(): string
+{
+    if (!isset($_SESSION['csrf'])) {
+        $_SESSION['csrf'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf'];
+}
+
+function verifierCsrf(mixed $jeton): void
+{
+    if (!is_string($jeton) || !isset($_SESSION['csrf'])
+        || !hash_equals($_SESSION['csrf'], $jeton)) {
+        http_response_code(403);
+        exit('Requête refusée.');
+    }
+}
+```
+
+Formulaire :
+
+```php
+<form method="post" action="supprimer.php">
+    <input type="hidden" name="id" value="<?= (int) $livre['id'] ?>">
+    <input type="hidden" name="csrf" value="<?= htmlspecialchars(jetonCsrf(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+    <button type="submit">Supprimer</button>
+</form>
+```
+
+Gestionnaire complet `supprimer.php` (le bootstrap fournit `$pdo`) :
+
+```php
+<?php
+declare(strict_types=1);
+session_start();
+require __DIR__ . '/bootstrap.php';
+require __DIR__ . '/csrf.php';
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    header('Allow: POST');
+    exit('Méthode non autorisée.');
+}
+verifierCsrf($_POST['csrf'] ?? null);
+$id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1],
+]);
+if ($id === false) {
+    http_response_code(400);
+    exit('Identifiant invalide.');
+}
+$delete = $pdo->prepare('DELETE FROM livres WHERE id = :id');
+$delete->execute(['id' => $id]);
+header('Location: livres.php', true, 303);
+exit;
+```
+</Solution>
+
+## Livrable
+
+Un espace privé avec connexion sécurisée, mot de passe haché, session renouvelée, contrôles d'autorisation et opérations POST protégées contre CSRF.

@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { getTrackBySlug } from '../data/tracks.js';
-import { getModulesByTrack, SECTIONS } from '../data/modules.js';
+import { getTrackBySlug, TRACKS } from '../data/tracks.js';
+import { getModulesByTrack, sectionsFromModules, sectionLabel } from '../data/modules.js';
+import TrackGrid from '../components/tracks/TrackGrid.jsx';
 import ModuleList from '../components/modules/ModuleList.jsx';
 import ModuleCard from '../components/modules/ModuleCard.jsx';
 import Badge from '../components/ui/Badge.jsx';
@@ -10,6 +11,7 @@ import FadeIn from '../components/ui/FadeIn.jsx';
 
 export default function Track() {
   const { track } = useParams();
+  const isTrackIndex = !track;
   const trackData = getTrackBySlug(track);
   const [section, setSection] = useState('all');
   const modules = getModulesByTrack(track);
@@ -17,6 +19,36 @@ export default function Track() {
     () => modules.filter((module) => section === 'all' || module.section === section),
     [modules, section],
   );
+  const filterItems = [
+    { id: 'all', label: 'Tous' },
+    ...sectionsFromModules(modules).map((id) => ({ id, label: sectionLabel(id) })),
+  ];
+
+  if (isTrackIndex) {
+    const availableTracks = TRACKS.filter((item) => item.status === 'available');
+    const availableModules = availableTracks.reduce(
+      (total, item) => total + getModulesByTrack(item.slug).length,
+      0,
+    );
+
+    return (
+      <div className="page container">
+        <FadeIn className="page-heading">
+          <p className="eyebrow">Apprendre, étape par étape</p>
+          <h1 className="page-title">Tous les parcours</h1>
+          <p className="page-description">
+            Explorez l’algorithmique, la programmation et le développement à travers plusieurs langages et spécialités.
+            Chaque parcours présente ses modules dans l’ordre, avec leurs prérequis, objectifs et projets à réaliser.
+          </p>
+        </FadeIn>
+        <div className="track-summary">
+          <Badge>{availableTracks.length} parcours disponibles</Badge>
+          <p>{availableModules} modules publiés · un parcours Java est en préparation.</p>
+        </div>
+        <TrackGrid tracks={TRACKS} />
+      </div>
+    );
+  }
 
   if (!trackData) {
     return (
@@ -51,7 +83,7 @@ export default function Track() {
         <p className="page-description">{trackData.description}</p>
       </FadeIn>
       <div className="filters" role="group" aria-label="Filtrer les modules par section">
-        {SECTIONS.map((item) => (
+        {filterItems.map((item) => (
           <button
             key={item.id}
             type="button"
@@ -71,7 +103,7 @@ export default function Track() {
         <ModuleList modules={filteredModules} trackSlug={track} />
       ) : (
         <div className="module-group">
-          <h3>{section === 'pro' ? 'Projet' : section.charAt(0).toUpperCase() + section.slice(1)}</h3>
+          <h3>{sectionLabel(section)}</h3>
           <div className="module-list">
             {filteredModules.map((module) => (
               <ModuleCard key={module.slug} module={module} trackSlug={track} showLivrable={false} />

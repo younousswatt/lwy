@@ -12,10 +12,11 @@
 .prose h1,
 .prose h2,
 .prose h3 {
-  color: var(--text);
+  color: var(--ink);
+  font-family: var(--font-serif);
   font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.25;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
 }
 
 .prose h1 {
@@ -34,7 +35,7 @@
 
 .prose p,
 .prose li {
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 .prose ul,
@@ -47,7 +48,11 @@
 }
 
 .prose a {
-  color: var(--text);
+  color: var(--accent-ink);
+  text-decoration-color: var(--accent-border);
+}
+
+.prose a:hover {
   text-decoration-color: var(--accent);
 }
 
@@ -90,4 +95,22 @@
 
 .prose td {
   color: var(--text-muted);
+}
+
+.prose img,
+.prose video {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+}
+
+.prose blockquote {
+  padding-left: 18px;
+  border-left: 2px solid var(--accent);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.prose :not(pre) > code {
+  overflow-wrap: anywhere;
 }

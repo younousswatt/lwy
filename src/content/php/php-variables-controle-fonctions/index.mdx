@@ -1,0 +1,258 @@
+# Types, conditions, boucles et fonctions PHP
+
+Ce module présente les briques du langage nécessaires pour écrire des scripts côté serveur : variables, chaînes, nombres, tableaux, conditions et fonctions. Les exemples s'appuient sur un calculateur de budget pour mettre en pratique des fonctions testables et des types explicites.
+
+## Objectifs
+
+- Déclarer des variables et utiliser les types PHP courants.
+- Manipuler chaînes et tableaux indexés ou associatifs.
+- Écrire des conditions et boucles lisibles.
+- Créer des fonctions avec paramètres et valeurs de retour typés.
+- Comprendre la portée des variables et les conversions.
+- Séparer calcul et présentation HTML.
+
+## Prérequis
+
+- Le serveur XAMPP et une page PHP exécutée par Apache.
+- Notions de base en programmation et en HTML.
+
+## Cours
+
+### Variables et types
+
+Les variables PHP commencent par `$`. PHP est dynamiquement typé, mais les signatures de fonctions peuvent préciser les types attendus :
+
+```php
+<?php
+declare(strict_types=1);
+
+$nom = 'Mina';
+$nombreDeLivres = 4;
+$prix = 12.50;
+$estDisponible = true;
+$description = null;
+```
+
+Les types usuels comprennent `string`, `int`, `float`, `bool`, `array` et `null`. Le type `mixed` désigne une valeur de type quelconque et ne devrait pas remplacer un modèle précis sans raison.
+
+### Chaînes et interpolation
+
+Les chaînes entre guillemets doubles interpolent les variables ; celles entre apostrophes simples les conservent comme texte :
+
+```php
+$prenom = 'Mina';
+echo "Bonjour $prenom";
+echo 'Bonjour ' . $prenom;
+```
+
+`echo` produit du texte dans la réponse. Toute donnée contrôlée par un utilisateur doit être échappée au moment où elle est insérée dans le contexte HTML.
+
+### Tableaux indexés et associatifs
+
+```php
+$notes = [14, 18, 12];
+$premiereNote = $notes[0];
+
+$livre = [
+    'titre' => 'Dune',
+    'auteur' => 'Frank Herbert',
+    'annee' => 1965,
+];
+```
+
+Les tableaux associatifs utilisent des clés explicites. `foreach` parcourt les deux types :
+
+```php
+foreach ($livre as $champ => $valeur) {
+    echo htmlspecialchars((string) $champ, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    echo ': ';
+    echo htmlspecialchars((string) $valeur, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    echo '<br>';
+}
+```
+
+N'affichez pas de valeur brute dans une page : transformez-la en texte HTML échappé.
+
+### Conditions et boucles
+
+```php
+if ($nombreDeLivres === 0) {
+    echo 'La bibliothèque est vide.';
+} elseif ($nombreDeLivres < 5) {
+    echo 'La collection commence.';
+} else {
+    echo 'La collection est bien remplie.';
+}
+```
+
+Préférez la comparaison stricte `===` lorsque le type doit aussi correspondre. Les boucles `for`, `while` et `foreach` servent à répéter un traitement ; `foreach` est généralement le choix naturel pour parcourir une collection PHP.
+
+```php
+foreach ($notes as $note) {
+    echo $note . '<br>';
+}
+```
+
+### Fonctions typées
+
+```php
+function calculerTotal(array $articles): float
+{
+    $total = 0.0;
+
+    foreach ($articles as $article) {
+        $total += (float) $article['prix'] * (int) $article['quantite'];
+    }
+
+    return $total;
+}
+```
+
+Une fonction reçoit explicitement ses dépendances et retourne le résultat. Évitez de modifier des variables globales ou de générer du HTML dans une fonction de calcul.
+
+Une valeur de retour `void` signifie que la fonction ne retourne pas de résultat utile. Les types de paramètres et de retour rendent les contrats plus visibles et facilitent les tests.
+
+### Portée et inclusion
+
+Une variable définie dans une fonction n'est pas automatiquement accessible à l'extérieur. Préférez passer les valeurs en paramètres plutôt que d'utiliser `global`.
+
+`require` charge un fichier PHP et provoque une erreur bloquante si le fichier manque ; `include` émet un avertissement et poursuit l'exécution. `require_once` évite les inclusions répétées. Les chemins de projet peuvent être construits avec `__DIR__` :
+
+```php
+require_once __DIR__ . '/fonctions.php';
+```
+
+Ne placez pas de mots de passe dans les fichiers de code commis au dépôt.
+
+<Callout type="tip">
+Testez les fonctions avec des entrées et sorties simples avant de les connecter au HTML. Une fonction qui calcule sans accéder au navigateur ni à la base est plus facile à réutiliser.
+</Callout>
+
+## Erreurs fréquentes
+
+**Confondre `=` et `===`**
+
+`=` affecte une variable. `===` compare valeur et type.
+
+**Utiliser des indices inexistants**
+
+Vérifiez qu'une clé est présente avant de l'utiliser, notamment avec les données reçues d'un formulaire ou d'une base.
+
+**Traiter toute entrée comme un nombre**
+
+Une donnée reçue du navigateur est une chaîne ou peut être absente. Validez-la et convertissez-la explicitement.
+
+**Afficher des données sans échappement**
+
+Une valeur externe affichée sans `htmlspecialchars` peut injecter du balisage ou du script dans la page.
+
+## Exercices
+
+<Exercise n="2.1" title="Calculer une moyenne">
+Écrivez une fonction typée qui reçoit une liste de notes numériques et retourne leur moyenne. Décidez quoi faire lorsque la liste est vide.
+</Exercise>
+
+<Solution>
+```php
+<?php
+declare(strict_types=1);
+
+function moyenne(array $notes): ?float
+{
+    if ($notes === []) {
+        return null;
+    }
+
+    foreach ($notes as $note) {
+        if (!is_int($note) && !is_float($note)) {
+            throw new InvalidArgumentException('Chaque note doit être numérique.');
+        }
+    }
+
+    return array_sum($notes) / count($notes);
+}
+
+foreach ([ [14, 18, 12], [] ] as $notes) {
+    $resultat = moyenne($notes);
+    echo $resultat === null
+        ? "Aucune note.\n"
+        : number_format($resultat, 2, ',', ' ') . "\n";
+}
+```
+
+La fonction retourne `null` pour une liste vide et refuse les valeurs qui ne sont pas des nombres.
+</Solution>
+
+<Exercise n="2.2" title="Afficher un tableau associatif">
+Parcourez les propriétés d'un livre et affichez-les dans une liste HTML. Échappez chaque clé et chaque valeur.
+</Exercise>
+
+<Solution>
+```php
+<?php
+declare(strict_types=1);
+
+$livre = [
+    'titre' => 'Dune < édition spéciale',
+    'auteur' => 'Frank Herbert',
+    'annee' => 1965,
+];
+?>
+<ul>
+    <?php foreach ($livre as $cle => $valeur): ?>
+        <li>
+            <strong><?= htmlspecialchars((string) $cle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?> :</strong>
+            <?= htmlspecialchars((string) $valeur, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+        </li>
+    <?php endforeach; ?>
+</ul>
+```
+
+Enregistrez ce code dans un fichier `.php` sous `htdocs` et ouvrez-le avec Apache.
+</Solution>
+
+<Exercise n="2.3" title="Créer un calculateur de budget">
+À partir d'une liste d'articles contenant prix et quantité, calculez un total et affichez-le avec deux décimales.
+</Exercise>
+
+<Solution>
+```php
+<?php
+declare(strict_types=1);
+
+function calculerTotal(array $articles): float
+{
+    $total = 0.0;
+
+    foreach ($articles as $article) {
+        if (
+            !isset($article['prix'], $article['quantite'])
+            || (!is_int($article['prix']) && !is_float($article['prix']))
+            || !is_int($article['quantite'])
+            || $article['prix'] < 0
+            || $article['quantite'] < 0
+        ) {
+            throw new InvalidArgumentException('Article invalide.');
+        }
+
+        $total += $article['prix'] * $article['quantite'];
+    }
+
+    return $total;
+}
+
+$articles = [
+    ['nom' => 'Livre', 'prix' => 12.50, 'quantite' => 2],
+    ['nom' => 'Carnet', 'prix' => 4.25, 'quantite' => 1],
+];
+$total = calculerTotal($articles);
+?>
+<p>Total : <?= htmlspecialchars(number_format($total, 2, ',', ' '), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?> €</p>
+```
+
+Le résultat numérique reste indépendant de son formatage pour l'affichage.
+</Solution>
+
+## Livrable
+
+Un calculateur de budget PHP composé de fonctions typées, utilisant tableaux associatifs et présentant un résultat HTML échappé.

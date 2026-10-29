@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 export function useActiveSection(ids) {
+  const idsKey = ids.join('\u0000');
   const [activeId, setActiveId] = useState(ids[0] ?? '');
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export function useActiveSection(ids) {
     );
     headings.forEach((heading) => observer.observe(heading));
     return () => observer.disconnect();
-  }, [ids]);
+  }, [idsKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return activeId;
 }

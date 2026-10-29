@@ -1,0 +1,203 @@
+# Démarrer avec PHP et XAMPP
+
+PHP est un langage exécuté côté serveur. Apache reçoit une requête HTTP, transmet le fichier PHP à l'interpréteur, puis renvoie le résultat, souvent du HTML, au navigateur. Ce module configure un environnement local reproductible avec XAMPP et apprend à distinguer le code serveur du code visible dans la page.
+
+## Objectifs
+
+- Installer et démarrer Apache et MySQL avec XAMPP.
+- Comprendre le trajet d'une requête HTTP vers un script PHP.
+- Créer et ouvrir un projet dans `htdocs`.
+- Afficher la version de PHP utilisée par Apache.
+- Utiliser les balises PHP et intégrer des expressions dans du HTML.
+- Distinguer configuration locale de développement et production.
+
+## Prérequis
+
+- Un ordinateur Windows, macOS ou Linux.
+- Un navigateur, un éditeur de code et des droits d'installation.
+- Notions de base en HTML et navigation web.
+
+## Cours
+
+### Installer XAMPP
+
+Téléchargez XAMPP depuis le site officiel Apache Friends et choisissez une version qui inclut PHP 8.x. Suivez les instructions propres à votre système. Le panneau de contrôle XAMPP permet de démarrer et d'arrêter Apache et MySQL.
+
+Sur Windows, démarrez Apache et MySQL depuis le panneau de contrôle. Selon l'installation, Windows Defender Firewall peut demander une autorisation pour Apache : n'autorisez que les réseaux nécessaires et gardez le serveur de développement local.
+
+Les ports par défaut sont généralement 80 pour HTTP et 3306 pour MySQL. Si un autre programme utilise déjà un port, le service XAMPP peut échouer à démarrer. Consultez son journal et corrigez le conflit plutôt que d'exposer le serveur sur un réseau public.
+
+### Créer un projet dans `htdocs`
+
+Dans l'installation Windows par défaut, les projets Apache sont sous `C:\xampp\htdocs`. Créez par exemple :
+
+```text
+C:\xampp\htdocs\bibliotheque\
+└── index.php
+```
+
+Le serveur est joint via une URL locale :
+
+```text
+http://localhost/bibliotheque/
+```
+
+Ouvrir le fichier `.php` directement depuis l'explorateur ne l'exécute pas par Apache. Il faut passer par `http://localhost/...` afin que le serveur traite PHP.
+
+### Vérifier PHP via Apache
+
+Créez temporairement `verifier.php` dans le dossier du projet :
+
+```php
+<?php
+echo PHP_VERSION;
+```
+
+Ouvrez `http://localhost/bibliotheque/verifier.php`. La version affichée est celle du PHP chargé par Apache.
+
+La fonction `phpinfo()` montre de nombreuses informations de configuration. N'exposez jamais une page `phpinfo()` sur un serveur public et supprimez-la dès la vérification terminée : elle peut divulguer des chemins, extensions et paramètres internes.
+
+### Premier script PHP
+
+```php
+<?php
+declare(strict_types=1);
+
+$titre = 'Ma bibliothèque';
+?>
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?= htmlspecialchars($titre, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></title>
+</head>
+<body>
+    <h1><?= htmlspecialchars($titre, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></h1>
+</body>
+</html>
+```
+
+`<?php` ouvre le code PHP. `?>` le ferme pour laisser la place au HTML. La syntaxe `<?= ... ?>` est un raccourci d'affichage. Utilisez `htmlspecialchars` pour insérer une valeur dans du HTML : le contenu dynamique ne doit pas être interprété comme du balisage.
+
+`declare(strict_types=1)` active une vérification plus stricte des types scalaires pour les appels effectués depuis ce fichier. Placez cette déclaration au début du fichier PHP.
+
+### Apache et le navigateur
+
+Le code PHP est exécuté côté serveur. Le navigateur reçoit la réponse générée, pas le fichier source PHP. N'incluez donc jamais des mots de passe ou la configuration sensible dans le HTML, des commentaires HTML ou un fichier placé dans le répertoire public.
+
+La structure d'un projet peut commencer simplement :
+
+```text
+bibliotheque/
+├── index.php
+├── styles.css
+└── pages/
+```
+
+Au fil du parcours, séparez les vues, règles métier, accès à MySQL et configuration.
+
+### Erreurs et environnement local
+
+En développement local, affichez les erreurs PHP et consultez les journaux d'Apache afin de corriger rapidement les problèmes. En production, désactivez l'affichage des erreurs : les détails techniques doivent être journalisés côté serveur, pas envoyés aux visiteurs.
+
+MySQL doit être démarré séparément d'Apache depuis le panneau XAMPP. phpMyAdmin, généralement accessible via `http://localhost/phpmyadmin/`, est un outil d'administration local, pas une interface à intégrer aux pages publiques.
+
+<Callout type="warn">
+Le mot de passe vide du compte MySQL `root` peut être présent dans certaines installations locales de XAMPP. Cela ne convient qu'à un environnement isolé et temporaire. N'utilisez jamais cette configuration pour un serveur exposé au réseau ou en production.
+</Callout>
+
+## Erreurs fréquentes
+
+**Ouvrir un fichier PHP avec `file://`**
+
+Le navigateur affiche le contenu comme un fichier, sans lancer l'interpréteur. Utilisez l'URL `http://localhost/...`.
+
+**Apache ne démarre pas**
+
+Un autre service utilise peut-être son port. Consultez le panneau XAMPP et ses journaux avant de modifier la configuration.
+
+**Modifier le PHP CLI sans changer celui d'Apache**
+
+Une installation peut contenir plusieurs versions de PHP. Vérifiez la version via Apache et le terminal si les deux environnements sont utilisés.
+
+**Laisser `phpinfo()` en ligne**
+
+Cette page révèle des informations sur le serveur. Supprimez-la après le diagnostic.
+
+## Exercices
+
+<Exercise n="1.1" title="Vérifier XAMPP">
+Démarrez Apache, créez une page PHP dans le répertoire `htdocs` et ouvrez-la depuis `localhost`. Vérifiez la version PHP via Apache puis supprimez la page temporaire de diagnostic.
+</Exercise>
+
+<Solution>
+Dans le panneau de contrôle XAMPP, démarrez Apache. Créez `C:\xampp\htdocs\bibliotheque\index.php`, puis ouvrez `http://localhost/bibliotheque/`.
+
+```php
+<?php
+declare(strict_types=1);
+
+echo 'Version PHP utilisée par Apache : ';
+echo htmlspecialchars(PHP_VERSION, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+```
+
+Le résultat montre la version du module PHP chargé par Apache. Supprimez tout fichier de diagnostic après usage.
+</Solution>
+
+<Exercise n="1.2" title="Générer du HTML avec PHP">
+Créez une page HTML française qui affiche dynamiquement le titre d'un livre. Échappez le titre avant de l'insérer dans le document.
+</Exercise>
+
+<Solution>
+```php
+<?php
+declare(strict_types=1);
+
+$titre = 'Dune < édition spéciale';
+?>
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?= htmlspecialchars($titre, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></title>
+</head>
+<body>
+    <main>
+        <h1><?= htmlspecialchars($titre, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></h1>
+    </main>
+</body>
+</html>
+```
+
+Enregistrez le fichier sous `C:\xampp\htdocs\bibliotheque\index.php` et ouvrez-le par Apache. Les caractères `<` sont affichés comme du texte, pas interprétés comme du HTML.
+</Solution>
+
+<Exercise n="1.3" title="Observer le trajet d'une requête">
+Décrivez ce qui se passe entre la saisie de l'URL locale et l'affichage de la page. Identifiez le rôle de Apache, PHP et du navigateur.
+</Exercise>
+
+<Solution>
+Le navigateur envoie une requête HTTP à Apache. Apache transmet le script à PHP, qui l'exécute et produit une réponse. Apache renvoie le HTML généré au navigateur, qui l'interprète et affiche la page.
+
+Pour observer la frontière entre le code serveur et la réponse, ajoutez temporairement ceci dans `index.php` :
+
+```php
+<?php
+$titre = 'Page PHP';
+?>
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<title><?= htmlspecialchars($titre, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></title>
+<h1><?= htmlspecialchars($titre, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></h1>
+</html>
+```
+
+Dans le navigateur, affichez la source de la page : vous verrez le HTML produit, mais pas l'affectation `$titre` ni les balises PHP.
+</Solution>
+
+## Livrable
+
+Une page de bibliothèque PHP servie par Apache via XAMPP, avec titre dynamique échappé et instructions de démarrage local.

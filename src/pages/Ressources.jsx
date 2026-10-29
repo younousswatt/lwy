@@ -5,49 +5,100 @@ const resources = {
   documentation: [
     {
       title: 'MDN Web Docs',
-      description: 'Documentation de référence pour HTML, CSS et JavaScript.',
+      description: 'Référence détaillée pour HTML, CSS, JavaScript et les API du navigateur.',
       url: 'https://developer.mozilla.org',
     },
     {
-      title: 'JS.info',
-      description: 'Cours moderne de JavaScript, du débutant à l\'avancé.',
-      url: 'https://javascript.info',
+      title: 'Documentation Angular',
+      description: 'Guides officiels pour apprendre Angular et consulter les API.',
+      url: 'https://angular.dev',
     },
     {
-      title: 'Can I Use',
-      description: 'Tableau de compatibilité des fonctionnalités web.',
-      url: 'https://caniuse.com',
+      title: 'Documentation Python',
+      description: 'Tutoriel, bibliothèque standard et référence officielle du langage.',
+      url: 'https://docs.python.org/fr/3/',
+    },
+    {
+      title: 'Manuel PHP',
+      description: 'Documentation officielle de PHP, avec référence du langage et extensions.',
+      url: 'https://www.php.net/manual/fr/',
+    },
+    {
+      title: 'MySQL Reference Manual',
+      description: 'Guide officiel pour SQL, les bases MySQL et leur administration.',
+      url: 'https://dev.mysql.com/doc/',
+    },
+    {
+      title: 'cppreference',
+      description: 'Référence des bibliothèques et fonctionnalités de C et C++.',
+      url: 'https://en.cppreference.com/',
     },
   ],
-  apprentissage: [
+  pratique: [
     {
       title: 'freeCodeCamp',
-      description: 'Parcours interactifs gratuits pour apprendre à coder.',
-      url: 'https://freecodecamp.org',
+      description: 'Leçons interactives et certifications autour du développement web.',
+      url: 'https://www.freecodecamp.org/',
     },
     {
-      title: 'Frontend Mentor',
-      description: 'Projets pour s\'exercer au développement frontend.',
-      url: 'https://frontendmentor.io',
+      title: 'Exercism',
+      description: 'Exercices de programmation avec pratique guidée dans plusieurs langages.',
+      url: 'https://exercism.org/',
+    },
+    {
+      title: 'VisuAlgo',
+      description: 'Visualisations interactives d’algorithmes et de structures de données.',
+      url: 'https://visualgo.net/',
+    },
+    {
+      title: 'CS50x',
+      description: 'Cours d’introduction à l’informatique : résolution de problèmes, algorithmes et programmation.',
+      url: 'https://cs50.harvard.edu/x/',
+    },
+    {
+      title: 'SQLBolt',
+      description: 'Exercices interactifs pour découvrir SQL pas à pas.',
+      url: 'https://sqlbolt.com/',
     },
     {
       title: 'Roadmap.sh',
-      description: 'Guides de roadmap pour différents parcours techniques.',
-      url: 'https://roadmap.sh',
+      description: 'Feuilles de route visuelles pour explorer les métiers et technologies.',
+      url: 'https://roadmap.sh/',
     },
   ],
   outils: [
     {
-      title: 'CSS-Tricks',
-      description: 'Articles et astuces sur CSS et le développement web.',
-      url: 'https://css-tricks.com',
+      title: 'Visual Studio Code',
+      description: 'Éditeur de code et documentation des fonctions de développement.',
+      url: 'https://code.visualstudio.com/docs',
     },
     {
-      title: 'DevTools',
-      description: 'Outils de développement intégrés aux navigateurs.',
-      url: 'https://developer.chrome.com/docs/devtools',
+      title: 'Chrome DevTools',
+      description: 'Inspecter, déboguer et mesurer une application web dans Chrome.',
+      url: 'https://developer.chrome.com/docs/devtools/',
+    },
+    {
+      title: 'GitHub Skills',
+      description: 'Ateliers guidés pour apprendre GitHub en manipulant de vrais projets.',
+      url: 'https://skills.github.com/',
+    },
+    {
+      title: 'XAMPP',
+      description: 'Environnement local Apache, PHP et MariaDB pour suivre le parcours PHP.',
+      url: 'https://www.apachefriends.org/',
+    },
+    {
+      title: 'Can I Use',
+      description: 'Vérifier la compatibilité des fonctionnalités web entre navigateurs.',
+      url: 'https://caniuse.com/',
     },
   ],
+};
+
+const groupTitles = {
+  documentation: 'Documentation',
+  pratique: 'Apprendre et pratiquer',
+  outils: 'Outils de développement',
 };
 
 export default function Ressources() {
@@ -57,64 +108,30 @@ export default function Ressources() {
         <p className="eyebrow">Pour aller plus loin</p>
         <h1 className="page-title">Ressources</h1>
         <p className="page-description">
-          Une sélection de références de qualité pour approfondir vos connaissances et résoudre vos problèmes.
+          Des références, visualisations et exercices pour travailler l’algorithmique, la programmation et le développement web ou logiciel.
         </p>
       </FadeIn>
       <div className="resource-groups">
-        <div className="resource-group">
-          <h2>Documentation</h2>
-          <ul>
-            {resources.documentation.map((resource) => (
-              <li key={resource.url}>
-                <div className="resource-item">
-                  <div>
-                    <h3>{resource.title}</h3>
-                    <p>{resource.description}</p>
+        {Object.entries(resources).map(([group, items]) => (
+          <section className="resource-group" key={group}>
+            <h2>{groupTitles[group]}</h2>
+            <ul>
+              {items.map((resource) => (
+                <li key={resource.url}>
+                  <div className="resource-item">
+                    <div>
+                      <h3>{resource.title}</h3>
+                      <p>{resource.description}</p>
+                    </div>
+                    <a href={resource.url} target="_blank" rel="noopener noreferrer" aria-label={`Ouvrir ${resource.title} dans un nouvel onglet`}>
+                      <ExternalLink size={18} aria-hidden="true" />
+                    </a>
                   </div>
-                  <a href={resource.url} target="_blank" rel="noopener noreferrer" aria-label={`Ouvrir ${resource.title} dans un nouvel onglet`}>
-                    <ExternalLink size={18} />
-                  </a>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="resource-group">
-          <h2>Apprentissage</h2>
-          <ul>
-            {resources.apprentissage.map((resource) => (
-              <li key={resource.url}>
-                <div className="resource-item">
-                  <div>
-                    <h3>{resource.title}</h3>
-                    <p>{resource.description}</p>
-                  </div>
-                  <a href={resource.url} target="_blank" rel="noopener noreferrer" aria-label={`Ouvrir ${resource.title} dans un nouvel onglet`}>
-                    <ExternalLink size={18} />
-                  </a>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="resource-group">
-          <h2>Outils</h2>
-          <ul>
-            {resources.outils.map((resource) => (
-              <li key={resource.url}>
-                <div className="resource-item">
-                  <div>
-                    <h3>{resource.title}</h3>
-                    <p>{resource.description}</p>
-                  </div>
-                  <a href={resource.url} target="_blank" rel="noopener noreferrer" aria-label={`Ouvrir ${resource.title} dans un nouvel onglet`}>
-                    <ExternalLink size={18} />
-                  </a>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
     </div>
   );

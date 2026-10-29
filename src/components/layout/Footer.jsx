@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="container footer-inner">
         <p>LWY — Learn With Yunus</p>
         <p>Parcours de formation en programmation</p>
-        <a href="[GITHUB]" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/younousswatt/lwy" target="_blank" rel="noopener noreferrer">Dépôt GitHub</a>
       </div>
     </footer>
   );

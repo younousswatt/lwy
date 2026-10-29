@@ -27,8 +27,8 @@ export const TRACKS = [
     slug: 'php',
     order: 4,
     title: 'PHP',
-    description: 'Développement backend avec PHP, bases de données et frameworks modernes.',
-    status: 'soon',
+    description: 'Développement web avec PHP, formulaires sécurisés, sessions et MySQL via PDO sous XAMPP.',
+    status: 'available',
     level: 'Débutant à intermédiaire',
   },
   {

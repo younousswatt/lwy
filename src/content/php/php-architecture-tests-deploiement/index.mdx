@@ -1,0 +1,275 @@
+# Architecture, tests et déploiement PHP
+
+Une application PHP grandit lorsque vues, requêtes SQL et règles métier s'entremêlent. Ce module présente une organisation graduelle, Composer, configuration hors dépôt, tests et différences entre environnement XAMPP local et serveur de production.
+
+## Objectifs
+
+- Séparer configuration, accès aux données, traitement HTTP et vues.
+- Comprendre l'autoloading et la gestion de dépendances avec Composer.
+- Protéger les secrets et distinguer environnements.
+- Écrire des tests pour des fonctions et services sans Apache.
+- Configurer les erreurs et journaux pour la production.
+- Préparer un déploiement reproductible hors du poste local.
+
+## Prérequis
+
+- CRUD, PDO, sessions et contrôles de sécurité.
+- PHP 8 et environnement XAMPP local.
+
+## Cours
+
+### Organiser l'application
+
+Une petite application peut commencer ainsi :
+
+```text
+bibliotheque/
+├── public/
+│   ├── index.php
+│   └── assets/
+├── src/
+│   ├── Database.php
+│   └── LivreRepository.php
+├── templates/
+├── config/
+├── tests/
+├── composer.json
+└── .gitignore
+```
+
+Le répertoire public contient le point d'entrée servi par le web. Les classes d'accès aux données sont dans `src`; les secrets sont exclus du dépôt et, en production, la racine du serveur web doit pointer vers `public/`.
+
+Sous XAMPP, vous pouvez placer le projet sous `htdocs` pour l'apprentissage. Pour un déploiement réel, ne rendez pas `config/`, `src/`, fichiers `.env`, sauvegardes ou journaux directement accessibles par HTTP.
+
+### Séparer les responsabilités
+
+- Le point d'entrée reçoit la requête et choisit le traitement.
+- Le repository encapsule les requêtes PDO.
+- Les fonctions ou services portent les règles métier.
+- Les templates affichent les données échappées.
+- La configuration crée la connexion et lit les secrets.
+
+Une séparation claire permet de tester les règles sans appeler Apache ni MySQL réel. Ne multipliez pas les classes avant d'avoir des responsabilités distinctes.
+
+### Composer et autoloading
+
+Composer gère les dépendances PHP. Le fichier `composer.json` décrit les packages et l'autoloading :
+
+```json
+{
+  "require": {
+    "php": "^8.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Bibliotheque\\": "src/"
+    }
+  }
+}
+```
+
+Générez l'autoloader avec `composer dump-autoload`, puis incluez `vendor/autoload.php` au point d'entrée. Les dossiers `vendor/` et secrets locaux ne sont généralement pas commis ; le `composer.lock`, lui, doit être versionné pour une application afin de figer les dépendances résolues.
+
+Les versions PHP compatibles par Composer doivent aussi correspondre à PHP configuré dans Apache sous XAMPP.
+
+### Configuration et secrets
+
+Ne commitez pas les identifiants MySQL. Utilisez des variables d'environnement configurées pour le processus Apache ou un fichier local non versionné, avec une configuration d'exemple sans secrets.
+
+```php
+$host = getenv('DB_HOST') ?: '127.0.0.1';
+$base = getenv('DB_NAME') ?: 'bibliotheque';
+$user = getenv('DB_USER');
+$password = getenv('DB_PASSWORD');
+
+if ($user === false || $password === false) {
+    throw new RuntimeException('Configuration MySQL manquante.');
+}
+```
+
+Ne remplacez pas une configuration absente par des identifiants de production par défaut. Signalez l'erreur au démarrage et gardez les détails dans les journaux privés.
+
+### Tests
+
+Les petites fonctions sans dépendance externe se testent directement. PHPUnit est un framework courant installé via Composer. La version doit correspondre à la version de PHP utilisée par le projet.
+
+```php
+<?php
+use PHPUnit\Framework\TestCase;
+
+final class ValidationTest extends TestCase
+{
+    public function testTitreVideEstRefuse(): void
+    {
+        self::assertFalse(validerTitre(''));
+    }
+}
+```
+
+Testez aussi les repositories en isolant leur base de test et en réinitialisant les données. Ne lancez jamais les tests contre la base de données d'un vrai utilisateur.
+
+### Erreurs et journaux
+
+En développement, activez des diagnostics localement. En production :
+
+- désactivez `display_errors` ;
+- activez la journalisation côté serveur avec des permissions restrictives ;
+- affichez des messages neutres ;
+- ne journalisez pas mots de passe, cookies, jetons CSRF ou secrets ;
+- configurez `error_reporting` pour capter les erreurs utiles.
+
+### Préparer un déploiement
+
+Un serveur de production doit disposer d'une version PHP prise en charge, des extensions requises, de HTTPS, de MySQL configuré avec un utilisateur à privilèges limités, d'une racine web limitée à `public/` et d'une procédure de sauvegarde.
+
+Exportez/importez les migrations ou scripts SQL via une procédure contrôlée. Les mots de passe locaux XAMPP, réglages Apache locaux et fichiers générés ne constituent pas un plan de déploiement.
+
+<Callout type="warn">
+XAMPP est un environnement de développement local, pas un serveur prêt à publier sur Internet. N'exposez pas phpMyAdmin ni les réglages par défaut sur un réseau public.
+</Callout>
+
+## Erreurs fréquentes
+
+**Commiter `vendor/` sans stratégie cohérente**
+
+Suivez les pratiques Composer du projet : versionnez `composer.lock`, documentez `composer install` et ignorez le dossier généré `vendor/` dans un projet applicatif standard.
+
+**Placer le fichier de secrets sous la racine publique**
+
+Un mauvais réglage Apache pourrait le servir. Placez la configuration sensible hors du répertoire accessible par HTTP.
+
+**Afficher une trace d'exception à l'utilisateur**
+
+Les détails doivent être captés dans les journaux avec un identifiant de suivi, tandis que l'interface affiche un message neutre.
+
+**Utiliser la base de production pour les tests**
+
+Configurez une base dédiée aux tests, créée puis réinitialisée par le processus de test.
+
+## Exercices
+
+<Exercise n="7.1" title="Séparer un traitement de sa vue">
+Extrayez l'accès aux livres dans un repository PDO et conservez l'échappement HTML dans la vue. Expliquez les dépendances de chaque couche.
+</Exercise>
+
+<Solution>
+Placez la classe ci-dessous dans `src/Repository/LivreRepository.php`. Elle ne connaît ni les formulaires ni le HTML :
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\Repository;
+
+use PDO;
+
+final class LivreRepository
+{
+    public function __construct(private PDO $pdo)
+    {
+    }
+
+    /** @return list<array{id:int, titre:string, auteur:string, annee:int|null}> */
+    public function tous(): array
+    {
+        $rows = $this->pdo
+            ->query('SELECT id, titre, auteur, annee FROM livres ORDER BY titre')
+            ->fetchAll();
+
+        return array_map(static fn (array $row): array => [
+            'id' => (int) $row['id'],
+            'titre' => (string) $row['titre'],
+            'auteur' => (string) $row['auteur'],
+            'annee' => $row['annee'] === null ? null : (int) $row['annee'],
+        ], $rows);
+    }
+
+    public function trouver(int $id): ?array
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT id, titre, auteur, annee FROM livres WHERE id = :id'
+        );
+        $statement->execute(['id' => $id]);
+        $row = $statement->fetch();
+
+        return $row === false ? null : [
+            'id' => (int) $row['id'],
+            'titre' => (string) $row['titre'],
+            'auteur' => (string) $row['auteur'],
+            'annee' => $row['annee'] === null ? null : (int) $row['annee'],
+        ];
+    }
+}
+```
+
+Le contrôleur construit le repository et passe son résultat à la vue. La vue échappe les chaînes au rendu avec `htmlspecialchars(..., ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')`. PDO est injecté, ce qui permet de remplacer la connexion réelle par une connexion de test.
+</Solution>
+
+<Exercise n="7.2" title="Versionner les dépendances sans secrets">
+Ajoutez un `composer.json`, générez l'autoloader et vérifiez que `vendor/` ainsi que les secrets locaux ne sont pas suivis par Git.
+</Exercise>
+
+<Solution>
+Fichier `composer.json` à la racine :
+
+```json
+{
+  "name": "lwy/bibliotheque",
+  "description": "Exercices de bibliothèque en PHP",
+  "type": "project",
+  "require": {
+    "php": "^8.1",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}
+```
+
+Depuis le terminal dans le dossier du projet, exécutez `composer install`, puis `composer dump-autoload`. Exemple de `.gitignore` :
+
+```gitignore
+/vendor/
+/.env
+/config/local.php
+/storage/logs/
+```
+
+Versionnez `composer.json` et `composer.lock`, mais pas les secrets. Fournissez plutôt un `config/example.php` avec des valeurs fictives ou des noms de variables d'environnement.
+</Solution>
+
+<Exercise n="7.3" title="Préparer une configuration de production">
+Établissez une checklist pour distinguer configuration locale XAMPP et configuration de production, notamment HTTPS, identifiants MySQL, erreurs, journaux et racine web.
+</Exercise>
+
+<Solution>
+Exemple de réglages de production à appliquer dans la configuration PHP du serveur, et non dans un fichier public du projet :
+
+```ini
+display_errors = Off
+log_errors = On
+expose_php = Off
+session.cookie_httponly = On
+session.cookie_secure = On
+session.cookie_samesite = Lax
+```
+
+Exemple Apache pour interdire l'accès HTTP non chiffré (à adapter à la configuration TLS du fournisseur) :
+
+```apache
+<VirtualHost *:80>
+    ServerName bibliotheque.example
+    Redirect permanent / https://bibliotheque.example/
+</VirtualHost>
+```
+
+Avant la mise en ligne : activez HTTPS, injectez les secrets hors du dépôt, créez un compte MySQL à privilèges minimaux, désactivez l'affichage des erreurs, protégez les journaux, retirez phpMyAdmin de l'accès public et configurez la racine du site sur `public/`. N'utilisez jamais la configuration XAMPP de développement comme configuration de production.
+</Solution>
+
+## Livrable
+
+Une application PHP organisée et testée, dépendances reproductibles via Composer, configuration sensible hors dépôt et checklist de déploiement.

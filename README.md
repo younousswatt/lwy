@@ -1,10 +1,10 @@
 # LWY — Learn With Yunus
 
-LWY est un portfolio pédagogique et un support de cours consacré aux fondamentaux du développement web et d'autres langages de programmation. Le projet propose des parcours progressifs et rigoureux pour apprendre à programmer, du niveau débutant à intermédiaire.
+LWY est un espace pédagogique consacré à l'algorithmique, à la programmation et au développement logiciel et web. Le projet propose des parcours progressifs et rigoureux pour apprendre à raisonner, écrire des programmes et réaliser des applications, du niveau débutant à intermédiaire.
 
 ## Philosophie pédagogique
 
-Chaque module associe des objectifs observables, des explications précises, des exemples concrets, des exercices gradués et un livrable. La progression privilégie la compréhension des fondements avant d'aborder les abstractions, et chaque notion est définie avant d'être utilisée.
+Chaque module associe des objectifs observables, des explications précises, des exemples concrets, des exercices gradués et un livrable. La progression développe la logique algorithmique et la résolution de problèmes, puis les bases de la programmation et leur mise en pratique dans des projets. Elle privilégie la compréhension des fondements avant d'aborder les abstractions, et chaque notion est définie avant d'être utilisée.
 
 ## Parcours disponibles
 
@@ -30,6 +30,20 @@ Fondamentaux, programmation orientée objet, packages et projet final CLI.
 ### Angular (8 modules)
 TypeScript, composants, services, formulaires, routage, RxJS, tests et tableau de bord.
 
+### PHP (8 modules)
+Parcours complet avec Apache, PHP et MySQL dans XAMPP, depuis la première page jusqu'à une bibliothèque web :
+
+1. Démarrage avec XAMPP et cycle d'une requête
+2. Variables, types, contrôle et fonctions
+3. Formulaires et validation serveur
+4. MySQL et accès aux données avec PDO
+5. CRUD et pagination
+6. Sessions, authentification et protection CSRF
+7. Architecture, Composer, tests et déploiement
+8. Projet final : bibliothèque PHP/MySQL
+
+Les exercices incluent des corrigés avec exemples PHP, SQL, HTML et configuration. Les exemples utilisent requêtes préparées, validation côté serveur, échappement HTML et protections de session ; adaptez toujours les identifiants et configurations à votre environnement, sans publier de secrets.
+
 ### C (8 modules)
 Compilation, fonctions, tableaux, pointeurs, mémoire, fichiers et projet final.
 
@@ -37,7 +51,6 @@ Compilation, fonctions, tableaux, pointeurs, mémoire, fichiers et projet final.
 C++ moderne, classes, RAII, STL, templates, tests et projet final.
 
 ### Parcours à venir
-- PHP
 - Java
 
 ## Lancer en local
@@ -55,6 +68,14 @@ Pour vérifier le build de production :
 npm run build
 npm run preview
 ```
+
+### Environnement du parcours PHP
+
+Pour exécuter les exercices PHP, installez XAMPP avec Apache, PHP et MySQL/MariaDB, démarrez Apache et MySQL depuis le panneau XAMPP, puis placez les fichiers de cours dans un sous-dossier de `htdocs` (par exemple `C:\xampp\htdocs\bibliotheque`). Ouvrez les pages par `http://localhost/bibliotheque/` ; ne lancez pas les scripts PHP en ouvrant directement les fichiers dans le navigateur.
+
+phpMyAdmin est normalement disponible à `http://localhost/phpmyadmin/` pendant le développement local. Créez le schéma indiqué dans les leçons avant les exercices PDO. Vérifiez que l'extension `pdo_mysql` est activée dans la version PHP utilisée par Apache. Le PHP en ligne de commande peut provenir d'une autre installation ; vérifiez séparément sa version avec `php -v`.
+
+Les identifiants par défaut d'une installation locale ne sont pas une configuration de production. N'exposez pas phpMyAdmin sur Internet, n'enregistrez pas de secrets dans Git et utilisez en production HTTPS, des identifiants MySQL à privilèges minimaux et des erreurs non affichées au public.
 
 ## Ajouter un module
 

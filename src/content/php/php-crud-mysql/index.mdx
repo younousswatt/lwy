@@ -1,0 +1,353 @@
+# CRUD et relations MySQL
+
+CRUD désigne création, lecture, mise à jour et suppression de données. Ce module relie les formulaires PHP à MySQL via PDO et prépare les règles de persistance nécessaires à une application de bibliothèque maintenable.
+
+## Objectifs
+
+- Construire les opérations SQL CRUD avec PDO.
+- Valider les identifiants et données avant écriture.
+- Employer le modèle POST/Redirect/GET pour les mutations.
+- Afficher les résultats en échappant les valeurs.
+- Ajouter des relations avec clés étrangères.
+- Paginer une liste sans accepter de fragments SQL utilisateur.
+
+## Prérequis
+
+- Connexion PDO, schéma de base et requêtes préparées.
+
+## Cours
+
+### Lire une liste
+
+```php
+$requete = $pdo->query(
+    'SELECT id, titre, auteur, annee
+     FROM livres
+     ORDER BY titre ASC'
+);
+$livres = $requete->fetchAll();
+```
+
+Cette requête ne contient aucun fragment utilisateur. Pour afficher le résultat, échappez chaque champ au contexte HTML avec une fonction centralisée :
+
+```php
+function e(string $valeur): string
+{
+    return htmlspecialchars($valeur, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+```
+
+L'identifiant numérique doit aussi être formaté ou validé et le contenu ne doit pas devenir du HTML actif. La présence d'une base de données ne rend pas ses données automatiquement fiables.
+
+### Créer une ligne
+
+Vérifiez la requête HTTP, validez les champs et exécutez une instruction préparée :
+
+```php
+$requete = $pdo->prepare(
+    'INSERT INTO livres (titre, auteur, annee)
+     VALUES (:titre, :auteur, :annee)'
+);
+$requete->execute([
+    'titre' => $titre,
+    'auteur' => $auteur,
+    'annee' => $annee,
+]);
+```
+
+Une requête réussie n'est pas une validation : vérifiez longueurs, types et contraintes métier avant l'insertion. Le module sur les sessions ajoutera la protection CSRF aux opérations déclenchées depuis un navigateur authentifié.
+
+### Modifier et supprimer
+
+Utilisez une condition précise avec une clé primaire :
+
+```php
+$requete = $pdo->prepare(
+    'UPDATE livres SET titre = :titre, auteur = :auteur WHERE id = :id'
+);
+$requete->execute([
+    'titre' => $titre,
+    'auteur' => $auteur,
+    'id' => $id,
+]);
+```
+
+Validez l'identifiant comme entier positif, et vérifiez `rowCount()` selon le besoin de l'interface. Une absence de ligne modifiée peut signifier identifiant inconnu ou données déjà identiques : définissez le comportement attendu.
+
+```php
+$requete = $pdo->prepare('DELETE FROM livres WHERE id = :id');
+$requete->execute(['id' => $id]);
+```
+
+Les suppressions doivent être des requêtes POST protégées par CSRF, pas des liens GET. Une URL chargée automatiquement par un navigateur ou un robot ne doit pas détruire de données.
+
+### Modèle POST/Redirect/GET
+
+Après une insertion, modification ou suppression réussie :
+
+```php
+header('Location: index.php', true, 303);
+exit;
+```
+
+La redirection évite de rejouer la mutation à l'actualisation. N'envoyez aucun HTML ou espace avant l'en-tête.
+
+### Relations avec une clé étrangère
+
+Ajoutez une table d'auteurs ou de catégories uniquement lorsque le modèle le justifie. Une clé étrangère impose l'existence de la ligne liée :
+
+```sql
+CREATE TABLE categories (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(80) NOT NULL UNIQUE
+);
+
+ALTER TABLE livres
+  ADD COLUMN categorie_id INT UNSIGNED NULL,
+  ADD CONSTRAINT fk_livres_categories
+    FOREIGN KEY (categorie_id) REFERENCES categories(id)
+    ON DELETE SET NULL;
+```
+
+Choisissez explicitement le comportement de suppression (`RESTRICT`, `CASCADE`, `SET NULL`) selon le sens métier. Un `JOIN` permet ensuite d'afficher les informations liées.
+
+### Pagination et tri
+
+Les valeurs `LIMIT` et `OFFSET` doivent être validées comme entiers non négatifs et bornés par une taille de page raisonnable. Les paramètres ne remplacent pas une liste blanche pour un nom de colonne de tri :
+
+```php
+$tris = [
+    'titre' => 'titre',
+    'auteur' => 'auteur',
+];
+$colonne = $tris[$_GET['tri'] ?? 'titre'] ?? 'titre';
+$ordre = ($_GET['ordre'] ?? 'asc') === 'desc' ? 'DESC' : 'ASC';
+
+$sql = "SELECT id, titre, auteur FROM livres ORDER BY $colonne $ordre LIMIT :limite OFFSET :decalage";
+$requete = $pdo->prepare($sql);
+$requete->bindValue('limite', $limite, PDO::PARAM_INT);
+$requete->bindValue('decalage', $decalage, PDO::PARAM_INT);
+$requete->execute();
+```
+
+Les fragments interpolés viennent uniquement des listes fixes de l'application, jamais directement de la requête.
+
+### Transactions et cohérence
+
+Lorsque plusieurs écritures forment une seule opération logique, regroupez-les dans une transaction. En cas d'échec, annulez la transaction et signalez l'erreur sans prétendre que toutes les écritures ont réussi.
+
+<Callout type="warn">
+Les actions d'écriture (création, modification, suppression) utilisent POST et doivent être protégées contre les requêtes CSRF. Une requête GET doit rester sans effet secondaire.
+</Callout>
+
+## Erreurs fréquentes
+
+**Faire une mutation avec GET**
+
+Les robots, liens préchargés ou rafraîchissements peuvent activer la requête. Utilisez POST pour modifier l'état.
+
+**Construire l'ORDER BY depuis l'URL**
+
+Un nom de colonne ne se protège pas comme une valeur paramétrée. Sélectionnez les noms autorisés par une liste blanche.
+
+**Oublier de vérifier l'identifiant**
+
+Validez la forme et les bornes avant l'exécution. Distinguez ligne absente d'une erreur de base.
+
+**Afficher des données SQL sans les échapper**
+
+Échappez au point où le champ est rendu dans HTML, quelle que soit sa source.
+
+## Exercices
+
+<Exercise n="5.1" title="Créer et lister des livres">
+Construisez un formulaire de création et une page de liste. Validez les champs, utilisez une requête préparée, puis redirigez après l'insertion.
+</Exercise>
+
+<Solution>
+Après avoir inclus votre bootstrap PDO, traitez le formulaire avant tout HTML :
+
+```php
+<?php
+declare(strict_types=1);
+require __DIR__ . '/bootstrap.php'; // Fournit $pdo.
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $titre = $_POST['titre'] ?? null;
+    $auteur = $_POST['auteur'] ?? null;
+    $anneeBrute = $_POST['annee'] ?? '';
+
+    if (!is_string($titre) || !is_string($auteur) || !is_string($anneeBrute)) {
+        http_response_code(400);
+        exit('Données invalides.');
+    }
+    $titre = trim($titre);
+    $auteur = trim($auteur);
+    $anneeBrute = trim($anneeBrute);
+    $annee = $anneeBrute === '' ? null : filter_var($anneeBrute, FILTER_VALIDATE_INT);
+
+    if ($titre === '' || mb_strlen($titre) > 200 || $auteur === '' || mb_strlen($auteur) > 150
+        || ($anneeBrute !== '' && ($annee === false || $annee < 1 || $annee > 9999))) {
+        http_response_code(422);
+        exit('Vérifiez le titre, l’auteur et l’année.');
+    }
+
+    $insert = $pdo->prepare(
+        'INSERT INTO livres (titre, auteur, annee) VALUES (:titre, :auteur, :annee)'
+    );
+    $insert->execute(['titre' => $titre, 'auteur' => $auteur, 'annee' => $annee]);
+    header('Location: livres.php', true, 303);
+    exit;
+}
+?>
+<form method="post" action="creer.php">
+    <label>Titre <input name="titre" required maxlength="200"></label>
+    <label>Auteur <input name="auteur" required maxlength="150"></label>
+    <label>Année <input name="annee" type="number" min="1" max="9999"></label>
+    <button type="submit">Ajouter</button>
+</form>
+```
+
+La page de liste récupère et échappe chaque valeur :
+
+```php
+<?php
+$livres = $pdo->query(
+    'SELECT id, titre, auteur, annee FROM livres ORDER BY titre'
+)->fetchAll();
+foreach ($livres as $livre):
+?>
+    <p>
+        <?= htmlspecialchars($livre['titre'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+        — <?= htmlspecialchars($livre['auteur'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+    </p>
+<?php endforeach; ?>
+```
+</Solution>
+
+<Exercise n="5.2" title="Modifier et supprimer un livre">
+Ajoutez une page de modification et un formulaire POST de suppression. Affichez un état 404 si le livre n'existe pas et protégez les opérations avec un jeton CSRF.
+</Exercise>
+
+<Solution>
+Dans les deux points d'entrée, démarrez la session avant toute sortie. Ces helpers rendent le formulaire et le jeton CSRF autonomes :
+
+```php
+<?php
+session_start();
+function e(string $value): string
+{
+    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+function jetonCsrf(): string
+{
+    return $_SESSION['csrf'] ??= bin2hex(random_bytes(32));
+}
+function verifierCsrf(mixed $jeton): void
+{
+    if (!is_string($jeton) || !isset($_SESSION['csrf'])
+        || !hash_equals($_SESSION['csrf'], $jeton)) {
+        http_response_code(403);
+        exit('Requête refusée.');
+    }
+}
+```
+
+La page `modifier.php` charge l'enregistrement avant de l'afficher et, sur POST, valide puis met à jour par paramètre :
+
+```php
+<?php
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if (!$id) {
+    http_response_code(404);
+    exit('Livre introuvable.');
+}
+$select = $pdo->prepare('SELECT id, titre, auteur, annee FROM livres WHERE id = :id');
+$select->execute(['id' => $id]);
+$livre = $select->fetch();
+if ($livre === false) {
+    http_response_code(404);
+    exit('Livre introuvable.');
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifierCsrf($_POST['csrf'] ?? null); // Helper du module 6.
+    $titreBrut = $_POST['titre'] ?? null;
+    $auteurBrut = $_POST['auteur'] ?? null;
+    if (!is_string($titreBrut) || !is_string($auteurBrut)) {
+        http_response_code(400);
+        exit('Données invalides.');
+    }
+    $titre = trim($titreBrut);
+    $auteur = trim($auteurBrut);
+    if ($titre === '' || mb_strlen($titre) > 200 || $auteur === '' || mb_strlen($auteur) > 150) {
+        http_response_code(422);
+        exit('Titre ou auteur invalide.');
+    }
+    $update = $pdo->prepare('UPDATE livres SET titre = :titre, auteur = :auteur WHERE id = :id');
+    $update->execute(['titre' => $titre, 'auteur' => $auteur, 'id' => $id]);
+    header('Location: livres.php', true, 303);
+    exit;
+}
+?>
+<form method="post">
+    <input type="hidden" name="csrf" value="<?= e(jetonCsrf()) ?>">
+    <label>Titre <input name="titre" required maxlength="200" value="<?= e($livre['titre']) ?>"></label>
+    <label>Auteur <input name="auteur" required maxlength="150" value="<?= e($livre['auteur']) ?>"></label>
+    <button type="submit">Enregistrer</button>
+</form>
+```
+
+Le formulaire de suppression doit être POST. Son gestionnaire vérifie le jeton avant le DELETE :
+
+```php
+verifierCsrf($_POST['csrf'] ?? null);
+$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if (!$id) {
+    http_response_code(400);
+    exit('Identifiant invalide.');
+}
+$delete = $pdo->prepare('DELETE FROM livres WHERE id = :id');
+$delete->execute(['id' => $id]);
+header('Location: livres.php', true, 303);
+exit;
+```
+
+N'utilisez pas de formulaire GET ni de lien pour supprimer une ligne.
+</Solution>
+
+<Exercise n="5.3" title="Paginer et trier une liste">
+Limitez le nombre de résultats par page, vérifiez les paramètres de page et autorisez le tri uniquement par titre ou auteur.
+</Exercise>
+
+<Solution>
+Ce code de `livres.php` autorise uniquement les colonnes connues et lie les bornes comme entiers :
+
+```php
+<?php
+$pageBrute = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
+$page = max(1, $pageBrute === false || $pageBrute === null ? 1 : $pageBrute);
+$parPage = 10;
+$debut = ($page - 1) * $parPage;
+
+$colonnesTri = ['titre' => 'titre', 'auteur' => 'auteur'];
+$triDemande = $_GET['tri'] ?? 'titre';
+$tri = is_string($triDemande) && isset($colonnesTri[$triDemande])
+    ? $colonnesTri[$triDemande]
+    : 'titre';
+
+$requete = $pdo->prepare(
+    "SELECT id, titre, auteur, annee FROM livres ORDER BY {$tri} LIMIT :limite OFFSET :debut"
+);
+$requete->bindValue(':limite', $parPage, PDO::PARAM_INT);
+$requete->bindValue(':debut', $debut, PDO::PARAM_INT);
+$requete->execute();
+$livres = $requete->fetchAll();
+```
+
+Seul le nom de colonne issu de la liste blanche est interpolé ; les valeurs de pagination sont des paramètres entiers. Dans une application qui peut recevoir une page arbitrairement grande, imposez également une borne maximale à `$page`.
+</Solution>
+
+## Livrable
+
+Un CRUD de livres persistant qui utilise PDO, formulaires POST, pagination, relations optionnelles et échappement à l'affichage.

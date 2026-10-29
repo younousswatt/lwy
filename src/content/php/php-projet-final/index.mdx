@@ -1,0 +1,349 @@
+# Projet final — Bibliothèque avec PHP et MySQL
+
+Le projet final consiste à créer un site de bibliothèque fonctionnant localement sous XAMPP. Les visiteurs peuvent consulter et chercher les livres ; un utilisateur connecté peut gérer le catalogue depuis un espace privé. PHP valide les requêtes, PDO communique avec MySQL et le navigateur reçoit du HTML accessible.
+
+## Objectifs
+
+- Configurer Apache, PHP et MySQL avec XAMPP.
+- Concevoir un schéma relationnel documenté.
+- Développer un CRUD avec PHP et PDO.
+- Implémenter inscription, connexion, session et contrôle d'accès.
+- Protéger affichage, requêtes SQL et formulaires contre les attaques usuelles.
+- Tester les règles et documenter l'installation locale.
+
+## Prérequis
+
+- Tous les modules précédents du parcours PHP.
+- XAMPP, navigateur, éditeur de code et Composer.
+- Notions de HTML et CSS.
+
+## Cours
+
+### Cahier des charges
+
+La bibliothèque contient des livres avec titre, auteur, année et date d'ajout. L'application doit permettre :
+
+- d'afficher, rechercher et paginer les livres publiquement ;
+- de s'inscrire et se connecter ;
+- de créer, modifier et supprimer les livres depuis un espace protégé ;
+- de conserver les données dans MySQL entre les redémarrages ;
+- d'afficher des états vides, erreurs de validation et erreurs serveur ;
+- de documenter le démarrage avec XAMPP.
+
+La première version peut réserver le CRUD aux utilisateurs authentifiés. Si plusieurs utilisateurs gèrent des collections séparées, chaque ligne doit également porter son propriétaire et chaque requête vérifier cette propriété.
+
+### Arborescence du projet
+
+```text
+bibliotheque/
+├── public/
+│   ├── index.php
+│   ├── connexion.php
+│   ├── inscription.php
+│   ├── deconnexion.php
+│   ├── livres/
+│   └── assets/
+├── src/
+│   ├── bootstrap.php
+│   ├── Database.php
+│   ├── LivreRepository.php
+│   └── Auth.php
+├── templates/
+├── config/
+│   └── config.example.php
+├── migrations/
+├── tests/
+├── composer.json
+└── README.md
+```
+
+Pour apprendre dans XAMPP, vous pouvez placer le projet sous `htdocs` et configurer les chemins. Ne rendez pas les fichiers de configuration, journaux ou sources de données accessibles publiquement. En production, la racine web doit pointer vers `public/`.
+
+### Schéma MySQL
+
+Créez une base encodée en `utf8mb4`, puis définissez au moins les tables utilisateurs et livres :
+
+```sql
+CREATE TABLE utilisateurs (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(254) NOT NULL UNIQUE,
+  mot_de_passe_hash VARCHAR(255) NOT NULL,
+  cree_le TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE livres (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  titre VARCHAR(200) NOT NULL,
+  auteur VARCHAR(150) NOT NULL,
+  annee SMALLINT UNSIGNED NULL,
+  cree_le TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CHECK (annee IS NULL OR annee BETWEEN 1 AND 2100)
+);
+```
+
+Créez un utilisateur MySQL dédié au projet et limitez ses droits à la base. Sur XAMPP local, `root` peut avoir une configuration simplifiée ; ne la transférez jamais sur un serveur public.
+
+### Bootstrap et connexion
+
+Le bootstrap prépare la session et la connexion PDO pour les points d'entrée. Il ne produit pas de sortie :
+
+```php
+<?php
+declare(strict_types=1);
+
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+require_once dirname(__DIR__) . '/config/config.php';
+
+session_start();
+
+$dsn = sprintf(
+    'mysql:host=%s;dbname=%s;charset=utf8mb4',
+    $config['db_host'],
+    $config['db_name'],
+);
+$pdo = new PDO($dsn, $config['db_user'], $config['db_password'], [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES => false,
+]);
+```
+
+Le chemin doit être adapté à l'arborescence locale. Le fichier `config.php` contient les secrets et reste non versionné. Les requêtes SQL sont concentrées dans des repositories plutôt que dupliquées dans les vues.
+
+### Parcours public
+
+La page d'accueil lit une page de résultats avec un nombre maximal fixé côté serveur. Une recherche textuelle peut utiliser une requête préparée :
+
+```php
+$requete = $pdo->prepare(
+    'SELECT id, titre, auteur, annee
+     FROM livres
+     WHERE titre LIKE :recherche
+     ORDER BY titre
+     LIMIT :limite OFFSET :decalage'
+);
+$requete->bindValue('recherche', '%' . $recherche . '%');
+$requete->bindValue('limite', $limite, PDO::PARAM_INT);
+$requete->bindValue('decalage', $decalage, PDO::PARAM_INT);
+$requete->execute();
+```
+
+Validez et bornez recherche, page et taille de page. Le paramètre préparé protège la requête SQL, tandis que l'échappement à l'affichage protège le HTML : ces protections ne se substituent pas.
+
+### CRUD et formulaires
+
+Chaque mutation reçoit une requête POST, vérifie la méthode, le jeton CSRF, le rôle ou l'identité, puis valide les champs avant d'appeler le repository. Le repository utilise une requête PDO préparée. Après succès, le contrôleur redirige avec le statut 303.
+
+Pour la modification et suppression, recherchez d'abord le livre et répondez 404 si nécessaire. Si les livres appartiennent à des utilisateurs distincts, ne faites pas seulement `WHERE id = :id` : filtrez également par l'identifiant du propriétaire authentifié.
+
+Les champs affichés sont échappés avec une fonction telle que :
+
+```php
+function e(string $texte): string
+{
+    return htmlspecialchars($texte, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+```
+
+N'utilisez jamais GET pour supprimer ou modifier une donnée.
+
+### Inscription et connexion
+
+Validez l'adresse et le mot de passe côté serveur, hachez ce dernier avec `password_hash`, puis insérez l'utilisateur via PDO. À la connexion, recherchez le compte par requête préparée et vérifiez `password_verify`.
+
+Après une authentification réussie, renouvelez l'identifiant de session et ne stockez que les informations nécessaires, comme l'identifiant utilisateur. Les mots de passe, jetons et cookies ne vont ni dans les journaux, ni dans les URL, ni dans le dépôt.
+
+Chaque page privée vérifie la session côté serveur. Chaque opération de modification vérifie aussi que l'utilisateur a le droit d'agir sur la ressource demandée.
+
+### Protection CSRF et session
+
+Configurez `HttpOnly`, `SameSite` et `Secure` selon l'environnement avant de démarrer la session. Générer un jeton avec `random_bytes`, l'inclure dans les formulaires POST et le comparer avec `hash_equals` avant l'opération.
+
+La déconnexion est elle-même une action POST protégée. Elle détruit la session et expire le cookie correspondant. Masquer un bouton de suppression aux utilisateurs anonymes ne remplace jamais le contrôle serveur.
+
+### Tests et scénarios
+
+Testez au minimum :
+
+- base vide, recherche sans résultat et pagination ;
+- formulaires incomplets, longueurs excessives et années invalides ;
+- connexion erronée, accès anonyme et accès autorisé ;
+- identifiant de livre inconnu ;
+- jeton CSRF absent ou invalide ;
+- erreur de base de données sans divulgation de détails ;
+- injection SQL et contenu HTML malveillant saisis comme texte ;
+- deux utilisateurs distincts si le modèle gère des collections privées.
+
+Utilisez une base de test, jamais une base personnelle ou de production. Les opérations invalides ne doivent pas laisser de données partiellement modifiées.
+
+<Callout type="warn">
+Ne déployez pas directement XAMPP sur Internet. Une production exige une configuration serveur dédiée, HTTPS, secrets hors du webroot, mises à jour de sécurité, sauvegardes et affichage d'erreurs désactivé.
+</Callout>
+
+## Erreurs fréquentes
+
+**Utiliser `root` et un mot de passe vide hors du poste local**
+
+Créez un utilisateur de base dédié avec les privilèges minimaux.
+
+**Faire confiance à l'identifiant d'une URL**
+
+Vérifiez l'existence de la ressource et son propriétaire ; les identifiants ne sont pas des autorisations.
+
+**N'échapper que les champs d'un formulaire**
+
+Toutes les données rendues depuis la base doivent être échappées au contexte de sortie, même si elles sont normalement saisies par un administrateur.
+
+**Oublier de protéger les mutations contre CSRF**
+
+Chaque formulaire de création, modification, suppression ou déconnexion vérifie un jeton lié à la session.
+
+**Confondre requête préparée et validation**
+
+La requête préparée protège la syntaxe SQL, pas les règles métier ni l'affichage HTML.
+
+**Montrer une erreur technique à l'utilisateur**
+
+Les identifiants, requêtes et traces restent dans des journaux privés ; la réponse publique doit rester neutre.
+
+## Exercices
+
+<Exercise n="8.1" title="Construire le schéma et la configuration">
+Créez les tables MySQL, un utilisateur à privilèges limités, les fichiers de configuration et le bootstrap PDO. Vérifiez que les secrets ne sont pas suivis par Git.
+</Exercise>
+
+<Solution>
+Exécutez ce schéma dans phpMyAdmin, puis créez un utilisateur MySQL limité à la base `bibliotheque` et aux opérations nécessaires (ne donnez pas de privilèges d'administration à l'application) :
+
+```sql
+CREATE DATABASE bibliotheque CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE bibliotheque;
+
+CREATE TABLE livres (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    titre VARCHAR(200) NOT NULL,
+    auteur VARCHAR(150) NOT NULL,
+    annee SMALLINT UNSIGNED NULL,
+    cree_le TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE utilisateurs (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(254) NOT NULL UNIQUE,
+    mot_de_passe_hash VARCHAR(255) NOT NULL,
+    cree_le TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+```
+
+`config/bootstrap.php`, placé hors de `public/`, lit les secrets depuis l'environnement :
+
+```php
+<?php
+declare(strict_types=1);
+
+$host = getenv('DB_HOST');
+$name = getenv('DB_NAME');
+$user = getenv('DB_USER');
+$password = getenv('DB_PASSWORD');
+if (!is_string($host) || !is_string($name) || !is_string($user) || !is_string($password)) {
+    throw new RuntimeException('Configuration de base de données manquante.');
+}
+
+$pdo = new PDO("mysql:host={$host};dbname={$name};charset=utf8mb4", $user, $password, [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES => false,
+]);
+```
+
+Ne versionnez pas les secrets : ajoutez-les à `.gitignore` et fournissez un exemple de configuration avec des valeurs fictives seulement.
+</Solution>
+
+<Exercise n="8.2" title="Réaliser le CRUD protégé">
+Implémentez liste, recherche, ajout, modification et suppression. Toute mutation doit être POST, validée, protégée par CSRF et suivie d'une redirection.
+</Exercise>
+
+<Solution>
+Voici un point d'entrée POST de création réutilisant `$pdo` et les helpers de session/CSRF des modules précédents. Les contrôles de rôle doivent être ajoutés au même endroit avant la mutation si le projet possède des rôles :
+
+```php
+<?php
+declare(strict_types=1);
+session_start();
+require dirname(__DIR__) . '/config/bootstrap.php';
+require dirname(__DIR__) . '/src/csrf.php';
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    header('Allow: POST');
+    exit('Méthode non autorisée.');
+}
+if (!isset($_SESSION['utilisateur_id'])) {
+    http_response_code(403);
+    exit('Connexion requise.');
+}
+verifierCsrf($_POST['csrf'] ?? null);
+
+$titreBrut = $_POST['titre'] ?? null;
+$auteurBrut = $_POST['auteur'] ?? null;
+if (!is_string($titreBrut) || !is_string($auteurBrut)) {
+    http_response_code(400);
+    exit('Données invalides.');
+}
+$titre = trim($titreBrut);
+$auteur = trim($auteurBrut);
+if ($titre === '' || mb_strlen($titre) > 200 || $auteur === '' || mb_strlen($auteur) > 150) {
+    http_response_code(422);
+    exit('Titre ou auteur invalide.');
+}
+
+$insert = $pdo->prepare('INSERT INTO livres (titre, auteur) VALUES (:titre, :auteur)');
+$insert->execute(['titre' => $titre, 'auteur' => $auteur]);
+header('Location: /livres.php', true, 303);
+exit;
+```
+
+Les autres mutations suivent le même ordre : méthode, authentification/autorisation, CSRF, validation métier, requête préparée, puis redirection 303. Une lecture par identifiant doit renvoyer 404 si `fetch()` retourne `false`; les vues échappent chaque valeur avec `htmlspecialchars`.
+</Solution>
+
+<Exercise n="8.3" title="Ajouter authentification et tests">
+Ajoutez inscription, connexion et déconnexion. Testez accès autorisé, accès interdit, entrées malveillantes, erreurs de stockage et jetons invalides.
+</Exercise>
+
+<Solution>
+À l'inscription, validez puis stockez uniquement un hachage :
+
+```php
+$hash = password_hash($motDePasse, PASSWORD_DEFAULT);
+$insert = $pdo->prepare(
+    'INSERT INTO utilisateurs (email, mot_de_passe_hash) VALUES (:email, :hash)'
+);
+$insert->execute(['email' => $email, 'hash' => $hash]);
+```
+
+À la connexion, récupérez le hachage par courriel avec un SELECT préparé, vérifiez avec `password_verify`, puis appelez `session_regenerate_id(true)` et placez l'identifiant utilisateur en session. Déconnectez par POST protégé contre CSRF, puis videz la session et détruisez son cookie.
+
+Exemple de test d'intégration PHPUnit (utilisez une base dédiée aux tests, recréée par le script de préparation, jamais la base de production) :
+
+```php
+<?php
+use PHPUnit\Framework\TestCase;
+
+final class AuthentificationTest extends TestCase
+{
+    public function testMotDePasseEstVerifieParSonHachage(): void
+    {
+        $hash = password_hash('mot-de-passe-test', PASSWORD_DEFAULT);
+
+        self::assertTrue(password_verify('mot-de-passe-test', $hash));
+        self::assertFalse(password_verify('mauvais-mot-de-passe', $hash));
+    }
+}
+```
+
+Ajoutez des tests d'intégration pour accès anonyme refusé, requête préparée, jeton CSRF invalide et erreur de stockage. Les messages visibles restent génériques ; les détails techniques ne vont que dans des journaux privés.
+</Solution>
+
+## Livrable
+
+Une bibliothèque web PHP et MySQL exécutable localement avec XAMPP, documentée, testée, dotée d'un CRUD, d'une authentification, de validations serveur et de protections adaptées.
