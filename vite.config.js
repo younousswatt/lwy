@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 
 export default defineConfig({
-  base: '/lwy/',
+  base: process.env.GITHUB_ACTIONS ? '/lwy/' : '/',
   plugins: [
     {
       enforce: 'pre',

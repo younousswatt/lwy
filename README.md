@@ -118,7 +118,7 @@ Les identifiants par défaut d'une installation locale ne sont pas une configura
 
 ## Déploiement
 
-Le workflow GitHub Actions construit et publie le site sur GitHub Pages à chaque push sur `main`. Le dépôt Pages doit être configuré pour utiliser GitHub Actions comme source de déploiement. L'application est construite avec la base `/lwy/`.
+Le workflow GitHub Actions construit et publie le site sur GitHub Pages à chaque push sur `main`. Le dépôt Pages doit être configuré pour utiliser GitHub Actions comme source de déploiement. La base `/lwy/` est activée pour GitHub Pages ; les autres déploiements, dont Vercel, utilisent la racine du domaine.
 
 ## Note sur les contrastes
 
